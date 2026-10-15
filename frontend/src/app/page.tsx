@@ -4,9 +4,9 @@ import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
-  Shield, FileText, BarChart3, MessageSquare, GitCompare,
-  Upload, ArrowRight, CheckCircle, Star, Zap, Globe, Brain,
-  Lock, ChevronRight, Sparkles, Activity,
+  Shield, FileText, MessageSquare, GitCompare,
+  Upload, ArrowRight, CheckCircle, Star, Zap,
+  Lock, ChevronRight, Sparkles, HeartPulse,
 } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 
@@ -14,12 +14,10 @@ const fadeUp = { hidden: { opacity: 1, y: 0 }, show: { opacity: 1, y: 0 } };
 const stagger = { show: { transition: { staggerChildren: 0.1 } } };
 
 const features = [
+  { icon: HeartPulse, title: "Find Insurance", desc: "Answer a few questions about your age, family, and budget. Get ranked health insurance recommendations with evidence from real policy documents.", color: "from-rose-500 to-pink-500", href: "/dashboard/recommend", badge: "Recommend" },
   { icon: FileText, title: "PolicyLens AI", desc: "Upload any policy — PDF, photo, or screenshot. AI extracts and simplifies every clause, exclusion, and hidden condition.", color: "from-indigo-500 to-violet-500", href: "/dashboard/upload", badge: "Audit & Extract" },
   { icon: MessageSquare, title: "ScenarioGPT", desc: "Ask real-life questions like 'What if I get dengue?' and get instant coverage answers with estimated costs.", color: "from-cyan-500 to-blue-500", href: "/dashboard/scenario", badge: "Simulate & Check" },
-  { icon: Activity, title: "ClaimShield AI", desc: "Predict claim outcomes before filing. Know required documents, rejection risks, and approval probability.", color: "from-amber-500 to-orange-500", href: "/dashboard/claims", badge: "Pre-Claim Audit" },
   { icon: GitCompare, title: "CompareWise", desc: "Compare policies beyond premiums — hidden exclusions, real protection scores, and misleading similarities.", color: "from-emerald-500 to-teal-500", href: "/dashboard/compare", badge: "Head-to-Head" },
-  { icon: Globe, title: "Voice AI", desc: "Multilingual voice assistant explains your policy in Hindi, Telugu, Tamil, Bengali, and more.", color: "from-pink-500 to-rose-500", href: "/dashboard/voice", badge: "Speech & Audio" },
-  { icon: BarChart3, title: "TrustScore Engine", desc: "AI-generated transparency, risk, fairness, and claim reliability scores for every policy.", color: "from-purple-500 to-indigo-500", href: "/dashboard/analytics", badge: "Scores & Health" },
 ];
 
 const steps = [
@@ -127,7 +125,7 @@ export default function LandingPage() {
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
               Your Complete <span className="gradient-text">Insurance Intelligence</span> Suite
             </h2>
-            <p className="text-muted max-w-xl mx-auto">Six powerful AI tools working together to make insurance transparent, understandable, and trustworthy.</p>
+            <p className="text-muted max-w-xl mx-auto">Four powerful AI tools working together to make insurance transparent, understandable, and trustworthy.</p>
           </motion.div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {features.map((f, i) => (

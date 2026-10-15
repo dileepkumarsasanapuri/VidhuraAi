@@ -16,11 +16,10 @@ import {
   ChevronRight,
   Sparkles,
   Home,
-  AlertTriangle,
   LogOut,
   User,
-  Globe,
   Plus,
+  HeartPulse,
 } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 
@@ -28,11 +27,9 @@ const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
   { href: "/dashboard/upload", label: "Upload Policy", icon: Upload },
   { href: "/dashboard/policies", label: "My Policies", icon: FileText },
+  { href: "/dashboard/recommend", label: "Find Insurance", icon: HeartPulse },
   { href: "/dashboard/scenario", label: "ScenarioGPT", icon: MessageSquare },
   { href: "/dashboard/compare", label: "CompareWise", icon: GitCompare },
-  { href: "/dashboard/claims", label: "ClaimShield", icon: AlertTriangle },
-  { href: "/dashboard/voice", label: "Voice AI", icon: Globe },
-  { href: "/dashboard/analytics", label: "TrustScore", icon: BarChart3 },
   { href: "/dashboard/profile", label: "My Profile", icon: User },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
@@ -279,17 +276,17 @@ export default function Sidebar({ activeTab }: { activeTab: string }) {
           <span className="text-[10px] font-medium text-foreground mt-0.5">Upload</span>
         </Link>
 
-        {/* Tab 4: Voice AI */}
+        {/* Tab 4: Find Insurance */}
         <Link
-          href="/dashboard/voice"
+          href="/dashboard/recommend"
           className={`flex flex-col items-center justify-center py-1.5 px-2 rounded-xl transition-colors ${
-            activeTab === "/dashboard/voice"
+            activeTab === "/dashboard/recommend"
               ? "text-primary-light font-semibold"
               : "text-muted hover:text-foreground"
           }`}
         >
-          <Globe className="w-5 h-5 mb-0.5" />
-          <span className="text-[10px] tracking-tight">Voice AI</span>
+          <HeartPulse className="w-5 h-5 mb-0.5" />
+          <span className="text-[10px] tracking-tight">Find</span>
         </Link>
 
         {/* Tab 5: More / Menu Drawer Trigger */}

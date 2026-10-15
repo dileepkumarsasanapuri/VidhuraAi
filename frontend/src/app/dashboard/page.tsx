@@ -3,8 +3,8 @@
 import React from "react";
 import { motion } from "framer-motion";
 import {
-  Shield, FileText, BarChart3, AlertTriangle, TrendingUp,
-  Activity, Bell, Search, ChevronRight,
+  Shield, FileText, AlertTriangle, TrendingUp,
+  Activity, Bell, Search, ChevronRight, HeartPulse,
 } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import StatCard from "@/components/StatCard";
@@ -21,16 +21,12 @@ export default function DashboardPage() {
   const [policies, setPolicies] = React.useState<any[]>([]);
   const [dynamicRisks, setDynamicRisks] = React.useState<RiskItem[]>([]);
   const [dynamicActivity, setDynamicActivity] = React.useState<any[]>([]);
-  const [analytics, setAnalytics] = React.useState<any>(null);
   const userName = user?.name || "User";
 
   React.useEffect(() => {
     async function fetchData() {
       try {
-        const [polRes, anaRes] = await Promise.all([
-          api.getPolicies(),
-          api.getAnalytics()
-        ]);
+        const polRes = await api.getPolicies();
         if (polRes.data) {
           setPolicies(polRes.data);
           
@@ -71,9 +67,6 @@ export default function DashboardPage() {
           });
           setDynamicRisks(extractedRisks);
           setDynamicActivity(activities.reverse().slice(0, 4));
-        }
-        if (anaRes.data) {
-          setAnalytics(anaRes.data);
         }
       } catch (e) {
         console.error("Failed to fetch dashboard data", e);
@@ -129,13 +122,6 @@ export default function DashboardPage() {
               delay={0.1}
             />
             <StatCard title="Hidden Risks Found" value={dynamicRisks.length.toString()} icon={AlertTriangle} color="danger" delay={0.2} />
-            <StatCard
-              title="Avg. Trust Score"
-              value={policies.length > 0 ? `${analytics?.kpis?.trustScore?.value ?? 0}/100` : "—"}
-              icon={BarChart3}
-              color="warning"
-              delay={0.3}
-            />
           </div>
 
           {/* Main Grid */}
@@ -162,10 +148,10 @@ export default function DashboardPage() {
               <div className="mt-6 glass rounded-xl p-4">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs text-muted">Overall Protection Score</span>
-                  <span className="text-sm font-bold gradient-text">{policies.length > 0 ? `${analytics?.policyHealth?.overall ?? 0}/100` : "0/100"}</span>
+                  <span className="text-sm font-bold gradient-text">{policies.length > 0 ? `${(policies.reduce((sum: number, p: any) => sum + (p.analysis?.scores?.overall || p.healthScore || 0), 0) / policies.length).toFixed(0)}/100` : "0/100"}</span>
                 </div>
                 <div className="w-full h-2 rounded-full bg-white/5 overflow-hidden">
-                  <motion.div initial={{ width: 0 }} animate={{ width: `${policies.length > 0 ? (analytics?.policyHealth?.overall ?? 0) : 0}%` }} transition={{ duration: 1.2, ease: "easeOut" }}
+                  <motion.div initial={{ width: 0 }} animate={{ width: `${policies.length > 0 ? (policies.reduce((sum: number, p: any) => sum + (p.analysis?.scores?.overall || p.healthScore || 0), 0) / policies.length) : 0}%` }} transition={{ duration: 1.2, ease: "easeOut" }}
                     className="h-full rounded-full bg-gradient-to-r from-primary to-accent" />
                 </div>
               </div>
@@ -217,12 +203,12 @@ export default function DashboardPage() {
               </div>
               <div className="mt-6 p-4 glass rounded-xl">
                 <div className="flex items-center gap-2 mb-2">
-                  <Activity className="w-4 h-4 text-primary-light" />
-                  <span className="text-xs font-medium">Quick Scenario</span>
+                  <HeartPulse className="w-4 h-4 text-rose-400" />
+                  <span className="text-xs font-medium">Find Insurance</span>
                 </div>
-                <p className="text-xs text-muted mb-3">Try asking: &quot;What if I get hospitalized?&quot;</p>
-                <Link href="/dashboard/scenario" className="block text-center py-2 text-xs font-medium rounded-lg glass glass-hover">
-                  Open ScenarioGPT →
+                <p className="text-xs text-muted mb-3">Answer a few questions and get personalized health insurance recommendations.</p>
+                <Link href="/dashboard/recommend" className="block text-center py-2 text-xs font-medium rounded-lg glass glass-hover">
+                  Get Recommendations →
                 </Link>
               </div>
             </motion.div>

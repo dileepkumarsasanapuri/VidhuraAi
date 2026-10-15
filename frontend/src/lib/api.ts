@@ -239,12 +239,31 @@ class ApiClient {
     });
   }
 
-  // Claims
-  predictClaim(data: ClaimInput) {
-    return this.request<{ success: boolean; data: ClaimPrediction }>("/claims/predict", {
+  // Recommendations
+  generateRecommendations(data: RecommendationRequest) {
+    return this.request<{ success: boolean; data: RecommendationResponse }>("/recommend", {
       method: "POST",
       body: JSON.stringify(data),
     });
+  }
+
+  getRecommendationGuidance(data: GuidanceRequest) {
+    return this.request<{ success: boolean; data: GuidanceResponse }>("/recommend/guidance", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  getRecommendationHistory() {
+    return this.request<{ success: boolean; data: RecommendationHistoryItem[] }>("/recommend/history");
+  }
+
+  getRecommendationById(id: string) {
+    return this.request<{ success: boolean; data: RecommendationHistoryItem }>(`/recommend/${id}`);
+  }
+
+  getPolicyCatalog() {
+    return this.request<{ success: boolean; data: StructuredPolicy[] }>("/recommend/catalog");
   }
 
   // Compare
@@ -493,6 +512,195 @@ export interface AnalyticsData {
     percentage: number;
   }>;
   riskDistribution: Array<{ category: string; count: number; severity: string }>;
+}
+
+export interface MemberInput {
+  relation: string;
+  displayName?: string;
+  age: number;
+  preExistingConditions?: string[];
+}
+
+export interface RecommendationRequest {
+  primaryAge: number;
+  insuranceType: string;
+  members?: MemberInput[];
+  cityOrPincode: string;
+  annualBudget: number;
+  budgetType: "STRICT" | "PREFERRED";
+  desiredSumInsured?: number | null;
+  helpMeDecideSumInsured?: boolean;
+  primaryPriority: "AFFORDABLE_PREMIUMS" | "BROADER_COVERAGE" | "LOWER_OUT_OF_POCKET" | "BALANCED";
+  preferredHospitals?: string[];
+  preExistingConditions?: string[];
+  hasExistingInsurance?: boolean;
+  existingSumInsured?: number | null;
+  portingPolicy?: boolean;
+  policyRenewalDate?: string;
+  maternityBenefitNeeded?: boolean;
+  opdBenefitNeeded?: boolean;
+  copayTolerance?: string;
+}
+
+export interface GuidanceRequest {
+  primaryAge: number;
+  insuranceType: string;
+  memberCount: number;
+  cityOrPincode: string;
+  annualBudget?: number;
+}
+
+export interface GuidanceResponse {
+  recommendedSumInsured: number;
+  formattedRecommendedSumInsured: string;
+  rationale: string;
+  medicalInflationInsight: string;
+  zone: string;
+  estimatedMinBudget: number;
+  estimatedMaxBudget: number;
+  budgetAdequacyNote: string;
+  tips: string[];
+}
+
+export interface ProfileSummary {
+  primaryAge: number;
+  insuranceType: string;
+  totalInsuredMembers: number;
+  cityOrPincode: string;
+  pricingZone: string;
+  annualBudget: number;
+  formattedBudget: string;
+  budgetType: string;
+  selectedSumInsured: number;
+  formattedSumInsured: string;
+  primaryPriorityLabel: string;
+  declaredConditions: string[];
+}
+
+export interface ProfileGuidance {
+  recommendedSumInsured: number;
+  formattedRecommendedSumInsured: string;
+  sumInsuredRationale: string;
+  zoneClassification: string;
+  medicalInflationInsight: string;
+  budgetAdequacyNote: string;
+}
+
+export interface DiseaseSublimit {
+  diseaseName: string;
+  sublimitAmount: number;
+  formattedLimit: string;
+  note: string;
+}
+
+export interface LimitationAssessment {
+  roomRentCondition: string;
+  roomRentCapped: boolean;
+  proportionateDeductionRisk: boolean;
+  roomRentWarning: string;
+  copayPercentage: number;
+  copayNote: string;
+  sublimits: DiseaseSublimit[];
+  initialWaitingDays: number;
+  specificIllnessWaitingMonths: number;
+  pedWaitingMonths: number;
+  pedStatusForUser: string;
+  restorationSummary: string;
+  noClaimBonusSummary: string;
+}
+
+export interface OutOfPocketRiskAnalysis {
+  riskLevel: "LOW" | "MODERATE" | "HIGH";
+  summary: string;
+  estimatedExposurePercentage: number;
+  sampleScenarioBill: number;
+  estimatedCoveredAmount: number;
+  estimatedOutofPocketCost: number;
+  exposureFactors: string[];
+}
+
+export interface PolicyEvidenceItem {
+  clauseName: string;
+  sectionReference: string;
+  documentName: string;
+  verbatimText: string;
+  verifiedFact: string;
+  tag: string;
+}
+
+export interface InsurerMetrics {
+  claimSettlementRatio: number;
+  incurredClaimsRatio: number;
+  cashlessHospitalsCount: number;
+  topHospitalNetworks: string[];
+  avgGrievanceResolutionDays: number;
+  claimPaymentSpeed: string;
+}
+
+export interface RankedPolicyCard {
+  rank: number;
+  policyId: string;
+  policyCode: string;
+  policyName: string;
+  provider: string;
+  irdaUin: string;
+  planName: string;
+  category: string;
+  policyWordingDocument: string;
+  overallMatchScore: number;
+  costScore: number;
+  coverageScore: number;
+  outOfPocketProtectionScore: number;
+  insurerReliabilityScore: number;
+  calculatedAnnualPremium: number;
+  formattedAnnualPremium: string;
+  sumInsured: number;
+  formattedSumInsured: string;
+  withinBudget: boolean;
+  budgetDifference: number;
+  budgetComparisonText: string;
+  matchBadges: string[];
+  matchReasons: string[];
+  limitations: LimitationAssessment;
+  outOfPocketRisk: OutOfPocketRiskAnalysis;
+  keyExclusions: string[];
+  supportingEvidence: PolicyEvidenceItem[];
+  insurerMetrics: InsurerMetrics;
+}
+
+export interface RecommendationResponse {
+  recommendationId: string;
+  profileId: string;
+  generatedAt: string;
+  profileSummary: ProfileSummary;
+  guidance: ProfileGuidance;
+  rankedPolicies: RankedPolicyCard[];
+  totalPoliciesEvaluated: number;
+  eligiblePoliciesCount: number;
+}
+
+export interface RecommendationHistoryItem {
+  id: string;
+  userId: string;
+  profileId: string;
+  guidance: ProfileGuidance;
+  rankedPolicies: RankedPolicyCard[];
+  createdAt: string;
+}
+
+export interface StructuredPolicy {
+  id: string;
+  policyCode: string;
+  policyName: string;
+  provider: string;
+  irdaUin: string;
+  planName: string;
+  category: string;
+  summary: string;
+  policyWordingDocument: string;
+  insurerMetrics: InsurerMetrics;
+  officialEvidence: PolicyEvidenceItem[];
+  keyExclusions: string[];
 }
 
 export const api = new ApiClient();
