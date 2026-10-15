@@ -50,15 +50,16 @@ This is the **most cost-effective, straightforward, and performant** setup for V
    - **Name**: `vidhura-ai-production`
    - **Application and OS Images (AMI)**: `Ubuntu Server 22.04 LTS (HVM), SSD Volume Type` (64-bit x86).
    - **Instance Type**:
-     - **Recommended**: `t3.medium` (2 vCPU, 4 GiB RAM) — *Optimal for Spring Boot JVM + Next.js SSR + MongoDB*.
-     - *Budget alternative*: `t3.small` (2 vCPU, 2 GiB RAM) with a 2GB Linux swapfile.
+     - **AWS Free Tier (100% Free for 12 months)**: Select `t2.micro` (1 vCPU, 1 GiB RAM) or `t3.micro` (marked with the green *"Free tier eligible"* badge).
+       > 💡 **Memory Safety**: `scripts/deploy-aws-ec2.sh` automatically creates a **4 GB Linux Swapfile** and caps the Java JVM heap to `384MB`. This expands your addressable memory to **5 GB**, ensuring Spring Boot, Next.js, and MongoDB run stably on AWS Free Tier without out-of-memory errors!
+     - *Paid Scaled alternative*: `t3.medium` (2 vCPU, 4 GiB RAM) for higher concurrent user traffic.
    - **Key Pair**: Select an existing key pair or click **Create new key pair** (e.g., `vidhura-key.pem`) and save it to your local machine.
    - **Network Settings**:
      - Check ✅ **Allow SSH traffic from Anywhere** (or your specific IP).
      - Check ✅ **Allow HTTP traffic from the internet** (Port 80).
      - Check ✅ **Allow HTTPS traffic from the internet** (Port 443).
    - **Configure Storage**:
-     - Set Root volume to **30 GiB gp3 SSD** (general purpose, fast I/O).
+     - Set Root volume to **30 GiB gp3 SSD** (*30 GB is 100% Free Tier eligible*).
 3. Click **Launch Instance**.
 
 ---

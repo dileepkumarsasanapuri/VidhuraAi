@@ -30,6 +30,23 @@ echo -e "\n${YELLOW}[1/6] Updating system packages and installing prerequisites.
 apt-get update -y
 apt-get install -y ca-certificates curl gnupg lsb-release certbot openssl
 
+# Configure 4GB Swap for AWS Free Tier (1GB RAM t2.micro/t3.micro)
+SWAP_TOTAL=$(free -m | awk '/^Swap:/ {print $2}')
+if [ -z "$SWAP_TOTAL" ] || [ "$SWAP_TOTAL" -lt 2000 ]; then
+  echo -e "${CYAN}==> Configuring 4GB Swapfile for AWS Free Tier memory safety...${NC}"
+  if [ ! -f /swapfile ]; then
+    fallocate -l 4G /swapfile 2>/dev/null || dd if=/dev/zero of=/swapfile bs=1M count=4096
+    chmod 600 /swapfile
+    mkswap /swapfile
+    swapon /swapfile
+    if ! grep -q '/swapfile' /etc/fstab; then
+      echo '/swapfile none swap sw 0 0' >> /etc/fstab
+    fi
+    sysctl vm.swappiness=20 > /dev/null || true
+    echo -e "${GREEN}==> 4GB Swap enabled! Total addressable memory is now 5GB.${NC}"
+  fi
+fi
+
 # 2. Install Docker if not present
 if ! command -v docker &> /dev/null; then
   echo -e "${YELLOW}[2/6] Installing Docker Engine & Docker Compose Plugin...${NC}"

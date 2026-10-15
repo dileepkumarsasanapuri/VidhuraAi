@@ -11,6 +11,7 @@ services:
     image: mongo:7
     container_name: vidhura-mongodb
     restart: always
+    command: ["mongod", "--wiredTigerCacheSizeGB", "0.25"]
     environment:
       MONGO_INITDB_DATABASE: vidhura
     volumes:
@@ -33,6 +34,7 @@ services:
     restart: always
     environment:
       SPRING_PROFILES_ACTIVE: prod
+      JAVA_TOOL_OPTIONS: ${JAVA_TOOL_OPTIONS:--Xms192m -Xmx384m -XX:+UseG1GC}
       MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017/vidhura}
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set in production}
       GROQ_API_KEY: ${GROQ_API_KEY:-}
