@@ -1,0 +1,74 @@
+server:
+  port: 5000
+  servlet:
+    context-path: /
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain,application/javascript,text/css
+    min-response-size: 1024
+
+spring:
+  application:
+    name: vidhura-ai-backend
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb+srv://dileepkumarsasanapuri_db_user:Dileep123@cluster0.r0i7een.mongodb.net/vidhura?retryWrites=true&w=majority}
+  servlet:
+    multipart:
+      max-file-size: 25MB
+      max-request-size: 25MB
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 604800000
+
+google:
+  client-id: ${GOOGLE_CLIENT_ID:}
+
+# AI Provider Configuration (Default: Groq - Free, Ultra-Fast Llama 3.3 70B)
+ai:
+  provider: ${AI_PROVIDER:auto}
+  groq:
+    api-key: ${GROQ_API_KEY:}
+    model: ${GROQ_MODEL:llama-3.3-70b-versatile}
+    fallback-model: ${GROQ_FALLBACK_MODEL:llama-3.1-8b-instant}
+    api-url: ${GROQ_API_URL:https://api.groq.com/openai/v1/chat/completions}
+  hf:
+    token: ${HF_TOKEN:}
+    model: ${HF_MODEL:meta-llama/Llama-3.3-70B-Instruct}
+    api-url: ${HF_API_URL:https://router.huggingface.co/v1/chat/completions}
+
+hf:
+  token: ${GROQ_API_KEY:${HF_TOKEN:}}
+  model: ${GROQ_MODEL:${HF_MODEL:llama-3.3-70b-versatile}}
+  api-url: ${GROQ_API_URL:${HF_API_URL:https://api.groq.com/openai/v1/chat/completions}}
+
+# Production CORS — restrict to actual frontend origin
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
+
+# Actuator for health/monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+  health:
+    mongo:
+      enabled: true
+
+# Logging
+logging:
+  level:
+    root: WARN
+    com.vidhura.ai: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{requestId}] %-5level %logger{36} - %msg%n"
+
+# Rate limiting
+rate-limit:
+  requests-per-minute: ${RATE_LIMIT_RPM:60}

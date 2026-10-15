@@ -1,0 +1,171 @@
+name: Continuous Delivery & Deployment (CD)
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target Deployment Environment"
+        required: true
+        default: "production"
+        type: choice
+        options:
+          - production
+          - staging
+
+env:
+  REGISTRY: ghcr.io
+  BACKEND_IMAGE_NAME: ${{ github.repository }}/backend
+  FRONTEND_IMAGE_NAME: ${{ github.repository }}/frontend
+
+jobs:
+  # ─────────────────────────────────────────────────────────────
+  # Stage 1: Build & Publish OCI Container Images to GHCR
+  # ─────────────────────────────────────────────────────────────
+  build-and-publish:
+    name: Build & Push Container Images
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Authenticate to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker Metadata (Backend)
+        id: meta-backend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=sha,format=short
+            type=semver,pattern={{version}}
+
+      - name: Extract Docker Metadata (Frontend)
+        id: meta-frontend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=sha,format=short
+            type=semver,pattern={{version}}
+
+      - name: Build & Publish Vidhura Backend Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: ${{ steps.meta-backend.outputs.tags }}
+          labels: ${{ steps.meta-backend.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build & Publish Vidhura Frontend Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: ${{ steps.meta-frontend.outputs.tags }}
+          labels: ${{ steps.meta-frontend.outputs.labels }}
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api' }}
+            NEXT_PUBLIC_GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID || '' }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ─────────────────────────────────────────────────────────────
+  # Stage 2: Automated Deployment to Target Server
+  # ─────────────────────────────────────────────────────────────
+  deploy:
+    name: Deploy to ${{ github.event.inputs.environment || 'production' }}
+    needs: [build-and-publish]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Execute Remote Deployment via SSH
+        if: env.DEPLOY_HOST != ''
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+        run: |
+          echo "Connecting to $DEPLOY_HOST..."
+          mkdir -p ~/.ssh
+          echo "$DEPLOY_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+
+          ssh "$DEPLOY_USER@$DEPLOY_HOST" "
+            cd /opt/vidhura-ai && \
+            echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u '${{ github.actor }}' --password-stdin && \
+            docker compose pull && \
+            docker compose up -d --remove-orphans && \
+            docker image prune -af --filter 'until=48h'
+          "
+
+      - name: Simulated Deployment (Local / Self-Hosted Runner Fallback)
+        if: env.DEPLOY_HOST == ''
+        run: |
+          echo "=========================================================="
+          echo "DEPLOY_HOST secret not configured."
+          echo "Images were successfully published to GHCR:"
+          echo " - ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}:latest"
+          echo " - ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE_NAME }}:latest"
+          echo "To enable automated remote deployment, configure:"
+          echo " - DEPLOY_HOST, DEPLOY_USER, DEPLOY_KEY in repository secrets."
+          echo "=========================================================="
+
+  # ─────────────────────────────────────────────────────────────
+  # Stage 3: Post-Deployment Smoke Test & Health Check
+  # ─────────────────────────────────────────────────────────────
+  smoke-test:
+    name: Post-Deployment Synthetic Health Check
+    needs: [deploy]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Synthetic Health Check
+        run: |
+          TARGET_URL="${{ secrets.DEPLOY_URL || 'http://localhost:5000' }}/api/health"
+          echo "Probing application health endpoint: $TARGET_URL"
+          
+          # If a live production URL is configured, perform HTTP probe with retries
+          if [[ "${{ secrets.DEPLOY_URL }}" != "" ]]; then
+            for i in {1..10}; do
+              RESPONSE=$(curl -s -w "\n%{http_code}" "$TARGET_URL" || true)
+              HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+              BODY=$(echo "$RESPONSE" | sed '$d')
+              
+              if [ "$HTTP_CODE" = "200" ]; then
+                echo "✅ Health check PASSED on attempt $i. Response: $BODY"
+                exit 0
+              fi
+              echo "Attempt $i: Received HTTP $HTTP_CODE. Retrying in 10 seconds..."
+              sleep 10
+            done
+            echo "❌ Post-deployment health check failed after 10 attempts."
+            exit 1
+          else
+            echo "ℹ️ DEPLOY_URL not set. Skipping live HTTP probe in sandbox CI environment."
+          fi
