@@ -427,8 +427,8 @@ export default function VoiceAiPage() {
       }
 
       const currentText = chunks[chunkIdx];
-      // 1. Try Backend TTS endpoint (localhost:5000/api/scenario/tts)
-      const primaryUrl = `http://localhost:5000/api/scenario/tts?lang=${encodeURIComponent(
+      // 1. Try Backend TTS endpoint (/api/scenario/tts)
+      const primaryUrl = `/api/scenario/tts?lang=${encodeURIComponent(
         ttsCode
       )}&text=${encodeURIComponent(currentText)}`;
 

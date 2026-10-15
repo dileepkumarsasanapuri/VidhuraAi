@@ -42,7 +42,7 @@ services:
       HF_TOKEN: ${HF_TOKEN:-}
       HF_MODEL: ${HF_MODEL:-meta-llama/Llama-3.3-70B-Instruct}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://${DOMAIN:-localhost}}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-*}
       RATE_LIMIT_RPM: ${RATE_LIMIT_RPM:-120}
       SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
       SMTP_PORT: ${SMTP_PORT:-587}

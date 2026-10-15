@@ -45,7 +45,7 @@ hf:
 
 # Production CORS — restrict to actual frontend origin
 cors:
-  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:*}
 
 # Actuator for health/monitoring
 management:

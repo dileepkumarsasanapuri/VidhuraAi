@@ -1,10 +1,44 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+function normalizeBaseUrl(url: string): string {
+  return url.endsWith("/") ? url.slice(0, -1) : url;
+}
+
+function resolveApiBase(): string {
+  if (typeof window !== "undefined") {
+    // If an explicit non-localhost external API URL is configured, use it
+    if (process.env.NEXT_PUBLIC_API_URL && !process.env.NEXT_PUBLIC_API_URL.includes("localhost")) {
+      return normalizeBaseUrl(process.env.NEXT_PUBLIC_API_URL);
+    }
+    // Local dev on localhost:3000 without Nginx proxy
+    const isLocalBrowser = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+    if (isLocalBrowser && window.location.port === "3000") {
+      return normalizeBaseUrl(process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api");
+    }
+    // Production / EC2 / Behind Nginx reverse proxy: use relative /api
+    return "/api";
+  }
+
+  // Server-side (Node.js SSR / Container)
+  const serverUrl = process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://backend:5000/api";
+  return normalizeBaseUrl(serverUrl);
+}
 
 class ApiClient {
-  private base: string;
+  private customBase?: string;
 
-  constructor(base: string) {
-    this.base = base;
+  constructor(base?: string) {
+    if (base && !base.includes("localhost:5000")) {
+      this.customBase = normalizeBaseUrl(base);
+    }
+  }
+
+  get base(): string {
+    if (this.customBase) return this.customBase;
+    return resolveApiBase();
+  }
+
+  private getUrl(path: string): string {
+    const cleanPath = path.startsWith("/") ? path : `/${path}`;
+    return `${this.base}${cleanPath}`;
   }
 
   private async request<T>(
@@ -23,7 +57,7 @@ class ApiClient {
       headers.Authorization = `Bearer ${token}`;
     }
 
-    const url = `${this.base}${path}`;
+    const url = this.getUrl(path);
     let res = await fetch(url, {
       ...options,
       headers,
@@ -55,7 +89,7 @@ class ApiClient {
     if (!refreshToken) return null;
 
     try {
-      const res = await fetch(`${this.base}/auth/refresh`, {
+      const res = await fetch(this.getUrl("/auth/refresh"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ refreshToken }),
@@ -118,7 +152,7 @@ class ApiClient {
     const formData = new FormData();
     formData.append("policyFile", file);
 
-    const url = `${this.base}/analyze`;
+    const url = this.getUrl("/analyze");
     const token = typeof window !== "undefined"
       ? (window.localStorage.getItem("vidhura_auth_token") || window.localStorage.getItem("claritysure_auth_token"))
       : null;
@@ -143,7 +177,7 @@ class ApiClient {
     const formData = new FormData();
     formData.append("policyFile", file);
 
-    const url = `${this.base}/analyze/async`;
+    const url = this.getUrl("/analyze/async");
     const token = typeof window !== "undefined"
       ? (window.localStorage.getItem("vidhura_auth_token") || window.localStorage.getItem("claritysure_auth_token"))
       : null;
@@ -194,7 +228,7 @@ class ApiClient {
   }
 
   getAnalysisStreamUrl(taskId: string) {
-    return `${this.base}/analyze/stream/${taskId}`;
+    return this.getUrl(`/analyze/stream/${taskId}`);
   }
 
   // Scenario
@@ -461,5 +495,5 @@ export interface AnalyticsData {
   riskDistribution: Array<{ category: string; count: number; severity: string }>;
 }
 
-export const api = new ApiClient(API_BASE);
+export const api = new ApiClient();
 export default api;
