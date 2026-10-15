@@ -114,8 +114,6 @@ services:
         condition: service_healthy
     networks:
       - vidhura-net
-    profiles:
-      - with-nginx
 
 volumes:
   mongodb_data:
