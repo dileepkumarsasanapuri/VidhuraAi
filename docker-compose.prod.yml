@@ -1,0 +1,119 @@
+# ==============================================================================
+# Vidhura AI — Production Docker Compose (AWS & Cloud VPS)
+# Uses pre-built images from GitHub Container Registry (ghcr.io)
+# ==============================================================================
+
+services:
+  # ─────────────────────────────────────────────────────────────
+  # MongoDB Database
+  # ─────────────────────────────────────────────────────────────
+  mongodb:
+    image: mongo:7
+    container_name: vidhura-mongodb
+    restart: always
+    environment:
+      MONGO_INITDB_DATABASE: vidhura
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - vidhura-net
+
+  # ─────────────────────────────────────────────────────────────
+  # Backend — Spring Boot 3 API
+  # ─────────────────────────────────────────────────────────────
+  backend:
+    image: ghcr.io/dileepkumarsasanapuri/vidhura-backend:latest
+    container_name: vidhura-backend
+    restart: always
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017/vidhura}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set in production}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      GROQ_MODEL: ${GROQ_MODEL:-llama-3.3-70b-versatile}
+      HF_TOKEN: ${HF_TOKEN:-}
+      HF_MODEL: ${HF_MODEL:-meta-llama/Llama-3.3-70B-Instruct}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://${DOMAIN:-localhost}}
+      RATE_LIMIT_RPM: ${RATE_LIMIT_RPM:-120}
+      SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:5000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 45s
+    networks:
+      - vidhura-net
+
+  # ─────────────────────────────────────────────────────────────
+  # Frontend — Next.js 15 Application
+  # ─────────────────────────────────────────────────────────────
+  frontend:
+    image: ghcr.io/dileepkumarsasanapuri/vidhura-frontend:latest
+    container_name: vidhura-frontend
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    networks:
+      - vidhura-net
+
+  # ─────────────────────────────────────────────────────────────
+  # Nginx Reverse Proxy with Rate Limiting & SSL
+  # ─────────────────────────────────────────────────────────────
+  nginx:
+    image: nginx:alpine
+    container_name: vidhura-nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - certbot_etc:/etc/letsencrypt:ro
+      - certbot_var:/var/lib/letsencrypt:ro
+      - certbot_www:/var/www/certbot:ro
+    depends_on:
+      frontend:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+    networks:
+      - vidhura-net
+
+volumes:
+  mongodb_data:
+    driver: local
+  certbot_etc:
+    driver: local
+  certbot_var:
+    driver: local
+  certbot_www:
+    driver: local
+
+networks:
+  vidhura-net:
+    driver: bridge
