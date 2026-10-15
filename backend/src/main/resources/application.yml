@@ -8,7 +8,7 @@ spring:
     name: vidhura-ai-backend
   data:
     mongodb:
-      uri: ${MONGODB_URI:mongodb+srv://dileepkumarsasanapuri_db_user:Dileep123@cluster0.r0i7een.mongodb.net/vidhura?retryWrites=true&w=majority&serverSelectionTimeoutMS=2000&connectTimeoutMS=2000}
+      uri: ${MONGODB_URI:mongodb://localhost:27017/vidhura}
   servlet:
     multipart:
       max-file-size: 25MB
