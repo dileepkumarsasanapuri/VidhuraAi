@@ -98,14 +98,47 @@ if [ -z "$CURRENT_GROQ" ] || [ "$CURRENT_GROQ" = "your_groq_api_key_here" ]; the
   fi
 fi
 
-# 4. Pull Latest Pre-built Docker Images
+# 4. Pull or Build Docker Images
 echo -e "\n${YELLOW}[4/6] Pulling pre-built Docker container images from GitHub Container Registry...${NC}"
-docker compose -f docker-compose.prod.yml pull
+COMPOSE_FILE="docker-compose.prod.yml"
+
+if ! docker compose -f docker-compose.prod.yml pull; then
+  echo -e "\n${YELLOW}----------------------------------------------------------------${NC}"
+  echo -e "${YELLOW}Notice: GitHub Container Registry reported 'denied' (Package is Private).${NC}"
+  echo -e "You have 3 easy options:"
+  echo -e "  [1] Make packages Public at: https://github.com/dileepkumarsasanapuri?tab=packages (Recommended - instant)"
+  echo -e "  [2] Login to ghcr.io with a GitHub Personal Access Token (PAT) with read:packages scope"
+  echo -e "  [3] Build containers directly on this EC2 instance from local source code"
+  echo -e "${YELLOW}----------------------------------------------------------------${NC}"
+  
+  read -r -p "Choose an option (1, 2, or 3) [1]: " PULL_OPT
+  PULL_OPT=${PULL_OPT:-1}
+
+  if [ "$PULL_OPT" = "2" ]; then
+    read -r -p "GitHub Username [dileepkumarsasanapuri]: " GH_USER
+    GH_USER=${GH_USER:-dileepkumarsasanapuri}
+    read -r -s -p "GitHub Personal Access Token (classic PAT with read:packages): " GH_PAT
+    echo ""
+    echo "$GH_PAT" | docker login ghcr.io -u "$GH_USER" --password-stdin
+    docker compose -f docker-compose.prod.yml pull
+  elif [ "$PULL_OPT" = "3" ]; then
+    echo -e "${CYAN}Building Docker containers locally on EC2...${NC}"
+    COMPOSE_FILE="docker-compose.yml"
+    docker compose -f docker-compose.yml build
+  else
+    echo -e "Retrying pull (ensure packages are set to Public in GitHub package settings)..."
+    if ! docker compose -f docker-compose.prod.yml pull; then
+      echo -e "${YELLOW}Could not pull from ghcr.io. Building containers locally from source instead...${NC}"
+      COMPOSE_FILE="docker-compose.yml"
+      docker compose -f docker-compose.yml build
+    fi
+  fi
+fi
 
 # 5. Launch Application Stack
-echo -e "\n${YELLOW}[5/6] Launching Vidhura AI Production Stack...${NC}"
-docker compose -f docker-compose.prod.yml down --remove-orphans || true
-docker compose -f docker-compose.prod.yml up -d
+echo -e "\n${YELLOW}[5/6] Launching Vidhura AI Production Stack using ${COMPOSE_FILE}...${NC}"
+docker compose -f "$COMPOSE_FILE" down --remove-orphans || true
+docker compose -f "$COMPOSE_FILE" up -d
 
 # 6. Configure Systemd Service for Auto-start on reboot
 echo -e "\n${YELLOW}[6/6] Setting up systemd auto-start service...${NC}"
@@ -119,8 +152,8 @@ After=docker.service
 Type=oneshot
 RemainAfterExit=yes
 WorkingDirectory=${APP_DIR}
-ExecStart=/usr/bin/docker compose -f docker-compose.prod.yml up -d
-ExecStop=/usr/bin/docker compose -f docker-compose.prod.yml down
+ExecStart=/usr/bin/docker compose -f ${COMPOSE_FILE} up -d
+ExecStop=/usr/bin/docker compose -f ${COMPOSE_FILE} down
 TimeoutStartSec=0
 
 [Install]

@@ -11,6 +11,7 @@ services:
     image: mongo:7
     container_name: vidhura-mongodb
     restart: unless-stopped
+    command: ["mongod", "--wiredTigerCacheSizeGB", "0.25"]
     ports:
       - "27017:27017"
     volumes:
@@ -39,6 +40,7 @@ services:
       - "5000:5000"
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-default}
+      JAVA_TOOL_OPTIONS: ${JAVA_TOOL_OPTIONS:--Xms192m -Xmx384m -XX:+UseG1GC}
       MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017/vidhura}
       JWT_SECRET: ${JWT_SECRET:-vidhura_secret_key_change_in_production_min_32_bytes}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
