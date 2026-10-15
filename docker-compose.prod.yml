@@ -29,6 +29,9 @@ services:
   # Backend — Spring Boot 3 API
   # ─────────────────────────────────────────────────────────────
   backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     image: ghcr.io/dileepkumarsasanapuri/vidhura-backend:latest
     container_name: vidhura-backend
     restart: always
@@ -64,6 +67,12 @@ services:
   # Frontend — Next.js 15 Application
   # ─────────────────────────────────────────────────────────────
   frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-/api}
+        NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
     image: ghcr.io/dileepkumarsasanapuri/vidhura-frontend:latest
     container_name: vidhura-frontend
     restart: always
