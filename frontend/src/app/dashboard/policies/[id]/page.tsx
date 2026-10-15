@@ -96,22 +96,22 @@ export default function PolicyDetailsPage() {
     <div className="flex h-screen overflow-hidden">
       <Sidebar activeTab="/dashboard/policies" />
       <main className="flex-1 overflow-y-auto">
-        <header className="sticky top-0 z-30 glass border-b border-border px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center">
-            <button onClick={() => router.push('/dashboard/policies')} className="mr-4 p-2 hover:bg-white/5 rounded-lg transition-colors">
-              <ArrowLeft className="w-5 h-5 text-muted hover:text-white" />
+        <header className="sticky top-0 z-30 glass border-b border-border px-4 sm:px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center ml-11 lg:ml-0 overflow-hidden">
+            <button onClick={() => router.push('/dashboard/policies')} className="mr-2 sm:mr-4 p-1.5 sm:p-2 hover:bg-white/5 rounded-lg transition-colors flex-shrink-0">
+              <ArrowLeft className="w-4 sm:w-5 h-4 sm:h-5 text-muted hover:text-white" />
             </button>
-            <h1 className="text-lg font-bold">Policy Audit & Clause Report</h1>
+            <h1 className="text-sm sm:text-lg font-bold truncate">Policy Audit & Report</h1>
           </div>
           <button
             onClick={() => router.push('/dashboard/compare')}
-            className="text-xs text-muted hover:text-white glass px-3 py-1.5 rounded-xl transition-colors hidden sm:block"
+            className="text-xs text-muted hover:text-white glass px-2.5 sm:px-3 py-1.5 rounded-xl transition-colors hidden sm:block flex-shrink-0"
           >
-            Compare with Others →
+            Compare →
           </button>
         </header>
 
-        <div className="p-6 max-w-5xl mx-auto space-y-6">
+        <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-5 sm:space-y-6 mobile-bottom-clearance">
           {/* Printable Official Report Header - visible only when printing/exporting to PDF */}
           <div className="print-only mb-6 pb-4 border-b-2 border-slate-900">
             <div className="flex justify-between items-start">

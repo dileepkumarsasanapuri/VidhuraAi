@@ -180,28 +180,28 @@ export default function UploadPage() {
     <div className="flex h-screen overflow-hidden">
       <Sidebar activeTab="/dashboard/upload" />
       <main className="flex-1 overflow-y-auto">
-        <header className="sticky top-0 z-30 glass border-b border-border px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3 ml-12 lg:ml-0">
-            <h1 className="text-lg font-bold">PolicyLens AI</h1>
-            <span className="text-xs text-muted hidden sm:block">• Deep Document & Clause Intelligence</span>
+        <header className="sticky top-0 z-30 glass border-b border-border px-4 sm:px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2 sm:gap-3 ml-11 lg:ml-0">
+            <h1 className="text-base sm:text-lg font-bold truncate">PolicyLens AI</h1>
+            <span className="text-xs text-muted hidden md:block">• Deep Document & Clause Intelligence</span>
           </div>
           {step === "complete" && (
             <button
               onClick={() => setStep("upload")}
               className="text-xs text-muted hover:text-white glass px-3 py-1.5 rounded-xl transition-colors"
             >
-              Analyze Another Document
+              Analyze Another
             </button>
           )}
         </header>
 
-        <div className="p-6 max-w-5xl mx-auto space-y-6">
+        <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-5 sm:space-y-6 mobile-bottom-clearance">
           <AnimatePresence mode="wait">
             {step === "upload" && (
               <motion.div key="upload" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
                 {/* Dropzone */}
                 <div
-                  className={`dropzone rounded-2xl p-12 text-center transition-all ${dragActive ? "active" : ""}`}
+                  className={`dropzone rounded-2xl p-6 sm:p-12 text-center transition-all ${dragActive ? "active" : ""}`}
                   onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
                   onDragLeave={() => setDragActive(false)}
                   onDrop={handleDrop}

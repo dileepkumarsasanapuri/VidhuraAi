@@ -99,19 +99,19 @@ export default function ClaimsPage() {
     <div className="flex h-screen overflow-hidden">
       <Sidebar activeTab="/dashboard/claims" />
       <main className="flex-1 overflow-y-auto">
-        <header className="sticky top-0 z-30 glass border-b border-border px-6 h-16 flex items-center justify-between">
-          <div className="ml-12 lg:ml-0">
-            <h1 className="text-lg font-bold">ClaimShield AI</h1>
-            <p className="text-xs text-muted">Predict claim outcomes, deductions & approval probability</p>
+        <header className="sticky top-0 z-30 glass border-b border-border px-4 sm:px-6 h-16 flex items-center justify-between">
+          <div className="ml-11 lg:ml-0">
+            <h1 className="text-base sm:text-lg font-bold">ClaimShield AI</h1>
+            <p className="text-xs text-muted hidden sm:block">Predict claim outcomes, deductions & approval probability</p>
           </div>
           {availablePolicies.length > 0 && (
-            <span className="text-xs text-muted bg-white/5 px-3 py-1.5 rounded-xl hidden sm:inline-block">
+            <span className="text-xs text-muted bg-white/5 px-2.5 sm:px-3 py-1 rounded-xl">
               {availablePolicies.length} Active {availablePolicies.length === 1 ? "Policy" : "Policies"}
             </span>
           )}
         </header>
 
-        <div className="p-6 max-w-5xl mx-auto space-y-6">
+        <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-5 sm:space-y-6 mobile-bottom-clearance">
           {/* Input form */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass rounded-2xl p-6">
             <h3 className="text-base font-semibold mb-4 flex items-center gap-2">

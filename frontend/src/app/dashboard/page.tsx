@@ -87,12 +87,12 @@ export default function DashboardPage() {
       <Sidebar activeTab="/dashboard" />
       <main className="flex-1 overflow-y-auto">
         {/* Header */}
-        <header className="sticky top-0 z-30 glass border-b border-border px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-4 ml-12 lg:ml-0">
-            <h1 className="text-lg font-bold">Dashboard</h1>
-            <span className="text-xs text-muted hidden sm:block">Insurance Intelligence Overview</span>
+        <header className="sticky top-0 z-30 glass border-b border-border px-4 sm:px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-3 ml-11 lg:ml-0">
+            <h1 className="text-base sm:text-lg font-bold">Dashboard</h1>
+            <span className="text-xs text-muted hidden md:block">Insurance Intelligence Overview</span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <div className="hidden md:flex items-center glass rounded-xl px-3 py-1.5 gap-2">
               <Search className="w-4 h-4 text-muted" />
               <input type="text" placeholder="Search policies..." className="bg-transparent text-sm outline-none w-40 placeholder:text-muted/50" />
@@ -104,7 +104,7 @@ export default function DashboardPage() {
           </div>
         </header>
 
-        <div className="p-6 space-y-6">
+        <div className="p-4 sm:p-6 space-y-5 sm:space-y-6 mobile-bottom-clearance">
           {/* Welcome */}
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
             className="glass rounded-2xl p-6 relative overflow-hidden">

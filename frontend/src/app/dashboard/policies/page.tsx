@@ -67,22 +67,22 @@ export default function PoliciesPage() {
     <div className="flex h-screen overflow-hidden">
       <Sidebar activeTab="/dashboard/policies" />
       <main className="flex-1 overflow-y-auto">
-        <header className="sticky top-0 z-30 glass border-b border-border px-6 h-16 flex items-center justify-between">
-          <div className="ml-12 lg:ml-0">
-            <h1 className="text-lg font-bold">My Policies</h1>
+        <header className="sticky top-0 z-30 glass border-b border-border px-4 sm:px-6 h-16 flex items-center justify-between">
+          <div className="ml-11 lg:ml-0">
+            <h1 className="text-base sm:text-lg font-bold">My Policies</h1>
             <p className="text-xs text-muted">
-              {isLoading ? "Loading policies..." : `${policies.length} polic${policies.length === 1 ? 'y' : 'ies'} active`}
+              {isLoading ? "Loading..." : `${policies.length} polic${policies.length === 1 ? 'y' : 'ies'} active`}
             </p>
           </div>
           <Link
             href="/dashboard/upload"
-            className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-medium bg-gradient-to-r from-primary to-accent text-white hover:opacity-90 transition-opacity"
+            className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-medium bg-gradient-to-r from-primary to-accent text-white hover:opacity-90 transition-opacity"
           >
-            <Upload className="w-3.5 h-3.5" /> Upload Policy
+            <Upload className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Upload</span> Policy
           </Link>
         </header>
 
-        <div className="p-6">
+        <div className="p-4 sm:p-6 mobile-bottom-clearance">
           {isLoading ? (
             <div className="flex items-center justify-center py-24">
               <Loader2 className="w-8 h-8 text-primary animate-spin" />

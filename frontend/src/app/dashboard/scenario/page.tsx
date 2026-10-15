@@ -172,11 +172,11 @@ export default function ScenarioPage() {
       <Sidebar activeTab="/dashboard/scenario" />
       <main className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <header className="sticky top-0 z-30 glass border-b border-border px-6 h-16 flex items-center justify-between">
-          <div className="ml-12 lg:ml-0 flex items-center gap-3">
+        <header className="sticky top-0 z-30 glass border-b border-border px-4 sm:px-6 h-16 flex items-center justify-between">
+          <div className="ml-11 lg:ml-0 flex items-center gap-2 sm:gap-3">
             <div>
-              <h1 className="text-lg font-bold">ScenarioGPT</h1>
-              <p className="text-xs text-muted">Real-life medical scenario simulation with policy audit</p>
+              <h1 className="text-base sm:text-lg font-bold">ScenarioGPT</h1>
+              <p className="text-xs text-muted hidden sm:block">Real-life medical scenario simulation with policy audit</p>
             </div>
 
             <div className="hidden md:block h-6 w-px bg-border mx-1"></div>
@@ -469,9 +469,9 @@ export default function ScenarioPage() {
           )}
         </div>
 
-        {/* Input Bar */}
-        <div className="border-t border-border p-4 bg-background/50 backdrop-blur-md">
-          <div className="max-w-3xl mx-auto flex gap-3">
+        {/* Input Bar with Mobile Bottom Nav Clearance */}
+        <div className="border-t border-border p-3 sm:p-4 bg-background/50 backdrop-blur-md pb-20 lg:pb-4">
+          <div className="max-w-3xl mx-auto flex gap-2 sm:gap-3">
             <div className="flex-1 glass rounded-2xl flex items-center px-4 gap-3 focus-within:border-primary-light/50 transition-colors">
               <Sparkles className="w-4 h-4 text-primary-light flex-shrink-0" />
               <input

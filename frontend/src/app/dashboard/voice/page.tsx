@@ -594,19 +594,19 @@ export default function VoiceAiPage() {
 
       <main className="flex-1 flex flex-col h-screen overflow-hidden bg-background">
         {/* Header */}
-        <header className="glass border-b border-border px-6 h-16 flex items-center justify-between flex-shrink-0 z-30">
-          <div className="flex items-center gap-3 ml-12 lg:ml-0">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center shadow-lg shadow-pink-500/20">
-              <Globe className="w-5 h-5 text-white" />
+        <header className="glass border-b border-border px-4 sm:px-6 h-16 flex items-center justify-between flex-shrink-0 z-30">
+          <div className="flex items-center gap-2.5 sm:gap-3 ml-11 lg:ml-0">
+            <div className="w-8 sm:w-9 h-8 sm:h-9 rounded-xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center shadow-lg shadow-pink-500/20 flex-shrink-0">
+              <Globe className="w-4 sm:w-5 h-4 sm:h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-base font-bold flex items-center gap-2">
+              <h1 className="text-sm sm:text-base font-bold flex items-center gap-1.5 sm:gap-2">
                 Voice AI
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-400 border border-pink-500/30">
+                <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-wider px-1.5 sm:px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-400 border border-pink-500/30">
                   Multilingual
                 </span>
               </h1>
-              <p className="text-xs text-muted">Audits & explains your policy in your mother tongue</p>
+              <p className="text-[11px] sm:text-xs text-muted hidden xs:block truncate">Audits policy in your language</p>
             </div>
           </div>
 
@@ -966,8 +966,8 @@ export default function VoiceAiPage() {
           )}
         </div>
 
-        {/* Bottom Input Bar */}
-        <div className="p-4 glass border-t border-border flex-shrink-0">
+        {/* Bottom Input Bar with Mobile Bottom Nav Clearance */}
+        <div className="p-3 sm:p-4 glass border-t border-border flex-shrink-0 pb-20 lg:pb-4">
           <form
             onSubmit={(e) => {
               e.preventDefault();

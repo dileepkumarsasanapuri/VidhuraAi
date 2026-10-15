@@ -43,29 +43,29 @@ export default function LandingPage() {
     <div className="min-h-screen">
       {/* Navbar */}
       <nav className="fixed top-0 w-full z-50 glass border-b border-border">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-              <Shield className="w-5 h-5 text-white" />
+            <div className="w-8 sm:w-9 h-8 sm:h-9 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center flex-shrink-0">
+              <Shield className="w-4 sm:w-5 h-4 sm:h-5 text-white" />
             </div>
-            <span className="text-lg font-bold gradient-text">Vidhura AI</span>
+            <span className="text-base sm:text-lg font-bold gradient-text">Vidhura AI</span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm text-muted">
             <a href="#features" className="hover:text-foreground transition-colors">Features</a>
             <a href="#how-it-works" className="hover:text-foreground transition-colors">How It Works</a>
             <a href="#open-source" className="hover:text-foreground transition-colors">Open & Free</a>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {!isLoading && isAuthenticated ? (
-              <Link href="/dashboard" className="px-4 py-2 text-sm font-medium rounded-xl bg-gradient-to-r from-primary to-accent text-white hover:opacity-90 transition-opacity">
-                Go to Dashboard
+              <Link href="/dashboard" className="px-3.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-xl bg-gradient-to-r from-primary to-accent text-white hover:opacity-90 transition-opacity">
+                Dashboard
               </Link>
             ) : (
               <>
-                <Link href="/login" className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition-colors">
+                <Link href="/login" className="px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-slate-300 hover:text-white transition-colors">
                   Sign in
                 </Link>
-                <Link href="/register" className="px-4 py-2 text-sm font-medium rounded-xl bg-gradient-to-r from-primary to-accent text-white hover:opacity-90 transition-opacity">
+                <Link href="/register" className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-xl bg-gradient-to-r from-primary to-accent text-white hover:opacity-90 transition-opacity">
                   Get Started
                 </Link>
               </>
@@ -75,26 +75,26 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero */}
-      <section className="pt-32 pb-20 px-6 relative overflow-hidden">
+      <section className="pt-28 sm:pt-32 pb-16 sm:pb-20 px-4 sm:px-6 relative overflow-hidden">
         <div className="absolute top-20 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-accent/8 rounded-full blur-[100px] pointer-events-none" />
         <motion.div initial="hidden" animate="show" variants={stagger} className="max-w-4xl mx-auto text-center relative z-10">
-          <motion.div variants={fadeUp} className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass text-xs font-medium text-primary-light mb-6">
+          <motion.div variants={fadeUp} className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full glass text-xs font-medium text-primary-light mb-6">
             <Sparkles className="w-3.5 h-3.5" /> AI-Powered Insurance Intelligence
           </motion.div>
-          <motion.h1 variants={fadeUp} className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold leading-[1.1] mb-6">
+          <motion.h1 variants={fadeUp} className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold leading-[1.15] mb-5 sm:mb-6">
             Understand Your{" "}
             <span className="gradient-text">Insurance</span>{" "}
             Before It Understands You
           </motion.h1>
-          <motion.p variants={fadeUp} className="text-lg md:text-xl text-muted max-w-2xl mx-auto mb-10 leading-relaxed">
+          <motion.p variants={fadeUp} className="text-base sm:text-lg md:text-xl text-muted max-w-2xl mx-auto mb-8 sm:mb-10 leading-relaxed">
             Transform complex insurance policies into personalized, scenario-based explanations. No more hidden surprises. No more claim rejections.
           </motion.p>
-          <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/dashboard/upload" className="group px-8 py-3.5 text-sm font-semibold rounded-2xl bg-gradient-to-r from-primary to-accent text-white hover:opacity-90 transition-all flex items-center gap-2 glow-primary">
+          <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+            <Link href="/dashboard/upload" className="w-full sm:w-auto group px-6 sm:px-8 py-3.5 text-sm font-semibold rounded-2xl bg-gradient-to-r from-primary to-accent text-white hover:opacity-90 transition-all flex items-center justify-center gap-2 glow-primary">
               Analyze Your Policy <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
-            <a href="#how-it-works" className="px-8 py-3.5 text-sm font-medium rounded-2xl glass glass-hover flex items-center gap-2">
+            <a href="#how-it-works" className="w-full sm:w-auto px-6 sm:px-8 py-3.5 text-sm font-medium rounded-2xl glass glass-hover flex items-center justify-center gap-2">
               See How It Works <ChevronRight className="w-4 h-4" />
             </a>
           </motion.div>

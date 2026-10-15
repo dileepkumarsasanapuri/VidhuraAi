@@ -423,3 +423,16 @@ body {
   background: rgba(15, 23, 42, 0.6);
   border: 1px solid rgba(99, 102, 241, 0.1);
 }
+
+/* Mobile Safe Area & Touch UX Utilities */
+.safe-bottom {
+  padding-bottom: max(env(safe-area-inset-bottom), 8px);
+}
+
+@media (max-width: 1023px) {
+  /* Provides bottom padding so fixed mobile bottom navigation bar never obscures content */
+  .mobile-bottom-clearance {
+    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
+

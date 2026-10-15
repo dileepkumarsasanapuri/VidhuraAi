@@ -77,19 +77,19 @@ export default function ComparePage() {
     <div className="flex h-screen overflow-hidden">
       <Sidebar activeTab="/dashboard/compare" />
       <main className="flex-1 overflow-y-auto">
-        <header className="sticky top-0 z-30 glass border-b border-border px-6 h-16 flex items-center justify-between">
-          <div className="ml-12 lg:ml-0">
-            <h1 className="text-lg font-bold">CompareWise</h1>
-            <p className="text-xs text-muted">Intelligent policy comparison — beyond premiums & marketing</p>
+        <header className="sticky top-0 z-30 glass border-b border-border px-4 sm:px-6 h-16 flex items-center justify-between">
+          <div className="ml-11 lg:ml-0">
+            <h1 className="text-base sm:text-lg font-bold">CompareWise</h1>
+            <p className="text-xs text-muted hidden sm:block">Intelligent policy comparison — beyond premiums & marketing</p>
           </div>
           {availablePolicies.length > 0 && (
-            <span className="text-xs text-muted bg-white/5 px-3 py-1.5 rounded-xl hidden sm:inline-block">
+            <span className="text-xs text-muted bg-white/5 px-2.5 sm:px-3 py-1 rounded-xl">
               {selectedIds.length} of {availablePolicies.length} selected
             </span>
           )}
         </header>
 
-        <div className="p-6 max-w-6xl mx-auto space-y-6">
+        <div className="p-4 sm:p-6 max-w-6xl mx-auto space-y-5 sm:space-y-6 mobile-bottom-clearance">
           {isLoading ? (
             <div className="flex items-center justify-center py-24">
               <Loader2 className="w-8 h-8 text-primary animate-spin" />

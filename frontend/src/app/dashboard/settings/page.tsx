@@ -84,17 +84,17 @@ export default function SettingsPage() {
     <div className="flex h-screen overflow-hidden">
       <Sidebar activeTab="/dashboard/settings" />
       <main className="flex-1 overflow-y-auto">
-        <header className="sticky top-0 z-30 glass border-b border-border px-6 h-16 flex items-center justify-between">
-          <div className="ml-12 lg:ml-0">
-            <h1 className="text-lg font-bold">Profile & Settings</h1>
-            <p className="text-xs text-muted">Manage your profile & preferences</p>
+        <header className="sticky top-0 z-30 glass border-b border-border px-4 sm:px-6 h-16 flex items-center justify-between">
+          <div className="ml-11 lg:ml-0">
+            <h1 className="text-base sm:text-lg font-bold">Profile & Settings</h1>
+            <p className="text-xs text-muted hidden sm:block">Manage your profile & preferences</p>
           </div>
-          <button onClick={handleLogout} className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl border border-red-500/50 text-red-400 hover:bg-red-500/10 transition-colors">
-            <LogOut className="w-4 h-4" /> Log Out
+          <button onClick={handleLogout} className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-xl border border-red-500/50 text-red-400 hover:bg-red-500/10 transition-colors">
+            <LogOut className="w-3.5 sm:w-4 h-3.5 sm:h-4" /> Log Out
           </button>
         </header>
 
-        <div className="p-6 max-w-3xl mx-auto space-y-6">
+        <div className="p-4 sm:p-6 max-w-3xl mx-auto space-y-5 sm:space-y-6 mobile-bottom-clearance">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass rounded-2xl p-6">
             <div className="flex items-center gap-2 mb-4">
               <User className="w-5 h-5 text-primary-light" />

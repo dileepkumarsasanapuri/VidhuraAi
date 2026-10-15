@@ -47,19 +47,19 @@ export default function AnalyticsPage() {
     <div className="flex h-screen overflow-hidden">
       <Sidebar activeTab="/dashboard/analytics" />
       <main className="flex-1 overflow-y-auto">
-        <header className="sticky top-0 z-30 glass border-b border-border px-6 h-16 flex items-center justify-between">
-          <div className="ml-12 lg:ml-0">
-            <h1 className="text-lg font-bold">Analytics & Health</h1>
-            <p className="text-xs text-muted">Real-time protection insights derived from your active policies</p>
+        <header className="sticky top-0 z-30 glass border-b border-border px-4 sm:px-6 h-16 flex items-center justify-between">
+          <div className="ml-11 lg:ml-0">
+            <h1 className="text-base sm:text-lg font-bold">Analytics & Health</h1>
+            <p className="text-xs text-muted hidden sm:block">Real-time protection insights derived from your active policies</p>
           </div>
           {hasRealPolicies && (
-            <span className="text-xs text-muted bg-white/5 px-3 py-1.5 rounded-xl">
-              {totalPolicies} active polic{totalPolicies === 1 ? 'y' : 'ies'} analyzed
+            <span className="text-xs text-muted bg-white/5 px-2.5 sm:px-3 py-1 rounded-xl">
+              {totalPolicies} active polic{totalPolicies === 1 ? 'y' : 'ies'}
             </span>
           )}
         </header>
 
-        <div className="p-6 space-y-6 max-w-6xl mx-auto">
+        <div className="p-4 sm:p-6 space-y-5 sm:space-y-6 max-w-6xl mx-auto mobile-bottom-clearance">
           {isLoading ? (
             <div className="flex items-center justify-center py-24">
               <Loader2 className="w-8 h-8 text-primary animate-spin" />
