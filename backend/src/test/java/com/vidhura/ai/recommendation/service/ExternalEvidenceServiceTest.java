@@ -347,4 +347,84 @@ class ExternalEvidenceServiceTest {
         // For age 35, factor is 1.25 -> 10000 * 1.25 = 12500
         assertEquals(new BigDecimal("12500.00"), quote.getQuotedAnnualPremium());
     }
+
+    @Test
+    @DisplayName("Should detect expired authentic quote, mark it stale, and fallback to modelled actuarial estimate")
+    void testExpiredAuthenticQuoteFallsBackToModelled() {
+        PremiumQuoteRecord expiredQuote = PremiumQuoteRecord.builder()
+                .quoteId("q-expired-1")
+                .policyCode("HDFC_ERGO_OPTIIMA_SECURE")
+                .insurerCode("HDFC_ERGO")
+                .age(35)
+                .sumInsured(new BigDecimal("1000000"))
+                .quotedAnnualPremium(new BigDecimal("14500.00"))
+                .quotingChannel("OFFICIAL_PORTAL")
+                .quoteReferenceNumber("HDFC-QUO-EXP")
+                .sourceDocumentHash(VALID_SHA256)
+                .verificationStatus("VERIFIED_AUTHENTIC_QUOTE")
+                .expiryTimestamp(Instant.now().minus(5, ChronoUnit.DAYS))
+                .stale(false)
+                .build();
+
+        when(quoteRepository.findFirstByPolicyCodeAndAgeAndSumInsuredOrderByQuoteTimestampDesc(
+                eq("HDFC_ERGO_OPTIIMA_SECURE"), eq(35), eq(new BigDecimal("1000000"))))
+                .thenReturn(Optional.of(expiredQuote));
+
+        StructuredPolicy policy = StructuredPolicy.builder()
+                .policyCode("HDFC_ERGO_OPTIIMA_SECURE")
+                .provider("HDFC ERGO")
+                .sumInsuredTiers(List.of(
+                        StructuredPolicy.SumInsuredTier.builder()
+                                .sumInsured(1000000L)
+                                .premiumAge18To35(13000.0)
+                                .build()
+                ))
+                .build();
+
+        when(policyRepository.findByPolicyCode("HDFC_ERGO_OPTIIMA_SECURE")).thenReturn(Optional.of(policy));
+
+        ExternalEvidenceDto.QuoteDetailDto quote = evidenceService.getAuthenticOrModelledQuote(
+                "HDFC_ERGO_OPTIIMA_SECURE", 35, new BigDecimal("1000000"), "400001", "INDIVIDUAL");
+
+        assertNotNull(quote);
+        assertFalse(quote.isAuthentic(), "Expired quote must not be treated as authentic active offer");
+        assertEquals("ESTIMATED_ACTUARIAL_MODEL", quote.getVerificationStatus());
+        assertEquals(new BigDecimal("13000.00"), quote.getQuotedAnnualPremium());
+        assertTrue(expiredQuote.isStale(), "Expired quote entity must be flagged as stale in repository");
+        verify(quoteRepository, times(1)).save(expiredQuote);
+    }
+
+    @Test
+    @DisplayName("Should distinguish expired hospital cashless agreement as HISTORICAL_AGREEMENT_EXPIRED and not count as active cashless")
+    void testHospitalWithExpiredAgreement() {
+        HospitalNetworkNode hExpired = HospitalNetworkNode.builder()
+                .hospitalId("hosp-exp")
+                .hospitalName("Historical Heritage Hospital")
+                .registryRohiniCode("8900080009999")
+                .city("Mumbai")
+                .pinCode("400001")
+                .cashlessAgreements(List.of(
+                        HospitalNetworkNode.CashlessAgreement.builder()
+                                .insurerCode("HDFC_ERGO")
+                                .cashlessActive(true) // flag was true in DB
+                                .agreementValidUntil(LocalDate.now().minusMonths(2)) // but agreement expired 2 months ago
+                                .tier("TIER_1_PREFERRED")
+                                .build()
+                ))
+                .build();
+
+        when(hospitalRepository.findByCityAndCashlessInsurer("Mumbai", "HDFC_ERGO"))
+                .thenReturn(List.of(hExpired));
+
+        ExternalEvidenceDto.HospitalNetworkSummaryDto result =
+                evidenceService.getHospitalNetworkSummary("HDFC_ERGO", "Mumbai", null);
+
+        assertNotNull(result);
+        assertEquals(0, result.getPreferredTier1Count(), "Expired agreement must not count towards preferred tier 1 count");
+        assertEquals(0.0, result.getCashlessAccessibilityScore());
+        assertEquals(1, result.getHospitals().size());
+        ExternalEvidenceDto.HospitalNodeDto hospDto = result.getHospitals().get(0);
+        assertFalse(hospDto.isCashlessActive(), "Expired agreement must have cashlessActive=false");
+        assertEquals("HISTORICAL_AGREEMENT_EXPIRED", hospDto.getVerificationStatus());
+    }
 }

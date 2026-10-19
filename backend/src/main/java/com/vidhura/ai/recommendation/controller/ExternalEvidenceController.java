@@ -19,7 +19,7 @@ import java.math.BigDecimal;
  * hospital network availability, and authentic/modelled quotes.
  */
 @RestController
-@RequestMapping("/api/v1/external-evidence")
+@RequestMapping({"/api/v1/external-evidence", "/api/external-evidence"})
 @RequiredArgsConstructor
 @Slf4j
 public class ExternalEvidenceController {

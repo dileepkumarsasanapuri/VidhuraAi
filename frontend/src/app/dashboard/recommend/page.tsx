@@ -41,6 +41,7 @@ import {
 } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import ScoreRing from "@/components/ScoreRing";
+import PolicyIntelligenceProfileDrawer from "@/components/profile/PolicyIntelligenceProfileDrawer";
 import {
   api,
   RecommendationRequest,
@@ -169,6 +170,7 @@ export default function RecommendPage() {
   // Provenance & Audit modal state
   const [auditingPolicy, setAuditingPolicy] = useState<RankedPolicyCard | null>(null);
   const [showProvenanceModal, setShowProvenanceModal] = useState<boolean>(false);
+  const [intelligenceProfilePolicyCode, setIntelligenceProfilePolicyCode] = useState<string | null>(null);
 
   // Comparison drawer state
   const [comparingPolicyIds, setComparingPolicyIds] = useState<string[]>([]);
@@ -1572,6 +1574,16 @@ export default function RecommendPage() {
                                 </button>
                                 <button
                                   onClick={() => {
+                                    setIntelligenceProfilePolicyCode(policy.policyCode || policy.policyId);
+                                  }}
+                                  className="py-2 px-3 rounded-lg bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-500/30 text-indigo-300 font-semibold text-xs flex items-center gap-1.5 transition-colors shadow-sm"
+                                  title="Open 360° Policy Intelligence Profile"
+                                >
+                                  <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+                                  <span>Profile</span>
+                                </button>
+                                <button
+                                  onClick={() => {
                                     setAuditingPolicy(policy);
                                     setShowProvenanceModal(true);
                                   }}
@@ -2539,7 +2551,17 @@ export default function RecommendPage() {
                 </div>
               </div>
 
-              <div className="flex justify-end pt-2">
+              <div className="flex items-center justify-between pt-2">
+                <button
+                  onClick={() => {
+                    setShowProvenanceModal(false);
+                    setIntelligenceProfilePolicyCode(auditingPolicy.policyCode || auditingPolicy.policyId);
+                  }}
+                  className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white shadow-lg shadow-indigo-600/25 transition-all flex items-center gap-1.5"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  <span>Open 360° Intelligence Profile</span>
+                </button>
                 <button
                   onClick={() => setShowProvenanceModal(false)}
                   className="px-4 py-2 rounded-xl bg-card border border-border hover:bg-card/80 text-xs font-semibold text-foreground transition-colors"
@@ -2550,6 +2572,19 @@ export default function RecommendPage() {
             </div>
           </div>
         )}
+
+        {/* 360-Degree Policy Intelligence Profile Drawer */}
+        <PolicyIntelligenceProfileDrawer
+          isOpen={!!intelligenceProfilePolicyCode}
+          onClose={() => setIntelligenceProfilePolicyCode(null)}
+          policyCode={intelligenceProfilePolicyCode || ""}
+          demographics={{
+            age: primaryAge,
+            sumInsured: desiredSumInsured,
+            city: cityOrPincode,
+            familyConstruct: insuranceType,
+          }}
+        />
       </main>
     </div>
   );

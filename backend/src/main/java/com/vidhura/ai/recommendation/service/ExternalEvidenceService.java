@@ -19,6 +19,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.NumberFormat;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -307,9 +308,12 @@ public class ExternalEvidenceService {
         int secondaryCount = 0;
         List<ExternalEvidenceDto.HospitalNodeDto> hospitalDtos = new ArrayList<>();
 
+        LocalDate today = LocalDate.now();
         for (HospitalNetworkNode node : matchedNodes) {
             Optional<HospitalNetworkNode.CashlessAgreement> agreement = node.getCashlessAgreements().stream()
-                    .filter(a -> normInsurer.equalsIgnoreCase(a.getInsurerCode()) && a.isCashlessActive())
+                    .filter(a -> normInsurer.equalsIgnoreCase(a.getInsurerCode())
+                            && a.isCashlessActive()
+                            && (a.getAgreementValidUntil() == null || !a.getAgreementValidUntil().isBefore(today)))
                     .findFirst();
 
             if (agreement.isPresent()) {
@@ -391,7 +395,15 @@ public class ExternalEvidenceService {
         if (authenticQuote.isPresent()) {
             PremiumQuoteRecord q = authenticQuote.get();
             boolean isExpired = q.getExpiryTimestamp() != null && q.getExpiryTimestamp().isBefore(now);
-            if (!isExpired && "VERIFIED_AUTHENTIC_QUOTE".equals(q.getVerificationStatus())) {
+            if (isExpired && !q.isStale()) {
+                q.setStale(true);
+                try {
+                    quoteRepository.save(q);
+                } catch (Exception e) {
+                    log.warn("[QuotePipeline] Could not mark quote {} as stale: {}", q.getQuoteId(), e.getMessage());
+                }
+            }
+            if (!isExpired && !q.isStale() && "VERIFIED_AUTHENTIC_QUOTE".equals(q.getVerificationStatus())) {
                 log.info("[QuotePipeline] Authentic quote HIT for policy '{}', age={}, SI='{}': ₹{}",
                         policyCode, age, sumInsured, q.getQuotedAnnualPremium());
                 return mapToQuoteDto(q);
@@ -502,10 +514,21 @@ public class ExternalEvidenceService {
                     .filter(a -> targetInsurer.equalsIgnoreCase(a.getInsurerCode()))
                     .findFirst();
             if (agr.isPresent()) {
-                cashless = agr.get().isCashlessActive();
-                tier = agr.get().getTier();
-                validUntil = agr.get().getAgreementValidUntil();
-                status = agr.get().getVerificationStatus() != null ? agr.get().getVerificationStatus() : "VERIFIED_OFFICIAL_DISCLOSURE";
+                HospitalNetworkNode.CashlessAgreement agreement = agr.get();
+                tier = agreement.getTier() != null ? agreement.getTier() : "STANDARD";
+                validUntil = agreement.getAgreementValidUntil();
+                boolean isAgreementExpired = validUntil != null && validUntil.isBefore(java.time.LocalDate.now());
+
+                if (!agreement.isCashlessActive()) {
+                    cashless = false;
+                    status = "CASHLESS_INACTIVE";
+                } else if (isAgreementExpired) {
+                    cashless = false;
+                    status = "HISTORICAL_AGREEMENT_EXPIRED";
+                } else {
+                    cashless = true;
+                    status = agreement.getVerificationStatus() != null ? agreement.getVerificationStatus() : "VERIFIED_OFFICIAL_DISCLOSURE";
+                }
             }
         }
 
@@ -532,8 +555,12 @@ public class ExternalEvidenceService {
                 ? inr.format(q.getQuotedAnnualPremium().doubleValue())
                 : "₹0.00";
 
-        boolean isAuthentic = "VERIFIED_AUTHENTIC_QUOTE".equals(q.getVerificationStatus());
-        boolean isStale = q.getExpiryTimestamp() != null && q.getExpiryTimestamp().isBefore(Instant.now());
+        boolean isExpired = q.getExpiryTimestamp() != null && q.getExpiryTimestamp().isBefore(Instant.now());
+        boolean isStale = q.isStale() || isExpired;
+        boolean isAuthentic = "VERIFIED_AUTHENTIC_QUOTE".equals(q.getVerificationStatus()) && !isStale;
+        String verificationStatus = isStale && "VERIFIED_AUTHENTIC_QUOTE".equals(q.getVerificationStatus())
+                ? "EXPIRED_AUTHENTIC_QUOTE"
+                : q.getVerificationStatus();
 
         return ExternalEvidenceDto.QuoteDetailDto.builder()
                 .quoteId(q.getQuoteId())
@@ -553,7 +580,7 @@ public class ExternalEvidenceService {
                 .quoteReferenceNumber(q.getQuoteReferenceNumber())
                 .sourceDocumentHash(q.getSourceDocumentHash())
                 .isAuthentic(isAuthentic)
-                .verificationStatus(q.getVerificationStatus())
+                .verificationStatus(verificationStatus)
                 .formattedAnnualPremium(formatted)
                 .isStale(isStale)
                 .build();

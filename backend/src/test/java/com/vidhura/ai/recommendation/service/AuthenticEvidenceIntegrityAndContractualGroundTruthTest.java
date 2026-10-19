@@ -248,6 +248,70 @@ public class AuthenticEvidenceIntegrityAndContractualGroundTruthTest {
         assertEquals(totalSubmitted, respV3.getEstimatedInsurerPayment().add(respV3.getEstimatedPatientLiability()));
     }
 
+    @Test
+    @DisplayName("Verify clean whole-number statutory benchmark: ₹1,23,000 Bill (2 days, ₹78k associated, ₹20k medicine) yields exact ₹90,000 Insurer / ₹33,000 Patient")
+    void testCleanIntegerStatutoryBenchmark2Days() {
+        // Construct the 2-day clean-integer benchmark bill:
+        // Room: 2 days @ ₹6,500 = ₹13,000
+        // Associated: ₹50,000 Surgeon + ₹28,000 OT = ₹78,000
+        // Medicines (exempt): ₹20,000
+        // Consumables (IRDAI List 1 excluded): ₹12,000
+        // Total = ₹1,23,000.00
+        List<ClaimSimulationDto.BillLineItemDto> billLines = List.of(
+                ClaimSimulationDto.BillLineItemDto.builder()
+                        .lineId("L1").category(ClaimSimulationDto.BillItemCategory.ROOM_RENT).description("Single Room (2 days @ ₹6,500)")
+                        .unitPrice(new BigDecimal("6500.00")).quantity(2).totalAmount(new BigDecimal("13000.00")).build(),
+                ClaimSimulationDto.BillLineItemDto.builder()
+                        .lineId("L2").category(ClaimSimulationDto.BillItemCategory.SURGEON_FEES).description("Surgeon Professional Fee")
+                        .unitPrice(new BigDecimal("50000.00")).quantity(1).totalAmount(new BigDecimal("50000.00")).build(),
+                ClaimSimulationDto.BillLineItemDto.builder()
+                        .lineId("L3").category(ClaimSimulationDto.BillItemCategory.OT_CHARGES).description("Operation Theatre Charges")
+                        .unitPrice(new BigDecimal("28000.00")).quantity(1).totalAmount(new BigDecimal("28000.00")).build(),
+                ClaimSimulationDto.BillLineItemDto.builder()
+                        .lineId("L4").category(ClaimSimulationDto.BillItemCategory.MEDICINES).description("Pharmacy & IV Fluids (Exempt)")
+                        .unitPrice(new BigDecimal("20000.00")).quantity(1).totalAmount(new BigDecimal("20000.00")).build(),
+                ClaimSimulationDto.BillLineItemDto.builder()
+                        .lineId("L5").category(ClaimSimulationDto.BillItemCategory.CONSUMABLES).description("Consumables (IRDAI List 1)")
+                        .unitPrice(new BigDecimal("12000.00")).quantity(1).totalAmount(new BigDecimal("12000.00")).build()
+        );
+
+        BigDecimal totalSubmitted = billLines.stream()
+                .map(ClaimSimulationDto.BillLineItemDto::getTotalAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        assertEquals(new BigDecimal("123000.00"), totalSubmitted);
+
+        ClaimSimulationDto.ClaimSimulationRequest request = ClaimSimulationDto.ClaimSimulationRequest.builder()
+                .policyId("TEST_POL_2")
+                .patientAge(45)
+                .diagnosis("Appendectomy")
+                .hospitalRoomCategoryOpted("SINGLE_PRIVATE_AC")
+                .selectedSumInsured(new BigDecimal("500000.00"))
+                .policyContinuityMonths(36)
+                .billLines(billLines)
+                .build();
+
+        // 1% Room cap (₹5,000/day on ₹5L SI) + Proportionate deduction
+        ApprovedPolicyRuleResolver.ResolvedPolicyRules rules = ApprovedPolicyRuleResolver.ResolvedPolicyRules.builder()
+                .policyId("POL-2DAY").policyCode("UIIC_MEDICARE_2DAY").policyName("UIIC Family Medicare 2-Day")
+                .roomRentCapped(true).roomRentCapPerDay(new BigDecimal("5000.00")).proportionateDeductionApplies(true)
+                .copayPercentage(BigDecimal.ZERO).deductibleAmount(BigDecimal.ZERO)
+                .waitingPeriodInitialDays(30).waitingPeriodPedMonths(48)
+                .build();
+
+        ClaimSimulationDto.ClaimSimulationResponse resp = claimEngine.calculateClaim(request, rules);
+
+        // First-principles contractual verification:
+        // Room allowed: 2 * 5,000 = 10,000. Excess = 13,000 - 10,000 = 3,000.
+        // Associated allowed: 78,000 * (10,000 / 13,000) = 78,000 * (10 / 13) = 60,000. Proportionate Deduction = 18,000.
+        // Medicines allowed (exempt): 20,000.
+        // Insurer Payout = 10,000 + 60,000 + 20,000 = ₹90,000.00.
+        // Patient Liability = 12,000 (consumables) + 3,000 (room excess) + 18,000 (proportionate) = ₹33,000.00.
+        assertTrue(resp.isReconciled());
+        assertEquals(new BigDecimal("90000.00"), resp.getEstimatedInsurerPayment(), "Insurer payout must be exactly ₹90,000.00");
+        assertEquals(new BigDecimal("33000.00"), resp.getEstimatedPatientLiability(), "Patient liability must be exactly ₹33,000.00");
+        assertEquals(totalSubmitted, resp.getEstimatedInsurerPayment().add(resp.getEstimatedPatientLiability()));
+    }
+
     // =========================================================================
     // 4. Ambiguous Clause Fail-Closed Handling
     // =========================================================================

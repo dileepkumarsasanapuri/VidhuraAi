@@ -544,6 +544,30 @@ class ApiClient {
     }>(`/external-evidence/quotes?${q.toString()}`);
   }
 
+  getPolicyIntelligenceProfile(
+    policyCode: string,
+    params?: {
+      age?: number;
+      sumInsured?: number;
+      city?: string;
+      pinCode?: string;
+      familyConstruct?: string;
+    }
+  ) {
+    const q = new URLSearchParams();
+    if (params?.age) q.append("age", String(params.age));
+    if (params?.sumInsured) q.append("sumInsured", String(params.sumInsured));
+    if (params?.city) q.append("city", params.city);
+    if (params?.pinCode) q.append("pinCode", params.pinCode);
+    if (params?.familyConstruct) q.append("familyConstruct", params.familyConstruct);
+    const qs = q.toString() ? `?${q.toString()}` : "";
+    return this.request<{
+      success: boolean;
+      message?: string;
+      data: PolicyIntelligenceProfile;
+    }>(`/policies/${encodeURIComponent(policyCode)}/intelligence-profile${qs}`);
+  }
+
   ingestEvidence(data: IngestEvidenceRequest) {
     return this.request<{
       success: boolean;
@@ -1580,6 +1604,71 @@ export interface IngestHospitalRequest {
     sourceDocumentHash?: string;
     verificationStatus?: string;
   }>;
+}
+
+export interface PolicyContractOverview {
+  policyId: string;
+  policyCode: string;
+  policyName: string;
+  provider: string;
+  irdaUin: string;
+  uinRevision: string;
+  planName?: string;
+  category?: string;
+  description?: string;
+  roomRentCapped: boolean;
+  roomRentCapPerDay?: number;
+  proportionateDeductionApplies: boolean;
+  roomRentLimitDescription: string;
+  copayPercentage: number;
+  copayDescription: string;
+  deductibleAmount: number;
+  waitingPeriodInitialDays: number;
+  waitingPeriodPedMonths: number;
+  waitingPeriodSpecificIllnessMonths: number;
+  dayCareTreatmentsCovered: boolean;
+  restorationBenefit: boolean;
+  cumulativeBonusDescription: string;
+  officialDocumentUrl?: string;
+  policyWordingDocument?: string;
+  regulatoryFilingSource?: string;
+  syntheticFixture: boolean;
+  verificationStatus: string;
+}
+
+export interface BenchmarkClaimSimulationSummary {
+  diagnosis: string;
+  totalSubmittedBill: number;
+  estimatedInsurerPayment: number;
+  estimatedPatientLiability: number;
+  isReconciled: boolean;
+  roomRentExcessDeduction: number;
+  proportionateDeduction: number;
+  nonMedicalConsumablesDeduction: number;
+  copayDeduction: number;
+  contractualExplanation: string;
+  clauseCitations: string[];
+}
+
+export interface EvidenceQualityScorecard {
+  contractualGroundTruthStatus: string;
+  externalStatutoryEvidenceStatus: string;
+  quoteVerificationStatus: string;
+  hospitalRegistryStatus: string;
+  overallQualityScore: number;
+  verifiedDisclosures: string[];
+  pendingOrMissingDisclosures: string[];
+  statutoryDocumentHash?: string;
+  lastAuditedDate?: string;
+}
+
+export interface PolicyIntelligenceProfile {
+  contractOverview: PolicyContractOverview;
+  insurerPerformance: InsurerPerformanceSummary;
+  hospitalAccessibility: HospitalNetworkSummary;
+  premiumQuotation: QuoteDetail;
+  benchmarkClaimSimulation: BenchmarkClaimSimulationSummary;
+  evidenceQualityScorecard: EvidenceQualityScorecard;
 }
 
 export const api = new ApiClient();

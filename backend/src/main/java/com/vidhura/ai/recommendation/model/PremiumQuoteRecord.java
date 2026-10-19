@@ -57,6 +57,12 @@ public class PremiumQuoteRecord {
     private String zone;
 
     /**
+     * Optional user ID if this quote was generated for an authenticated user session
+     */
+    @Indexed
+    private String userId;
+
+    /**
      * Family construct: INDIVIDUAL, FLOATER_2A, FLOATER_2A_1C, FLOATER_2A_2C, PARENTS_2A
      */
     @Builder.Default

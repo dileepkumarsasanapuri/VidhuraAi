@@ -29,7 +29,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Document(collection = "external_evidence_records")
 @CompoundIndexes({
-        @CompoundIndex(name = "insurer_metric_period_idx", def = "{'insurerCode': 1, 'metricKey': 1, 'reportingPeriod': 1}", unique = true),
+        @CompoundIndex(name = "insurer_metric_period_hash_idx", def = "{'insurerCode': 1, 'metricKey': 1, 'reportingPeriod': 1, 'sourceDocumentHash': 1}", unique = true),
         @CompoundIndex(name = "insurer_period_idx", def = "{'insurerCode': 1, 'reportingPeriod': 1}")
 })
 public class ExternalEvidenceRecord {
