@@ -849,8 +849,8 @@ export default function EvidencePolicyComparisonPage() {
                     <div className="text-primary-light font-bold text-[11px] uppercase">{compA.policyName}</div>
                     <div className="text-muted">IRDAI UIN: <span className="text-foreground">{compA.irdaUin}</span></div>
                     <div className="text-muted">Revision: <span className="text-foreground">{compA.uinRevision}</span></div>
-                    <div className="text-muted">Approval Status: <span className="text-emerald-400 font-sans">{compA.reviewerApprovalStatus || "REVIEWER_APPROVED"}</span></div>
-                    <div className="text-muted">Verified By: <span className="text-foreground font-sans">{compA.verifiedBy || "SeniorComplianceOfficer@vidhura.ai"}</span></div>
+                    <div className="text-muted">Approval Status: <span className={`font-sans ${compA.reviewerApprovalStatus === "REVIEWER_APPROVED" ? "text-emerald-400" : "text-amber-400"}`}>{compA.reviewerApprovalStatus || "PENDING_REVIEW"}</span></div>
+                    <div className="text-muted">Verified By: <span className="text-foreground font-sans">{compA.verifiedBy || "Unverified / Pending"}</span></div>
                     <div className="text-muted truncate">
                       SHA-256: <span className="text-foreground/80">{compA.sourceDocumentHash || "N/A"}</span>
                     </div>
@@ -860,8 +860,8 @@ export default function EvidencePolicyComparisonPage() {
                     <div className="text-accent-light font-bold text-[11px] uppercase">{compB.policyName}</div>
                     <div className="text-muted">IRDAI UIN: <span className="text-foreground">{compB.irdaUin}</span></div>
                     <div className="text-muted">Revision: <span className="text-foreground">{compB.uinRevision}</span></div>
-                    <div className="text-muted">Approval Status: <span className="text-emerald-400 font-sans">{compB.reviewerApprovalStatus || "REVIEWER_APPROVED"}</span></div>
-                    <div className="text-muted">Verified By: <span className="text-foreground font-sans">{compB.verifiedBy || "SeniorComplianceOfficer@vidhura.ai"}</span></div>
+                    <div className="text-muted">Approval Status: <span className={`font-sans ${compB.reviewerApprovalStatus === "REVIEWER_APPROVED" ? "text-emerald-400" : "text-amber-400"}`}>{compB.reviewerApprovalStatus || "PENDING_REVIEW"}</span></div>
+                    <div className="text-muted">Verified By: <span className="text-foreground font-sans">{compB.verifiedBy || "Unverified / Pending"}</span></div>
                     <div className="text-muted truncate">
                       SHA-256: <span className="text-foreground/80">{compB.sourceDocumentHash || "N/A"}</span>
                     </div>

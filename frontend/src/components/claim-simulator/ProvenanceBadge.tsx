@@ -39,7 +39,8 @@ export default function ProvenanceBadge({
   const isFixtureDemo =
     Boolean(isSynthetic) ||
     reviewerApprovalStatus === "SYNTHETIC_DEMO" ||
-    Boolean(policyCode?.includes("HDFC")) ||
+    Boolean(policyCode?.includes("_DEMO")) ||
+    Boolean(policyCode?.includes("SYNTHETIC")) ||
     cleanHash.includes("mock") ||
     cleanHash.includes("placeholder") ||
     cleanHash.includes("fixture");

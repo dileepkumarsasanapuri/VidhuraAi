@@ -127,6 +127,7 @@ public class RecommendationService {
     private volatile long simulationStalenessOffsetMs = 0L;
     private volatile boolean enforceStalenessHalt = true;
 
+    @org.springframework.web.bind.annotation.ResponseStatus(value = org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE, reason = "Catalog staleness limit exceeded")
     public static class CatalogStalenessExceededException extends RuntimeException {
         public CatalogStalenessExceededException(String message) {
             super(message);
@@ -185,6 +186,22 @@ public class RecommendationService {
     public void unmarkPolicyRevoked(String policyCode) {
         if (policyCode != null && !policyCode.isBlank()) {
             explicitlyRevokedPolicyCodes.remove(policyCode);
+            if (catalogMetadataRepository != null) {
+                try {
+                    catalogMetadataRepository.findById(com.vidhura.ai.recommendation.model.CatalogMetadata.GLOBAL_ID)
+                            .ifPresent(meta -> {
+                                if (meta.getRevokedPolicyCodes() != null) {
+                                    boolean removed = meta.getRevokedPolicyCodes().removeIf(rc -> rc.equalsIgnoreCase(policyCode));
+                                    if (removed) {
+                                        catalogMetadataRepository.save(meta);
+                                        log.info("[RecommendationService] Purged revoked policy {} from persistent catalog metadata.", policyCode);
+                                    }
+                                }
+                            });
+                } catch (Exception e) {
+                    log.warn("[RecommendationService] Failed to clear persistent revoked state for {}: {}", policyCode, e.getMessage());
+                }
+            }
             log.info("[RecommendationService] Policy {} un-revoked and eligible for catalog restore.", policyCode);
         }
     }
@@ -211,7 +228,9 @@ public class RecommendationService {
                     newVer = existing.get().getVersion() + 1;
                     if (existing.get().getRevokedPolicyCodes() != null) {
                         for (String rc : existing.get().getRevokedPolicyCodes()) {
-                            if (!revokedList.contains(rc)) revokedList.add(rc);
+                            if (explicitlyRevokedPolicyCodes.contains(rc) && !revokedList.contains(rc)) {
+                                revokedList.add(rc);
+                            }
                         }
                     }
                 }
@@ -432,7 +451,7 @@ public class RecommendationService {
         boolean isVersionStale = isGlobalCatalogVersionNewer();
         boolean isTtlExpired = (now - lastCacheRefreshEpochMs >= cacheTtlMs);
 
-        if (cached != null && !cached.isEmpty() && !isVersionStale && !isTtlExpired) {
+        if (cached != null && !isVersionStale && !isTtlExpired) {
             return cached;
         }
 
@@ -441,7 +460,7 @@ public class RecommendationService {
             isVersionStale = isGlobalCatalogVersionNewer();
             isTtlExpired = (now - lastCacheRefreshEpochMs >= cacheTtlMs);
 
-            if (cached != null && !cached.isEmpty() && !isVersionStale && !isTtlExpired) {
+            if (cached != null && !isVersionStale && !isTtlExpired) {
                 return cached;
             }
 
@@ -1088,7 +1107,8 @@ public class RecommendationService {
                 ? profile.getDesiredSumInsured()
                 : guidance.getRecommendedSumInsured();
 
-        boolean coverageSpecificCause = allEligibilityResults != null
+        boolean coverageSpecificCause = (profile.getDesiredSumInsured() > 0 && !profile.isHelpMeDecideSumInsured())
+                && allEligibilityResults != null
                 && !allEligibilityResults.isEmpty()
                 && allEligibilityResults.stream().allMatch(r ->
                         !r.getFailReasons().isEmpty()

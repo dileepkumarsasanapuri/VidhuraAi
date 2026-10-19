@@ -1089,7 +1089,7 @@ export interface CrawlSummary {
   newRevisionsDetected?: number;
   draftsCreated?: number;
   failedSources: number;
-  failureDetails?: Record<string, string>;
+  failureDetails?: string[];
   messages: string[];
   domainDiagnostics?: DomainDiagnostics[];
 }
@@ -1213,6 +1213,7 @@ export type CalculationStatus =
 
 export interface ClaimSimulationResponse {
   simulationId: string;
+  scenarioId?: string;
   policyId: string;
   policyCode: string;
   policyName: string;

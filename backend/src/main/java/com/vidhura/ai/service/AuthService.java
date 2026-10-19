@@ -55,8 +55,9 @@ public class AuthService {
                     .build();
         }
 
-        String assignedRole = (email.startsWith("admin") || email.endsWith("@vidhura.ai") || email.contains("reviewer") || email.contains("admin"))
-                ? "ROLE_ADMIN" : "ROLE_USER";
+        // Strict security: Public self-registration only ever grants ROLE_USER.
+        // Administrative roles must be provisioned through explicit management operations.
+        String assignedRole = "ROLE_USER";
 
         String hash = passwordEncoder.encode(request.getPassword());
 
@@ -495,11 +496,42 @@ public class AuthService {
         return map;
     }
 
+    @org.springframework.beans.factory.annotation.Value("${security.seed.admin-password:${ADMIN_INITIAL_PASSWORD:}}")
+    private String adminInitialPassword;
+
+    @org.springframework.beans.factory.annotation.Value("${security.seed.reviewer-password:${REVIEWER_INITIAL_PASSWORD:}}")
+    private String reviewerInitialPassword;
+
+    @org.springframework.beans.factory.annotation.Value("${security.seed.guest-password:${GUEST_INITIAL_PASSWORD:}}")
+    private String guestInitialPassword;
+
+    @org.springframework.beans.factory.annotation.Value("${spring.profiles.active:default}")
+    private String activeProfile;
+
     @jakarta.annotation.PostConstruct
     public void initDefaultTestUsers() {
-        seedUserIfNotExists("admin@vidhura.ai", "Admin Reviewer", "ROLE_ADMIN", "Admin@123");
-        seedUserIfNotExists("reviewer@vidhura.ai", "Catalog Reviewer", "ROLE_REVIEWER", "Reviewer@123");
-        seedUserIfNotExists("guest@vidhura.ai", "Staging Audit Guest", "ROLE_GUEST", "Guest@123");
+        if ("prod".equalsIgnoreCase(activeProfile) || "production".equalsIgnoreCase(activeProfile)) {
+            // In production, strictly require explicit environment variables and never use default fallback credentials
+            if (adminInitialPassword != null && !adminInitialPassword.isBlank()) {
+                seedUserIfNotExists("admin@vidhura.ai", "Admin Reviewer", "ROLE_ADMIN", adminInitialPassword);
+            }
+            if (reviewerInitialPassword != null && !reviewerInitialPassword.isBlank()) {
+                seedUserIfNotExists("reviewer@vidhura.ai", "Catalog Reviewer", "ROLE_REVIEWER", reviewerInitialPassword);
+            }
+            if (guestInitialPassword != null && !guestInitialPassword.isBlank()) {
+                seedUserIfNotExists("guest@vidhura.ai", "Staging Audit Guest", "ROLE_GUEST", guestInitialPassword);
+            }
+            return;
+        }
+
+        // Dev / Test environment seeding
+        String adminPwd = (adminInitialPassword != null && !adminInitialPassword.isBlank()) ? adminInitialPassword : "Admin@123";
+        String reviewerPwd = (reviewerInitialPassword != null && !reviewerInitialPassword.isBlank()) ? reviewerInitialPassword : "Reviewer@123";
+        String guestPwd = (guestInitialPassword != null && !guestInitialPassword.isBlank()) ? guestInitialPassword : "Guest@123";
+
+        seedUserIfNotExists("admin@vidhura.ai", "Admin Reviewer", "ROLE_ADMIN", adminPwd);
+        seedUserIfNotExists("reviewer@vidhura.ai", "Catalog Reviewer", "ROLE_REVIEWER", reviewerPwd);
+        seedUserIfNotExists("guest@vidhura.ai", "Staging Audit Guest", "ROLE_GUEST", guestPwd);
     }
 
     private void seedUserIfNotExists(String email, String name, String role, String password) {

@@ -159,11 +159,12 @@ public class ClaimSimulationService {
 
         ClaimSimulationResult savedResult = resultRepository.save(snapshot);
 
-        // Update response with permanent simulation ID referencing the saved snapshot
+        // Update response with permanent simulation ID and scenario ID referencing saved snapshots
+        response.setScenarioId(savedScenario.getId());
         response.setSimulationId(savedResult.getId());
 
-        log.info("[ClaimSimulator] Completed simulation id='{}', status={}, insurerPay='{}', patientLiab='{}'",
-                savedResult.getId(), response.getCalculationStatus(),
+        log.info("[ClaimSimulator] Completed simulation id='{}', scenarioId='{}', status={}, insurerPay='{}', patientLiab='{}'",
+                savedResult.getId(), savedScenario.getId(), response.getCalculationStatus(),
                 response.getEstimatedInsurerPayment(), response.getEstimatedPatientLiability());
 
         return response;
@@ -171,12 +172,15 @@ public class ClaimSimulationService {
 
     /**
      * Retrieves a saved claim scenario and its immutable result snapshot.
+     * Supports retrieval by scenarioId or simulationId.
      * Enforces user ownership and authorization.
      * Never recalculates dynamically against newer policy terms.
      */
     public ClaimSimulationDto.SavedScenarioDetailDto getScenarioById(String scenarioId, User currentUser) {
         ClaimScenario scenario = scenarioRepository.findById(scenarioId)
-                .orElseThrow(() -> new NoSuchElementException("Claim scenario not found with ID: " + scenarioId));
+                .orElseGet(() -> resultRepository.findById(scenarioId)
+                        .flatMap(res -> scenarioRepository.findById(res.getScenarioId()))
+                        .orElseThrow(() -> new NoSuchElementException("Claim scenario not found with ID: " + scenarioId)));
 
         // Enforce Authorization: Only authenticated owner, ADMIN, REVIEWER, or synthetic demo scenarios can be accessed
         boolean isAuthenticated = currentUser != null && currentUser.getId() != null;
@@ -193,12 +197,15 @@ public class ClaimSimulationService {
         }
 
         // Retrieve preserved calculation result snapshot
-        ClaimSimulationResult result = resultRepository.findByScenarioId(scenarioId)
-                .orElseThrow(() -> new NoSuchElementException("Calculation result snapshot not found for scenario: " + scenarioId));
+        String resolvedScenarioId = scenario.getId();
+        ClaimSimulationResult result = resultRepository.findByScenarioId(resolvedScenarioId)
+                .orElseGet(() -> resultRepository.findById(scenarioId)
+                        .orElseThrow(() -> new NoSuchElementException("Calculation result snapshot not found for scenario: " + scenarioId)));
 
         // Reconstitute exact historical response from snapshot
         ClaimSimulationDto.ClaimSimulationResponse response = ClaimSimulationDto.ClaimSimulationResponse.builder()
                 .simulationId(result.getId())
+                .scenarioId(resolvedScenarioId)
                 .policyId(result.getPolicyId())
                 .policyCode(result.getPolicyCode())
                 .policyName(result.getPolicyName())

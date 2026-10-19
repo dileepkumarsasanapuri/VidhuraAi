@@ -124,9 +124,10 @@ export default function ClaimSimulatorPage() {
       const response = await api.simulateClaim(request);
       if (response.success && response.data) {
         setSimulationResult(response.data);
-        if (response.data.simulationId) {
-          setActiveScenarioId(response.data.simulationId);
-          saveRecentScenarioId(response.data.simulationId);
+        const savedId = response.data.scenarioId || response.data.simulationId;
+        if (savedId) {
+          setActiveScenarioId(savedId);
+          saveRecentScenarioId(savedId);
         }
         window.scrollTo({ top: 0, behavior: "smooth" });
       } else {

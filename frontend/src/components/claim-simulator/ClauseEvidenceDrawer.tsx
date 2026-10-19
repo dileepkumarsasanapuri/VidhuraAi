@@ -113,9 +113,15 @@ export default function ClauseEvidenceDrawer({
                   {deduction.sectionReference || "Statutory Clause"}
                 </span>
               </div>
-              <blockquote className="p-4 rounded-xl bg-primary/5 border-l-4 border-primary text-slate-200 text-sm leading-relaxed italic shadow-inner">
-                &ldquo;{deduction.verbatimClauseText || "Verbatim contractual clause extracted from official policy wording."}&rdquo;
-              </blockquote>
+              {deduction.verbatimClauseText ? (
+                <blockquote className="p-4 rounded-xl bg-primary/5 border-l-4 border-primary text-slate-200 text-sm leading-relaxed italic shadow-inner">
+                  &ldquo;{deduction.verbatimClauseText}&rdquo;
+                </blockquote>
+              ) : (
+                <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs">
+                  Verbatim clause text not recorded for this line item. Manual verification required.
+                </div>
+              )}
             </div>
 
             {/* Actuarial & Plain-English Explanation */}
@@ -178,7 +184,7 @@ export default function ClauseEvidenceDrawer({
                     Clause Verification Status
                   </span>
                   <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono text-[10px]">
-                    {deduction.clauseConfidence || "VERIFIED_CONTRACT_CLAUSE"}
+                    {deduction.clauseConfidence || "UNVERIFIED"}
                   </span>
                 </div>
               </div>

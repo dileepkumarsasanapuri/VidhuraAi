@@ -306,7 +306,12 @@ export default function ClaimScenarioForm({
 
   // Bill Line item management
   const handleAddBillLine = () => {
-    const newLineId = `L${billLines.length + 1}`;
+    const maxIndex = billLines.reduce((max, l) => {
+      const match = l.lineId?.match(/^L(\d+)$/i);
+      const num = match ? parseInt(match[1], 10) : 0;
+      return Math.max(max, isNaN(num) ? 0 : num);
+    }, 0);
+    const newLineId = `L${maxIndex + 1}`;
     setBillLines([
       ...billLines,
       {

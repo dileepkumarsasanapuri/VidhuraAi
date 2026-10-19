@@ -118,6 +118,11 @@ public class LiveOfficialPdfStagingAcceptanceTest {
     @Test
     @DisplayName("Acceptance: Real PDF Fetch, UIN Parsing, Identity Validation, and Staged Draft Creation for UIIC")
     void testRealUiicPdfStagedDraftCreation() {
+        org.junit.jupiter.api.Assumptions.assumeTrue(
+                "true".equalsIgnoreCase(System.getProperty("enable.live.tests")) ||
+                "true".equalsIgnoreCase(System.getenv("ENABLE_LIVE_NETWORK_TESTS")),
+                "Skipping live UIIC PDF staging test in offline CI. Enable via -Denable.live.tests=true or ENABLE_LIVE_NETWORK_TESTS=true");
+
         // Step 1: Execute curated registration for reachable UIIC official document
         PolicySourceMonitor.CuratedSourceRequest req = PolicySourceMonitor.CuratedSourceRequest.builder()
                 .sourceUrl(UIIC_OFFICIAL_PDF)

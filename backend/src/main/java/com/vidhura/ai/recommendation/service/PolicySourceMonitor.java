@@ -953,14 +953,17 @@ public class PolicySourceMonitor {
         String sha256 = fetchResult.getSha256Checksum();
         // Check content SHA-256 deduplication
         if (sourceRepository != null) {
+            boolean duplicateContent = false;
             try {
-                boolean duplicateContent = sourceRepository.findAll().stream()
+                duplicateContent = sourceRepository.findAll().stream()
                         .anyMatch(s -> sha256.equalsIgnoreCase(s.getLastSha256Checksum()));
-                if (duplicateContent) {
-                    throw new IllegalArgumentException("Duplicate document content: A document with identical SHA-256 checksum ("
-                            + sha256 + ") is already registered.");
-                }
-            } catch (Exception ignored) {}
+            } catch (Exception e) {
+                log.warn("[PolicySourceMonitor] Could not query source repository for duplicate check: {}", e.getMessage());
+            }
+            if (duplicateContent) {
+                throw new IllegalArgumentException("Duplicate document content: A document with identical SHA-256 checksum ("
+                        + sha256 + ") is already registered.");
+            }
         }
 
         // Extract text and UIN
@@ -1277,7 +1280,7 @@ public class PolicySourceMonitor {
         boolean hasPdfHeader = bytes != null && bytes.length >= 5
                 && bytes[0] == '%' && bytes[1] == 'P' && bytes[2] == 'D' && bytes[3] == 'F' && bytes[4] == '-';
 
-        if (bytes == null || bytes.length < 5 || isStub || (!hasPdfHeader && isStub)) {
+        if (bytes == null || bytes.length < 5 || isStub || !hasPdfHeader) {
             int failures = source.getConsecutiveFailures() + 1;
             source.setConsecutiveFailures(failures);
             int backoff = Math.min(24, Math.max(1, (int) Math.pow(2, failures - 1)));

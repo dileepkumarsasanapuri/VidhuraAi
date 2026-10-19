@@ -131,7 +131,8 @@ class PolicyDiscoveryCrawlTest {
                         .build());
 
         // For newly discovered candidate (e.g. Tata AIG Medicare)
-        String newPdfText = "Tata AIG General Insurance Co. Ltd.\n"
+        String newPdfText = "%PDF-1.4\n"
+                + "Tata AIG General Insurance Co. Ltd.\n"
                 + "Product Name: Medicare\n"
                 + "IRDAI UIN: TATHLIP21169V012021\n"
                 + "Single private AC room without restriction.\n"
@@ -229,7 +230,8 @@ class PolicyDiscoveryCrawlTest {
         storedSources.add(source);
 
         // Insurer publishes updated policy wording with new revision text
-        String updatedPdfText = "HDFC ERGO General Insurance Co. Ltd.\n"
+        String updatedPdfText = "%PDF-1.4\n"
+                + "HDFC ERGO General Insurance Co. Ltd.\n"
                 + "Optima Restore Health Insurance Policy\n"
                 + "IRDAI UIN: HDFHLIP21235V022026\n" // New revision code
                 + "Room Rent: No Room Rent Sub-limit\n"

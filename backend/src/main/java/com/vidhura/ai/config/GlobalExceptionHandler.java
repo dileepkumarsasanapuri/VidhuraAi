@@ -80,6 +80,13 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.err(ex.getMessage()));
     }
 
+    @ExceptionHandler(com.vidhura.ai.recommendation.service.RecommendationService.CatalogStalenessExceededException.class)
+    public ResponseEntity<ApiResponse<Void>> handleCatalogStaleness(com.vidhura.ai.recommendation.service.RecommendationService.CatalogStalenessExceededException ex) {
+        log.error("Catalog staleness safety constraint exceeded: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(ApiResponse.err("Catalog safety constraint active: " + ex.getMessage()));
+    }
+
     @ExceptionHandler({org.springframework.security.access.AccessDeniedException.class, SecurityException.class})
     public ResponseEntity<ApiResponse<Void>> handleAccessDenied(Exception ex) {
         log.warn("Access denied: {}", ex.getMessage());

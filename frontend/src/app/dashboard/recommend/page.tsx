@@ -1453,8 +1453,12 @@ export default function RecommendPage() {
                                     )}
                                   </div>
                                   <div className="mt-1">
-                                    <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-tight">
-                                      {policy.verificationStatus || "VERIFIED_OFFICIAL_CATALOG"}
+                                    <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-tight ${
+                                      policy.verificationStatus === "VERIFIED_OFFICIAL_CATALOG"
+                                        ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                                        : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                                    }`}>
+                                      {policy.verificationStatus || "UNVERIFIED"}
                                     </span>
                                   </div>
                                 </div>
@@ -2036,8 +2040,12 @@ export default function RecommendPage() {
                                   <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-muted text-muted-foreground uppercase">
                                     {item.tag}
                                   </span>
-                                  <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase">
-                                    {item.evidenceConfidence || "VERIFIED_CONTRACTUAL_SPECIFICATION"}
+                                  <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold border uppercase ${
+                                    item.evidenceConfidence === "VERIFIED_CONTRACTUAL_SPECIFICATION"
+                                      ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                                      : "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                                  }`}>
+                                    {item.evidenceConfidence || "PENDING_VERIFICATION"}
                                   </span>
                                   <h4 className="font-bold text-sm text-foreground">{item.clauseName}</h4>
                                 </div>
@@ -2221,8 +2229,12 @@ export default function RecommendPage() {
                           )}
                         </div>
                         <div className="mt-1">
-                          <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-tight">
-                            {policy.verificationStatus || "VERIFIED_OFFICIAL_CATALOG"}
+                          <span className={`px-1.5 py-0.2 rounded text-[9px] font-bold uppercase tracking-tight ${
+                            policy.verificationStatus === "VERIFIED_OFFICIAL_CATALOG"
+                              ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                              : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                          }`}>
+                            {policy.verificationStatus || "UNVERIFIED"}
                           </span>
                         </div>
                         <div className="text-xl font-black text-emerald-400 mt-2">
@@ -2351,8 +2363,12 @@ export default function RecommendPage() {
                       <h3 className="text-base font-bold text-foreground">
                         Data Provenance & Regulatory Filing Audit
                       </h3>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                        {auditingPolicy.verificationStatus || "VERIFIED_OFFICIAL_CATALOG"}
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
+                        auditingPolicy.verificationStatus === "VERIFIED_OFFICIAL_CATALOG"
+                          ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                          : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                      }`}>
+                        {auditingPolicy.verificationStatus || "UNVERIFIED"}
                       </span>
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5">

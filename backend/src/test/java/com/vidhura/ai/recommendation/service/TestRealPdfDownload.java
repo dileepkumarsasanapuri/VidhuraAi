@@ -9,6 +9,7 @@ import java.net.*;
 import javax.net.ssl.*;
 
 @DisplayName("Test Real PDF Download from Official Insurer and IRDAI Endpoints")
+@org.junit.jupiter.api.Tag("live-network")
 public class TestRealPdfDownload {
     static {
         System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
@@ -17,6 +18,11 @@ public class TestRealPdfDownload {
     @Test
     @DisplayName("Verify real PDF download and %PDF- magic bytes from reachable official portals")
     void testRealPdfDownloads() throws Exception {
+        org.junit.jupiter.api.Assumptions.assumeTrue(
+                "true".equalsIgnoreCase(System.getProperty("enable.live.tests")) ||
+                "true".equalsIgnoreCase(System.getenv("ENABLE_LIVE_NETWORK_TESTS")),
+                "Skipping live network test in default unit test suite. Enable via -Denable.live.tests=true or ENABLE_LIVE_NETWORK_TESTS=true");
+
         String[] testPdfs = {
             "https://uiic.co.in/web/sites/default/files/basic-documents/List-of-Retail-Products.pdf",
             "https://irdai.gov.in/documents/37343/0/Guidelines+on+Standard+Individual+Health+Insurance+Product.pdf/369dff4f-e97d-4eba-85b1-9a0e0080ff58?t=1633496923225",

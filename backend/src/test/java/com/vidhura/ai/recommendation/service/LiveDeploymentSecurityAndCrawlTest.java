@@ -121,6 +121,11 @@ public class LiveDeploymentSecurityAndCrawlTest {
     @Test
     @DisplayName("Check 1: Live Insurer Portal Crawl — URL, HTTP Status, Byte Size, SHA-256 Checksum, and Ingestion State")
     void testLiveInsurerPortalCrawlAndIngestionLogging() {
+        org.junit.jupiter.api.Assumptions.assumeTrue(
+                "true".equalsIgnoreCase(System.getProperty("enable.live.tests")) ||
+                "true".equalsIgnoreCase(System.getenv("ENABLE_LIVE_NETWORK_TESTS")),
+                "Skipping live insurer portal crawl in offline/sandboxed CI. Enable via -Denable.live.tests=true or ENABLE_LIVE_NETWORK_TESTS=true");
+
         log.info("==========================================================================================");
         log.info("STARTING LIVE OFFICIAL INSURER DOCUMENT CRAWL RUNTIME VERIFICATION");
         log.info("==========================================================================================");

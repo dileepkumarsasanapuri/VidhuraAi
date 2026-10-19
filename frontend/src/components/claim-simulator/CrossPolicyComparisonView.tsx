@@ -172,7 +172,16 @@ export default function CrossPolicyComparisonView({
             return (
               <div
                 key={pol.id}
+                role="button"
+                tabIndex={0}
+                aria-pressed={isSelected}
                 onClick={() => togglePolicy(pol.id)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    togglePolicy(pol.id);
+                  }
+                }}
                 className={`p-4 rounded-xl border text-left cursor-pointer transition-all flex flex-col justify-between ${
                   isSelected
                     ? "bg-primary/20 border-primary shadow-lg shadow-primary/10"

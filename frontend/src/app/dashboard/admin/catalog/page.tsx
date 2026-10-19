@@ -969,9 +969,15 @@ export default function AdminCatalogPage() {
                       <p className="text-2xl font-bold mt-2 text-foreground">
                         {qualityReport.overallQualityScore}%
                       </p>
-                      <p className="text-[11px] text-emerald-400 mt-0.5 font-medium flex items-center gap-1">
-                        <CheckCircle2 className="w-3 h-3" /> Regression Passed
-                      </p>
+                      {qualityReport.regressionPassed ? (
+                        <p className="text-[11px] text-emerald-400 mt-0.5 font-medium flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3" /> Regression Passed
+                        </p>
+                      ) : (
+                        <p className="text-[11px] text-rose-400 mt-0.5 font-medium flex items-center gap-1">
+                          <AlertTriangle className="w-3 h-3" /> Regression Failed
+                        </p>
+                      )}
                     </div>
 
                     <div className="glass p-4 rounded-2xl border border-white/5 relative overflow-hidden">

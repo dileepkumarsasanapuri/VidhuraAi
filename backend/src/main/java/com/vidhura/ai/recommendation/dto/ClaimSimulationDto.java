@@ -138,6 +138,7 @@ public class ClaimSimulationDto {
     @AllArgsConstructor
     public static class ClaimSimulationResponse {
         private String simulationId;
+        private String scenarioId;
         private String policyId;
         private String policyCode;
         private String policyName;
