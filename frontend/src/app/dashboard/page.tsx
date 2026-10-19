@@ -135,7 +135,7 @@ export default function DashboardPage() {
                   policies.slice(0, 3).map((p, i) => (
                     <ScoreRing 
                       key={p.id} 
-                      score={p.analysis?.scores?.overall || p.healthScore || 0} 
+                      score={p.analysis?.scores?.overall ?? p.healthScore ?? 0} 
                       label={p.name.split(' ')[0]} 
                       color={i === 0 ? "#10b981" : i === 1 ? "#3b82f6" : "#f59e0b"} 
                       size={100} 
@@ -148,10 +148,10 @@ export default function DashboardPage() {
               <div className="mt-6 glass rounded-xl p-4">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs text-muted">Overall Protection Score</span>
-                  <span className="text-sm font-bold gradient-text">{policies.length > 0 ? `${(policies.reduce((sum: number, p: any) => sum + (p.analysis?.scores?.overall || p.healthScore || 0), 0) / policies.length).toFixed(0)}/100` : "0/100"}</span>
+                  <span className="text-sm font-bold gradient-text">{policies.length > 0 ? `${(policies.reduce((sum: number, p: any) => sum + (p.analysis?.scores?.overall ?? p.healthScore ?? 0), 0) / policies.length).toFixed(0)}/100` : "0/100"}</span>
                 </div>
                 <div className="w-full h-2 rounded-full bg-white/5 overflow-hidden">
-                  <motion.div initial={{ width: 0 }} animate={{ width: `${policies.length > 0 ? (policies.reduce((sum: number, p: any) => sum + (p.analysis?.scores?.overall || p.healthScore || 0), 0) / policies.length) : 0}%` }} transition={{ duration: 1.2, ease: "easeOut" }}
+                  <motion.div initial={{ width: 0 }} animate={{ width: `${policies.length > 0 ? (policies.reduce((sum: number, p: any) => sum + (p.analysis?.scores?.overall ?? p.healthScore ?? 0), 0) / policies.length) : 0}%` }} transition={{ duration: 1.2, ease: "easeOut" }}
                     className="h-full rounded-full bg-gradient-to-r from-primary to-accent" />
                 </div>
               </div>

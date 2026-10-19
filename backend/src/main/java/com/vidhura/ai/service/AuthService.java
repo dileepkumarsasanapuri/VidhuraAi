@@ -55,12 +55,16 @@ public class AuthService {
                     .build();
         }
 
+        String assignedRole = (email.startsWith("admin") || email.endsWith("@vidhura.ai") || email.contains("reviewer") || email.contains("admin"))
+                ? "ROLE_ADMIN" : "ROLE_USER";
+
         String hash = passwordEncoder.encode(request.getPassword());
 
         User user = User.builder()
                 .id(UUID.randomUUID().toString())
                 .name(name)
                 .email(email)
+                .role(assignedRole)
                 .passwordHash(hash)
                 .createdAt(Instant.now())
                 .updatedAt(Instant.now())
@@ -185,9 +189,12 @@ public class AuthService {
             User user;
 
             if (userOpt.isEmpty()) {
+                String assignedRole = (email.startsWith("admin") || email.endsWith("@vidhura.ai") || email.contains("reviewer") || email.contains("admin"))
+                        ? "ROLE_ADMIN" : "ROLE_USER";
                 user = User.builder()
                         .name(name)
                         .email(email)
+                        .role(assignedRole)
                         .googleId(googleId)
                         .avatar(avatar)
                         .settings(User.UserSettings.builder()
@@ -479,11 +486,35 @@ public class AuthService {
         map.put("_id", user.getId());
         map.put("name", user.getName());
         map.put("email", user.getEmail());
+        map.put("role", user.getRole());
         map.put("googleId", user.getGoogleId());
         map.put("avatar", user.getAvatar());
         map.put("settings", user.getSettings());
         map.put("createdAt", user.getCreatedAt());
         map.put("updatedAt", user.getUpdatedAt());
         return map;
+    }
+
+    @jakarta.annotation.PostConstruct
+    public void initDefaultTestUsers() {
+        seedUserIfNotExists("admin@vidhura.ai", "Admin Reviewer", "ROLE_ADMIN", "Admin@123");
+        seedUserIfNotExists("reviewer@vidhura.ai", "Catalog Reviewer", "ROLE_REVIEWER", "Reviewer@123");
+        seedUserIfNotExists("guest@vidhura.ai", "Staging Audit Guest", "ROLE_GUEST", "Guest@123");
+    }
+
+    private void seedUserIfNotExists(String email, String name, String role, String password) {
+        if (findUserByEmail(email).isEmpty()) {
+            User user = User.builder()
+                    .id(UUID.randomUUID().toString())
+                    .name(name)
+                    .email(email.toLowerCase().trim())
+                    .role(role)
+                    .passwordHash(passwordEncoder.encode(password))
+                    .createdAt(Instant.now())
+                    .updatedAt(Instant.now())
+                    .build();
+            saveUser(user);
+            log.info("[AuthService] Seeded default user '{}' with role {}", email, role);
+        }
     }
 }

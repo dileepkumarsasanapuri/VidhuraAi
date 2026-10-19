@@ -73,6 +73,26 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.err("Method " + ex.getMethod() + " not supported"));
     }
 
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ApiResponse<Void>> handleIllegalState(IllegalStateException ex) {
+        log.warn("Illegal state or policy governance constraint: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(ApiResponse.err(ex.getMessage()));
+    }
+
+    @ExceptionHandler({org.springframework.security.access.AccessDeniedException.class, SecurityException.class})
+    public ResponseEntity<ApiResponse<Void>> handleAccessDenied(Exception ex) {
+        log.warn("Access denied: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ApiResponse.err("Access denied: " + ex.getMessage()));
+    }
+
+    @ExceptionHandler(java.util.NoSuchElementException.class)
+    public ResponseEntity<ApiResponse<Void>> handleNoSuchElement(java.util.NoSuchElementException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.err(ex.getMessage()));
+    }
+
     @ExceptionHandler(NoHandlerFoundException.class)
     public ResponseEntity<ApiResponse<Void>> handleNotFound(NoHandlerFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)

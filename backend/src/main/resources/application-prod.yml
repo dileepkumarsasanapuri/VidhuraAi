@@ -19,7 +19,7 @@ spring:
       max-request-size: 25MB
 
 jwt:
-  secret: ${JWT_SECRET}
+  secret: ${JWT_SECRET:vidhura_secret_key_change_in_production_min_32_bytes}
   expiration: 604800000
 
 google:

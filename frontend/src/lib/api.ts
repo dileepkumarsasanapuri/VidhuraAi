@@ -266,6 +266,123 @@ class ApiClient {
     return this.request<{ success: boolean; data: StructuredPolicy[] }>("/recommend/catalog");
   }
 
+  // Policy Discovery & Scalable Catalog Ingestion Pipeline
+  discoverPolicy(data: PolicyDiscoveryRequest) {
+    return this.request<{ success: boolean; data: PolicyIngestionResult }>("/policies/discover", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  verifyPolicy(id: string, data: PolicyVerificationRequest) {
+    return this.request<{ success: boolean; data: any }>(`/policies/${id}/verify`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  flagPolicy(id: string, reason?: string, status?: string) {
+    const params = new URLSearchParams();
+    if (reason) params.set("reason", reason);
+    if (status) params.set("status", status);
+    return this.request<{ success: boolean; data: any }>(`/policies/${id}/flag?${params.toString()}`, {
+      method: "POST",
+    });
+  }
+
+  rollbackPolicy(id: string, reason: string) {
+    return this.request<{ success: boolean; data: any }>(
+      `/policies/${id}/rollback?reason=${encodeURIComponent(reason)}`,
+      { method: "POST" }
+    );
+  }
+
+  getCatalogPolicies(status?: string) {
+    const query = status ? `?status=${encodeURIComponent(status)}` : "";
+    return this.request<{ success: boolean; data: any[]; count: number }>(`/policies/catalog${query}`);
+  }
+
+  getCatalogStats() {
+    return this.request<{ success: boolean; data: CatalogStats }>("/policies/catalog/stats");
+  }
+
+  refreshPolicyCache() {
+    return this.request<{ success: boolean; data: { message: string; activeVerifiedPoliciesCount: number } }>("/policies/cache/refresh", {
+      method: "POST",
+    });
+  }
+
+  getPolicyDrafts() {
+    return this.request<{ success: boolean; data: any[]; count: number }>("/policies/drafts");
+  }
+
+  getPolicySources() {
+    return this.request<{ success: boolean; data: PolicySource[]; count: number }>("/policies/sources");
+  }
+
+  registerPolicySource(source: Partial<PolicySource>) {
+    return this.request<{ success: boolean; data: PolicySource }>("/policies/sources", {
+      method: "POST",
+      body: JSON.stringify(source),
+    });
+  }
+
+  registerCuratedOfficialSource(request: {
+    sourceUrl: string;
+    sourceName?: string;
+    provider?: string;
+    canonicalProductName?: string;
+    expectedUin?: string;
+    expectedRevision?: string;
+    curationNotes?: string;
+  }) {
+    return this.request<{
+      success: boolean;
+      data: {
+        success: boolean;
+        message: string;
+        registeredSource: PolicySource;
+        stagedDocument: DiscoveredDocument;
+        stagedPolicyId: string;
+        irdaUin: string;
+        uinRevision: string;
+        sha256Checksum: string;
+        fileSizeBytes: number;
+        verificationStatus: string;
+      };
+    }>("/policies/sources/register-curated", {
+      method: "POST",
+      body: JSON.stringify(request),
+    });
+  }
+
+  crawlPolicySource(id: string, force = false) {
+    return this.request<{ success: boolean; data: { sourceId: string; outcome: string } }>(`/policies/sources/${id}/crawl?force=${force}`, {
+      method: "POST",
+    });
+  }
+
+  crawlAllPolicySources(force = false, discoverNewSources = true) {
+    return this.request<{ success: boolean; data: CrawlSummary }>(`/policies/sources/crawl-all?force=${force}&discoverNewSources=${discoverNewSources}`, {
+      method: "POST",
+    });
+  }
+
+  discoverPolicySources(candidateUrls?: string[]) {
+    return this.request<{ success: boolean; data: DiscoveryReport }>("/policies/sources/discover", {
+      method: "POST",
+      body: candidateUrls ? JSON.stringify(candidateUrls) : undefined,
+    });
+  }
+
+  getDiscoveredDocuments() {
+    return this.request<{ success: boolean; data: DiscoveredDocument[]; count: number }>("/policies/documents");
+  }
+
+  getQualityBenchmarkReport() {
+    return this.request<{ success: boolean; data: RecommendationQualityReport }>("/policies/quality-report");
+  }
+
   // Compare
   comparePolicies(policyIds?: string[]) {
     return this.request<{ success: boolean; data: ComparisonResult }>("/compare", {
@@ -343,6 +460,45 @@ class ApiClient {
   // Analytics
   getAnalytics() {
     return this.request<{ success: boolean; data: AnalyticsData }>("/analytics");
+  }
+
+  // Claim Simulator
+  simulateClaim(data: ClaimSimulationRequest) {
+    return this.request<{
+      success: boolean;
+      message?: string;
+      data: ClaimSimulationResponse;
+    }>("/claim-simulator/simulate", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  getClaimScenario(id: string) {
+    return this.request<{
+      success: boolean;
+      message?: string;
+      data: SavedScenarioDetail;
+    }>(`/claim-simulator/scenarios/${encodeURIComponent(id)}`);
+  }
+
+  getSampleClaimScenarios() {
+    return this.request<{
+      success: boolean;
+      message?: string;
+      data: SampleScenario[];
+    }>("/claim-simulator/sample-scenarios");
+  }
+
+  compareClaims(data: ClaimComparisonRequest) {
+    return this.request<{
+      success: boolean;
+      message?: string;
+      data: ClaimComparisonResponse;
+    }>("/claim-simulator/compare", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
   }
 }
 
@@ -556,9 +712,15 @@ export interface GuidanceResponse {
   rationale: string;
   medicalInflationInsight: string;
   zone: string;
+  pricingZone?: string;
   estimatedMinBudget: number;
   estimatedMaxBudget: number;
+  estimatedAnnualPremiumMin?: number;
+  estimatedAnnualPremiumMax?: number;
+  formattedEstimatedPremiumRange?: string;
   budgetAdequacyNote: string;
+  cityHealthcareInsights?: string[];
+  recommendationsByLifeStage?: string[];
   tips: string[];
 }
 
@@ -619,6 +781,23 @@ export interface OutOfPocketRiskAnalysis {
   exposureFactors: string[];
 }
 
+export interface DataClassification {
+  contractualFactsStatus: string;
+  pricingClassification: string;
+  isBindingQuote: boolean;
+  pricingDisclaimer: string;
+  billSimulationClassification: string;
+  billSimulationAssumptions: string;
+  regulatoryMetricsClassification: string;
+  regulatoryPeriod: string;
+}
+
+export interface ThreeQuestionAnswers {
+  whyRecommended: string;
+  verifiedFactsSupporting: string[];
+  estimatesAndAssumptions: string[];
+}
+
 export interface PolicyEvidenceItem {
   clauseName: string;
   sectionReference: string;
@@ -626,6 +805,8 @@ export interface PolicyEvidenceItem {
   verbatimText: string;
   verifiedFact: string;
   tag: string;
+  evidenceConfidence?: string;
+  sourceDocumentVersion?: string;
 }
 
 export interface InsurerMetrics {
@@ -635,6 +816,12 @@ export interface InsurerMetrics {
   topHospitalNetworks: string[];
   avgGrievanceResolutionDays: number;
   claimPaymentSpeed: string;
+  csrMetricName?: string;
+  csrReportingPeriod?: string;
+  csrSource?: string;
+  csrCalculationMethod?: string;
+  networkAsOfDate?: string;
+  networkSource?: string;
 }
 
 export interface RankedPolicyCard {
@@ -644,6 +831,11 @@ export interface RankedPolicyCard {
   policyName: string;
   provider: string;
   irdaUin: string;
+  uinRevision?: string;
+  verificationStatus?: string;
+  regulatoryFilingSource?: string;
+  officialDocumentUrl?: string;
+  lastAuditedDate?: string;
   planName: string;
   category: string;
   policyWordingDocument: string;
@@ -666,6 +858,60 @@ export interface RankedPolicyCard {
   keyExclusions: string[];
   supportingEvidence: PolicyEvidenceItem[];
   insurerMetrics: InsurerMetrics;
+  dataClassification?: DataClassification;
+  threeQuestionAnswers?: ThreeQuestionAnswers;
+  policySnapshotVersion?: string;
+  scoringEngineVersion?: string;
+  evaluationTimestamp?: string;
+  reproducibilitySnapshot?: {
+    policySnapshotVersion?: string;
+    scoringEngineVersion?: string;
+    evaluationTimestamp?: string;
+    contractTermsSnapshot?: {
+      roomRentLimit?: string;
+      roomRentCapped?: boolean;
+      copayPercentage?: number;
+      waitingPeriodPedMonths?: number;
+      waitingPeriodInitialDays?: number;
+      waitingPeriodSpecificMonths?: number;
+      deductibleAmount?: number;
+      restorationAvailable?: boolean;
+    };
+    pricingModelSnapshot?: {
+      selectedSumInsured?: number;
+      calculatedAnnualPremium?: number;
+      pricingZone?: string;
+      pricingStatus?: string;
+      pricingClassification?: string;
+    };
+    insurerMetricsSnapshot?: {
+      claimSettlementRatio?: number;
+      incurredClaimsRatio?: number;
+      cashlessHospitalsCount?: number;
+      reportingPeriod?: string;
+    };
+    scoringBreakdown?: {
+      costWeight?: number;
+      coverageWeight?: number;
+      oopWeight?: number;
+      reliabilityWeight?: number;
+      costScore?: number;
+      coverageScore?: number;
+      oopScore?: number;
+      reliabilityScore?: number;
+      overallScore?: number;
+      primaryPriority?: string;
+    };
+    inputRequirementsSnapshot?: {
+      primaryAge?: number;
+      insuranceType?: string;
+      pricingZone?: string;
+      annualBudget?: number;
+      budgetType?: string;
+      declaredConditionsCount?: number;
+      totalInsuredMembers?: number;
+    };
+  };
 }
 
 export interface RecommendationResponse {
@@ -683,6 +929,7 @@ export interface RecommendationHistoryItem {
   id: string;
   userId: string;
   profileId: string;
+  userRequirements?: any;
   guidance: ProfileGuidance;
   rankedPolicies: RankedPolicyCard[];
   createdAt: string;
@@ -701,6 +948,414 @@ export interface StructuredPolicy {
   insurerMetrics: InsurerMetrics;
   officialEvidence: PolicyEvidenceItem[];
   keyExclusions: string[];
+}
+
+export interface PolicyDiscoveryRequest {
+  documentUrl?: string;
+  documentName?: string;
+  sourceType?: string;
+  policyName?: string;
+  provider?: string;
+  irdaUin?: string;
+  uinRevision?: string;
+  rawPolicyText?: string;
+  autoPublishIfHighConfidence?: boolean;
+}
+
+export interface PolicyVerificationRequest {
+  decision: "APPROVE" | "REJECT" | "FLAG_OUTDATED" | "FLAG_INCOMPLETE";
+  reviewerName?: string;
+  reviewerNotes?: string;
+  overrideFields?: Record<string, any>;
+}
+
+export interface PolicyIngestionResult {
+  policyId: string;
+  policyCode: string;
+  policyName: string;
+  provider: string;
+  irdaUin: string;
+  uinRevision?: string;
+  verificationStatus: string;
+  contractConfidenceScore: number;
+  pricingConfidenceScore: number;
+  pricingStatus: string;
+  confidenceScore: number;
+  readyForPublication: boolean;
+  requiresHumanVerification: boolean;
+  contractUncertainFields: string[];
+  pricingUncertainFields: string[];
+  uncertainFields: string[];
+  criticalAuditFindings: string[];
+  extractedSummary: Record<string, any>;
+  message: string;
+}
+
+export interface CatalogStats {
+  totalPolicies: number;
+  verifiedPublishedPolicies: number;
+  pendingReviewPolicies: number;
+  draftPolicies: number;
+  flaggedOrOutdatedPolicies: number;
+}
+
+export interface PolicySource {
+  id: string;
+  sourceName: string;
+  provider: string;
+  canonicalProductName?: string;
+  irdaUin?: string;
+  expectedRevision?: string;
+  documentType?: string;
+  sourceAuthority?: string;
+  sourceUrl: string;
+  active: boolean;
+  lastEtag?: string;
+  lastModifiedHeader?: string;
+  lastSha256Checksum?: string;
+  lastFileSizeBytes?: number;
+  lastCheckedAt?: string;
+  lastFetchedAt?: string;
+  lastSuccessfulExtractionAt?: string;
+  lastHttpStatusCode?: number;
+  status: string;
+  lastErrorMessage?: string;
+  consecutiveFailures: number;
+  pollFrequencyHours: number;
+  linkedDraftPolicyId?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface DiscoveredDocument {
+  id: string;
+  sourceId?: string;
+  sourceUrl: string;
+  documentName: string;
+  sha256Checksum: string;
+  fileSizeBytes: number;
+  etag?: string;
+  contentType?: string;
+  fetchedAt: string;
+  extractionStatus: string;
+  extractedPolicyId?: string;
+  irdaUin?: string;
+  uinRevision?: string;
+  confidenceScore?: number;
+  errorMessage?: string;
+}
+
+export interface DomainDiagnostics {
+  rootUrl: string;
+  domain: string;
+  resolvedIp?: string;
+  httpStatusCode: number;
+  responseMessage?: string;
+  contentType?: string;
+  redirectLocation?: string;
+  redirectChain?: string[];
+  errorCategory: "SUCCESS_200" | "REDIRECT_FOLLOWED" | "BOT_PROTECTION_403" | "OBSOLETE_ENDPOINT_404" | "MISDIRECTED_OR_BAD_421_400" | "TIMEOUT_ERROR" | "SSRF_BLOCKED" | "CONNECTION_ERROR" | string;
+  sanitizedExcerpt?: string;
+  linksExtracted: number;
+}
+
+export interface DiscoveryReport {
+  candidateSourcesFound: number;
+  candidateSourcesRegistered: number;
+  candidateSourcesRejected: number;
+  rejectionReasons: Record<string, number>;
+  registeredSources: PolicySource[];
+  discoveryMessages: string[];
+  domainDiagnostics?: DomainDiagnostics[];
+}
+
+export interface CrawlSummary {
+  discoveryMode?: "LIVE_DISCOVERY" | "CATALOG_FALLBACK" | "LIVE_DISCOVERY_EMPTY" | "HYBRID" | "DISABLED" | string;
+  liveCandidatesDiscovered?: number;
+  fallbackCatalogCandidates?: number;
+  lastLiveScanSuccessful?: boolean;
+  lastLiveScanTimestamp?: string;
+  liveScannedUrls?: string[];
+  totalSources: number;
+  checkedSources: number;
+  sourcesScanned?: number;
+  candidateSourcesDiscovered?: number;
+  candidateSourcesRegistered?: number;
+  candidateSourcesRejected?: number;
+  candidateRejectionReasons?: Record<string, number>;
+  documentsDownloaded?: number;
+  newDocumentsExtracted: number;
+  unchangedDocumentsSkipped: number;
+  newRevisionsDetected?: number;
+  draftsCreated?: number;
+  failedSources: number;
+  failureDetails?: Record<string, string>;
+  messages: string[];
+  domainDiagnostics?: DomainDiagnostics[];
+}
+
+export interface FactDiff {
+  fieldName: string;
+  previousValue: string;
+  newValue: string;
+  isMaterial: boolean;
+  severity: "CRITICAL" | "MODERATE" | "INFORMATIONAL";
+  impactExplanation: string;
+  previousEvidenceCitation?: string;
+  newEvidenceCitation?: string;
+}
+
+export interface PolicyChangeImpactReport {
+  policyCode: string;
+  productName: string;
+  provider: string;
+  previousRevision?: string;
+  newRevision?: string;
+  analyzedAt: string;
+  materialChangesDetected: boolean;
+  requiresSeniorReview: boolean;
+  contractualDiffs: FactDiff[];
+  eligibilityImpacts: string[];
+  rankingScoreImpacts: string[];
+  claimSimulationImpacts: string[];
+}
+
+export interface ScenarioEvaluationResult {
+  scenarioId: string;
+  scenarioName: string;
+  category: string;
+  passed: boolean;
+  eligiblePoliciesFound: number;
+  topRankedPolicy: string;
+  expectedTopPolicy: string;
+  topMatchAligned: boolean;
+  mandatoryConstraintsHonored: boolean;
+  claimMathAccurate: boolean;
+  citationIntegrityScore: number;
+  executionTimeMs: number;
+  documentedGroundTruth?: string;
+  independentActuarialBasis?: string;
+  auditNotes: string;
+}
+
+export interface RecommendationQualityReport {
+  evaluatedAt: string;
+  engineVersion: string;
+  catalogPolicyCount: number;
+  totalBenchmarkScenarios: number;
+  passedScenarios: number;
+  overallQualityScore: number;
+  mandatoryConstraintViolationRate: number;
+  rankingAgreementRate: number;
+  claimMathAccuracyRate: number;
+  citationCoverageRate: number;
+  regressionPassed: boolean;
+  scenarioResults: ScenarioEvaluationResult[];
+}
+
+// Claim Simulator Types & DTOs
+export type BillItemCategory =
+  | "ROOM_RENT"
+  | "ICU_CHARGES"
+  | "NURSING_CHARGES"
+  | "SURGEON_FEES"
+  | "OT_CHARGES"
+  | "MEDICINES"
+  | "DIAGNOSTICS"
+  | "CONSUMABLES"
+  | "IMPLANTS"
+  | "AMBULANCE"
+  | "OTHER";
+
+export interface BillLineItem {
+  lineId: string;
+  category: BillItemCategory;
+  description: string;
+  unitPrice: number;
+  quantity: number;
+  totalAmount: number;
+}
+
+export interface ClaimSimulationRequest {
+  policyId: string;
+  uinRevision?: string;
+  patientAge: number;
+  diagnosis: string;
+  accidentalInjury?: boolean;
+  preExistingCondition?: boolean;
+  policyContinuityMonths?: number;
+  admissionDate?: string;
+  dischargeDate?: string;
+  hospitalType?: string;
+  hospitalRoomCategoryOpted?: string;
+  selectedSumInsured: number;
+  priorClaimsInCurrentYear?: number;
+  subsequentClaimForSameIllness?: boolean;
+  billLines: BillLineItem[];
+}
+
+export interface DeductionItem {
+  deductionType: string;
+  expenseCategory: string;
+  amountDeducted: number;
+  explanation: string;
+  calculationFormula?: string;
+  sectionReference?: string;
+  verbatimClauseText?: string;
+  clauseConfidence?: string;
+}
+
+export type CalculationStatus =
+  | "FULL_DETERMINISTIC_VERIFIED"
+  | "PARTIAL_ESTIMATE"
+  | "MANUAL_REVIEW_REQUIRED"
+  | "POLICY_UNAPPROVED_REJECTED";
+
+export interface ClaimSimulationResponse {
+  simulationId: string;
+  policyId: string;
+  policyCode: string;
+  policyName: string;
+  provider: string;
+  irdaUin: string;
+  uinRevision: string;
+  sourceDocumentHash?: string;
+  ruleSetVersion?: string;
+  calculationEngineVersion: string;
+  calculationStatus: CalculationStatus;
+  statusReason?: string;
+  totalSubmittedBill: number;
+  totalEligibleExpenses: number;
+  totalNonCoveredExpenses: number;
+  totalDeductions: number;
+  estimatedInsurerPayment: number;
+  estimatedPatientLiability: number;
+  reconciliationIdentity: string;
+  reconciled: boolean;
+  restorationTriggered: boolean;
+  restorationAmountGranted: number;
+  restorationExplanation?: string;
+  deductionBreakdown: DeductionItem[];
+  appliedClauses: string[];
+  unresolvedRules: string[];
+  legalDisclaimer: string;
+  evaluatedAt: string;
+}
+
+export interface SavedScenarioDetail {
+  scenarioId: string;
+  userId: string;
+  policyId: string;
+  policyCode: string;
+  irdaUin: string;
+  uinRevision: string;
+  patientAge: number;
+  diagnosis: string;
+  accidentalInjury: boolean;
+  preExistingCondition: boolean;
+  policyContinuityMonths: number;
+  admissionDate?: string;
+  dischargeDate?: string;
+  hospitalType: string;
+  hospitalRoomCategoryOpted: string;
+  selectedSumInsured: number;
+  totalSubmittedBill: number;
+  syntheticExample: boolean;
+  createdAt: string;
+  billLines: BillLineItem[];
+  result: ClaimSimulationResponse;
+}
+
+export interface SampleScenario {
+  sampleId: string;
+  title: string;
+  scenarioType: string;
+  description: string;
+  clinicalNarrative: string;
+  targetPolicyCode: string;
+  targetPolicyName: string;
+  request: ClaimSimulationRequest;
+  syntheticExample: boolean;
+  disclaimer: string;
+  educationalTakeaway: string;
+}
+
+export interface ClaimComparisonRequest {
+  policyIds: string[];
+  scenario: ClaimSimulationRequest;
+}
+
+export interface PolicyClaimComparisonItem {
+  policyId: string;
+  policyCode: string;
+  policyName: string;
+  provider: string;
+  irdaUin: string;
+  uinRevision: string;
+  sourceDocumentHash?: string;
+  syntheticExample: boolean;
+  calculationStatus: CalculationStatus;
+  reconciled: boolean;
+
+  totalSubmittedBill: number;
+  totalEligibleExpenses: number;
+  totalNonCoveredExpenses: number;
+  totalDeductions: number;
+  estimatedInsurerPayment: number;
+  estimatedPatientLiability: number;
+
+  roomRentDeductions: number;
+  sublimitDeductions: number;
+  costSharingDeductions: number;
+  waitingPeriodDeductions: number;
+
+  restorationTriggered: boolean;
+  restorationAmountGranted: number;
+  restorationExplanation?: string;
+
+  unresolvedRules: string[];
+  appliedClauseCount: number;
+  fullSimulation: ClaimSimulationResponse;
+
+  // Evidence Layer & Provenance Fields
+  authenticAcquiredDocument?: boolean;
+  verificationStatus?: string;
+  reviewerApprovalStatus?: string;
+  verifiedBy?: string;
+  roomRentLimit?: string;
+  roomRentCapped?: boolean;
+  proportionateDeductionApplies?: boolean;
+  copayPercentage?: number;
+  deductibleAmount?: number;
+  waitingPeriodInitialDays?: number;
+  waitingPeriodPedMonths?: number;
+  waitingPeriodSpecificMonths?: number;
+  keyExclusions?: string[];
+  uncertaintyNotice?: string;
+  documentEvidence?: any[];
+}
+
+export interface ClauseDelta {
+  feature: string;
+  policyAValue: string;
+  policyBValue: string;
+  financialImpact: string;
+  clauseCitationA: string;
+  clauseCitationB: string;
+}
+
+export interface ClaimComparisonResponse {
+  scenarioDiagnosis: string;
+  totalSubmittedBill: number;
+  comparisons: PolicyClaimComparisonItem[];
+  highestPayoutPolicyName: string;
+  lowestOutOfPocketPolicyName: string;
+  payoutVariance?: number;
+  patientLiabilityVariance?: number;
+  varianceExplanation?: string;
+  clauseDeltas?: ClauseDelta[];
+  disclaimer: string;
+  evaluatedAt: string;
 }
 
 export const api = new ApiClient();

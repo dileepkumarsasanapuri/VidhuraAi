@@ -61,6 +61,16 @@ public class RecommendationProfile {
     private boolean opdBenefitNeeded;
     private String copayTolerance; // NONE, LOW, FLEXIBLE
 
+    // Phase 3 Intelligence Inputs
+    @Builder.Default
+    private int policyContinuityMonths = 0;
+    @Builder.Default
+    private String likelyTreatmentNeeds = "COMPREHENSIVE";
+    @Builder.Default
+    private String strictRoomPreference = "SINGLE_PRIVATE_AC";
+    @Builder.Default
+    private boolean includeDemoFixtures = false;
+
     @CreatedDate
     private Instant createdAt;
 

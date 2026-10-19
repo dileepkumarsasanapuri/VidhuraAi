@@ -11,5 +11,10 @@ import java.util.Optional;
 public interface StructuredPolicyRepository extends MongoRepository<StructuredPolicy, String> {
     Optional<StructuredPolicy> findByPolicyCode(String policyCode);
     List<StructuredPolicy> findByActiveTrue();
+    List<StructuredPolicy> findByActiveTrueAndVerificationStatusIn(List<String> verificationStatuses);
+    List<StructuredPolicy> findByVerificationStatus(String verificationStatus);
+    Optional<StructuredPolicy> findByIrdaUin(String irdaUin);
+    long countByActiveTrue();
     boolean existsByPolicyCode(String policyCode);
+    boolean existsByIrdaUin(String irdaUin);
 }

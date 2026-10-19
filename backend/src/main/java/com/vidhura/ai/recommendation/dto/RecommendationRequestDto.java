@@ -93,7 +93,20 @@ public class RecommendationRequestDto {
     private Boolean opdBenefitNeeded = false;
 
     @Builder.Default
-    private String copayTolerance = "NONE"; // NONE, LOW, FLEXIBLE
+    private String copayTolerance = "FLEXIBLE"; // NONE, LOW, FLEXIBLE
+
+    // Phase 3 Intelligence Inputs
+    @Builder.Default
+    private Integer policyContinuityMonths = 0; // Months of continuous prior coverage for waiting period credit
+
+    @Builder.Default
+    private String likelyTreatmentNeeds = "COMPREHENSIVE"; // CARDIAC, ORTHOPEDIC, CATARACT, GENERAL_SURGERY, MATERNITY, COMPREHENSIVE
+
+    @Builder.Default
+    private String strictRoomPreference = "SINGLE_PRIVATE_AC"; // SINGLE_PRIVATE_AC, DELUXE, SHARED, NO_PREFERENCE
+
+    @Builder.Default
+    private Boolean includeDemoFixtures = false; // Production winner rankings exclude synthetic fixtures by default
 
     @Data
     @Builder

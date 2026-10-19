@@ -17,7 +17,9 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -33,6 +35,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             .id("default-guest-user")
             .name("Guest User")
             .email("guest@vidhura.ai")
+            .role("ROLE_GUEST")
             .settings(User.UserSettings.builder()
                     .profile(User.UserProfile.builder()
                             .name("Guest User")
@@ -89,8 +92,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             log.warn("Using guest user due to auth error: {}", ex.getMessage());
         }
 
+        List<org.springframework.security.core.authority.SimpleGrantedAuthority> authorities = new ArrayList<>();
+        if (activeUser == GUEST_USER || (activeUser != null && "ROLE_GUEST".equals(activeUser.getRole()))) {
+            authorities.add(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_GUEST"));
+        } else if (activeUser != null && activeUser.getRole() != null && !activeUser.getRole().isBlank()) {
+            authorities.add(new org.springframework.security.core.authority.SimpleGrantedAuthority(activeUser.getRole()));
+            if ("ROLE_ADMIN".equals(activeUser.getRole()) || "ROLE_REVIEWER".equals(activeUser.getRole())) {
+                authorities.add(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_USER"));
+            }
+        } else {
+            authorities.add(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_GUEST"));
+        }
+
         UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(activeUser, null, Collections.emptyList());
+                new UsernamePasswordAuthenticationToken(activeUser, null, authorities);
         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);

@@ -13,17 +13,17 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(() => {
-    if (typeof window !== "undefined") {
-      const saved = window.localStorage.getItem("vidhura_theme") as Theme;
-      return saved === "light" ? "light" : "dark";
-    }
-    return "dark";
-  });
+  const [theme, setThemeState] = useState<Theme>("dark");
 
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-  }, [theme]);
+    const saved = window.localStorage.getItem("vidhura_theme") as Theme;
+    if (saved === "light" || saved === "dark") {
+      setThemeState(saved);
+      document.documentElement.setAttribute("data-theme", saved);
+    } else {
+      document.documentElement.setAttribute("data-theme", "dark");
+    }
+  }, []);
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);

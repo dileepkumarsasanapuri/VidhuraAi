@@ -37,28 +37,19 @@ const PUBLIC_PATHS = ["/", "/login", "/register", "/forgot-password"];
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [user, setUser] = useState<AuthUser | null>(() => {
-    if (typeof window !== "undefined") {
-      const storedToken = getStoredToken();
-      const storedUser = getStoredUser();
-      if (storedToken && storedToken !== "guest-token" && storedUser) {
-        return storedUser as AuthUser;
-      }
-    }
-    return null;
-  });
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const [token, setToken] = useState<string | null>(() => {
-    if (typeof window !== "undefined") {
-      const storedToken = getStoredToken();
-      if (storedToken && storedToken !== "guest-token") {
-        return storedToken;
-      }
+  useEffect(() => {
+    const storedToken = getStoredToken();
+    const storedUser = getStoredUser();
+    if (storedToken && storedToken !== "guest-token" && storedUser) {
+      setToken(storedToken);
+      setUser(storedUser as AuthUser);
     }
-    return null;
-  });
-
-  const [isLoading] = useState(false);
+    setIsLoading(false);
+  }, []);
 
   // Route protection: redirect unauthenticated users away from dashboard
   useEffect(() => {

@@ -20,6 +20,8 @@ import {
   User,
   Plus,
   HeartPulse,
+  Database,
+  Calculator,
 } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 
@@ -28,8 +30,10 @@ const navItems = [
   { href: "/dashboard/upload", label: "Upload Policy", icon: Upload },
   { href: "/dashboard/policies", label: "My Policies", icon: FileText },
   { href: "/dashboard/recommend", label: "Find Insurance", icon: HeartPulse },
+  { href: "/dashboard/claim-simulator", label: "Claim Simulator", icon: Calculator },
   { href: "/dashboard/scenario", label: "ScenarioGPT", icon: MessageSquare },
   { href: "/dashboard/compare", label: "CompareWise", icon: GitCompare },
+  { href: "/dashboard/admin/catalog", label: "Catalog Governance", icon: Database },
   { href: "/dashboard/profile", label: "My Profile", icon: User },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];

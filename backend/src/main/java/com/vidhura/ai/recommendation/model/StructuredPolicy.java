@@ -12,7 +12,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Structured master health insurance policy catalog record.
@@ -40,6 +42,51 @@ public class StructuredPolicy {
     private String description;
     private String policyWordingDocument; // "HDFC_Optima_Secure_Wordings_v2024.pdf"
     private String versionDate; // "2024-Q1"
+    @Builder.Default
+    private String documentClassification = "POLICY_WORDING"; // POLICY_WORDING, PRODUCT_CATALOGUE, CUSTOMER_INFORMATION_SHEET, REGULATORY_FILING
+    @Builder.Default
+    private String verificationStatus = "VERIFIED_CONTRACTUAL_SPECIFICATION";
+    private String uinRevision; // e.g. "V012021"
+    @Builder.Default
+    private String regulatoryFilingSource = "IRDAI Health Product Registry & Insurer Public Disclosure";
+    @Builder.Default
+    private String officialDocumentUrl = "https://irdai.gov.in";
+    private String lastAuditedDate; // e.g. "2024-Q1"
+
+    // Cryptographic & Reviewer Provenance Identification
+    @Builder.Default
+    private boolean syntheticFixture = false; // true if this is a synthetic demonstration fixture
+    private String documentChecksum; // 64-character SHA-256 integrity checksum
+    private String sourceRecordId; // Reference to acquired source document / filing
+    @Builder.Default
+    private String reviewerApprovalStatus = "PENDING_REVIEW"; // REVIEWER_APPROVED, PENDING_REVIEW, SYNTHETIC_DEMO
+
+    // Discovery & Ingestion Audit Trail - Decoupled Contract vs Pricing Confidence
+    @Builder.Default
+    private double contractConfidenceScore = 100.0; // 0-100 score based purely on verified contractual clauses
+    @Builder.Default
+    private double pricingConfidenceScore = 100.0; // 0-100 score based on actuarial rate table calibration
+    @Builder.Default
+    private String pricingStatus = "CALIBRATED_ACTUARIAL_TABLE"; // CALIBRATED_ACTUARIAL_TABLE, MODELED_ESTIMATE_ONLY, UNVERIFIED_PRICING_TABLE
+    @Builder.Default
+    private List<String> contractUncertainFields = new ArrayList<>(); // contractual ambiguities (e.g. UNCERTAIN_ROOM_RENT_CLAUSE)
+    @Builder.Default
+    private List<String> pricingUncertainFields = new ArrayList<>(); // pricing ambiguities (e.g. UNVERIFIED_PROSPECTUS_RATES)
+
+    // Backward-compatible aliases
+    @Builder.Default
+    private double confidenceScore = 100.0; // 0-100 quality confidence score
+    @Builder.Default
+    private List<String> uncertainFields = new ArrayList<>(); // fields flagged for human review before publication
+    private String auditNotes;
+    private String verifiedBy;
+    private Instant publicationDate;
+    @Builder.Default
+    private String discoverySource = "OFFICIAL_FILING"; // IRDAI_REGISTRY, INSURER_PORTAL, POLICY_WORDING_PDF, MANUAL_INGESTION
+    @Builder.Default
+    private List<AuditLogEntry> auditHistory = new ArrayList<>();
+
+    private PolicyChangeImpactReport changeImpactReport;
 
     @Builder.Default
     private boolean active = true;
@@ -171,6 +218,20 @@ public class StructuredPolicy {
         private List<String> topHospitalNetworks = new ArrayList<>(); // Apollo, Fortis, Manipal, Max, Narayana
         private double avgGrievanceResolutionDays; // 1.8 days
         private String claimPaymentSpeed; // "Average cashless authorization within 45 minutes"
+
+        // Dated Regulatory Metrics Provenance
+        @Builder.Default
+        private String csrMetricName = "Claim Settlement Ratio (Settled vs Reported)";
+        @Builder.Default
+        private String csrReportingPeriod = "IRDAI Annual Report FY 2022-23";
+        @Builder.Default
+        private String csrSource = "IRDAI Annual Report & Form NL-25 Public Disclosure";
+        @Builder.Default
+        private String csrCalculationMethod = "Claims Settled / Total Claims Reported during the Financial Year";
+        @Builder.Default
+        private String networkAsOfDate = "March 2024";
+        @Builder.Default
+        private String networkSource = "Insurer Cashless Everywhere Network Directory";
     }
 
     @Data
@@ -184,5 +245,77 @@ public class StructuredPolicy {
         private String verbatimText; // Exact quote from document
         private String verifiedFact; // Human plain language fact
         private String tag; // ROOM_RENT, PED, RESTORATION, COPAY, SUBLIMIT, CLAIM
+        @Builder.Default
+        private String evidenceConfidence = "VERIFIED_CONTRACT_CLAUSE";
+        @Builder.Default
+        private String sourceDocumentVersion = "v2024.1";
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class AuditLogEntry {
+        private Instant timestamp;
+        private String action; // DISCOVERED, VERIFIED_PUBLISHED, FLAGGED_OUTDATED, REJECTED_FOR_REVISION
+        private String performedBy;
+        private String previousStatus;
+        private String newStatus;
+        private String notes;
+        @Builder.Default
+        private Map<String, Object> changes = new HashMap<>();
+    }
+
+    public boolean isAuthenticAcquiredDocument() {
+        if (syntheticFixture) return false;
+        boolean isApproved = "VERIFIED_OFFICIAL_CATALOG".equalsIgnoreCase(verificationStatus)
+                || "REVIEWER_APPROVED".equalsIgnoreCase(reviewerApprovalStatus);
+        boolean hasReviewer = verifiedBy != null && !verifiedBy.trim().isBlank();
+        boolean hasSourceUrl = officialDocumentUrl != null && !officialDocumentUrl.trim().isBlank();
+        boolean hasSourceRecord = sourceRecordId != null && !sourceRecordId.trim().isBlank();
+        String checksum = getEffectiveDocumentChecksum();
+        boolean hasValidChecksum = checksum != null && checksum.matches("^[a-fA-F0-9]{64}$")
+                && !isPlaceholderChecksum(checksum);
+        return isApproved && hasReviewer && hasSourceUrl && hasSourceRecord && hasValidChecksum;
+    }
+
+    public static boolean isPlaceholderChecksum(String checksum) {
+        if (checksum == null) return true;
+        String clean = checksum.toLowerCase().trim();
+        if (clean.length() != 64) return true;
+
+        // Check for single repeated character: e.g. "00000...", "aaaaa..."
+        char first = clean.charAt(0);
+        boolean allSame = true;
+        for (int i = 1; i < 64; i++) {
+            if (clean.charAt(i) != first) {
+                allSame = false;
+                break;
+            }
+        }
+        if (allSame) return true;
+
+        // Check for standard placeholder prefix patterns
+        if (clean.startsWith("a1b2c3d4") || clean.startsWith("b2c3d4e5") || clean.startsWith("c3d4e5f6")
+                || clean.startsWith("12345678") || clean.startsWith("abcdef12") || clean.startsWith("01234567")) {
+            return true;
+        }
+
+        // Check for periodic 32-char repeat patterns (such as duplicate halves)
+        if (clean.substring(0, 32).equals(clean.substring(32, 64))) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public String getEffectiveDocumentChecksum() {
+        if (documentChecksum != null && !documentChecksum.isBlank()) {
+            return documentChecksum.replaceFirst("^(?i)sha256:", "").trim();
+        }
+        if (policyWordingDocument != null && policyWordingDocument.toLowerCase().startsWith("sha256:")) {
+            return policyWordingDocument.substring(7).trim();
+        }
+        return null;
     }
 }

@@ -41,6 +41,13 @@ public class RecommendationResponseDto {
     // Count of total verified policies evaluated in catalog
     private int totalPoliciesEvaluated;
     private int eligiblePoliciesCount;
+    private long catalogVersion;
+    @Builder.Default
+    private String catalogStatus = "CURRENT"; // "CURRENT", "STALE_WARM_CACHE", "METADATA_UNREACHABLE_FROZEN", "DEGRADED_PARTITION_RECENT", "PARTITION_STALENESS_EXCEEDED_HALTED"
+    private boolean isStale;
+    private boolean isHalted;
+    private String catalogFreshnessWarning;
+    private String coverageAdvisory;
 
     @Data
     @Builder
@@ -92,6 +99,9 @@ public class RecommendationResponseDto {
         private boolean withinBudget;
         private double budgetDifference;
         private String budgetComparisonText;
+        private boolean coverageShortfall;
+        private long requestedSumInsured;
+        private long coverageShortfallAmount;
 
         @Builder.Default
         private List<String> matchBadges = new ArrayList<>();
@@ -110,5 +120,36 @@ public class RecommendationResponseDto {
 
         // Insurer Performance Metrics
         private StructuredPolicy.InsurerMetrics insurerMetrics;
+
+        // Canonical verification and provenance metadata
+        private String verificationStatus; // "VERIFIED_CONTRACTUAL_SPECIFICATION"
+        private String uinRevision; // e.g. "V012021"
+        private String regulatoryFilingSource; // "IRDAI Health Product Registry"
+        private String officialDocumentUrl;
+        private String lastAuditedDate;
+
+        // Version & Scoring Provenance Traceability
+        private String policySnapshotVersion;
+        private String scoringEngineVersion;
+        private Instant evaluationTimestamp;
+
+        // Explicit Data Classification (Verified Fact vs Modeled Estimate vs Dated Regulatory Metric)
+        private RecommendationResult.DataClassification dataClassification;
+
+        // The 3 Core Questions Answers
+        private RecommendationResult.ThreeQuestionAnswers threeQuestionAnswers;
+
+        // Reproducibility Audit Replay Snapshot
+        private RecommendationResult.ReproducibilitySnapshot reproducibilitySnapshot;
+
+        // Phase 3 Intelligence & Deterministic Claim Simulation Integration
+        private RecommendationResult.PersonalizedClaimSimulationSummary personalizedClaimSimulation;
+        private boolean authenticAcquiredDocument;
+        private boolean syntheticFixture;
+        private String documentChecksum;
+        private String reviewerApprovalStatus;
+        private String reviewerName;
+        @Builder.Default
+        private List<String> missingEvidenceWarnings = new ArrayList<>();
     }
 }

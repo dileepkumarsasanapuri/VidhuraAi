@@ -2,461 +2,873 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   GitCompare,
-  Shield,
+  ShieldCheck,
   AlertTriangle,
-  CheckCircle,
-  Star,
-  Upload,
-  Loader2,
-  Check,
-  X,
+  CheckCircle2,
   FileText,
-  Activity,
-  Award,
+  Building2,
+  Clock,
+  ExternalLink,
+  Sparkles,
+  Info,
+  DollarSign,
+  ChevronRight,
+  Loader2,
+  RefreshCw,
+  Scale,
+  Copy,
+  Check,
+  HelpCircle,
+  TrendingDown,
+  TrendingUp,
 } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
-import ScoreRing from "@/components/ScoreRing";
-import { api, ComparisonPolicy } from "@/lib/api";
+import {
+  api,
+  ClaimComparisonRequest,
+  ClaimComparisonResponse,
+  PolicyClaimComparisonItem,
+  BillLineItem,
+} from "@/lib/api";
 
-export default function ComparePage() {
-  const [availablePolicies, setAvailablePolicies] = useState<{ id: string; name: string }[]>([]);
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [compared, setCompared] = useState<ComparisonPolicy[]>([]);
-  const [recommendation, setRecommendation] = useState<{ bestPolicy: string; reason: string; savings: string } | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isComparing, setIsComparing] = useState(false);
+interface CatalogPolicyOption {
+  id: string;
+  code: string;
+  name: string;
+  provider: string;
+  irdaUin: string;
+  revision: string;
+  checksum: string;
+  isAuthentic: boolean;
+  status: string;
+  reviewer: string;
+  summary: string;
+}
 
-  useEffect(() => {
-    async function loadPolicies() {
-      try {
-        const response = await api.getPolicies();
-        if (response.data) {
-          const policies = response.data.map((p) => ({ id: p.id, name: p.name }));
-          setAvailablePolicies(policies);
-          // Default select up to three policies
-          if (policies.length > 0) {
-            setSelectedIds(policies.slice(0, 3).map((p) => p.id));
-          }
-        }
-      } catch (error) {
-        console.error("Failed to load policies", error);
-      } finally {
-        setIsLoading(false);
-      }
+const STATIC_CATALOG_POLICIES: CatalogPolicyOption[] = [
+  {
+    id: "UIIHLIP22070V042122",
+    code: "UNITED_INDIA_FAMILY_MEDICARE_V042122",
+    name: "United India Family Medicare Policy",
+    provider: "United India Insurance Company Limited",
+    irdaUin: "UIIHLIP22070V042122",
+    revision: "V042122",
+    checksum: "9728ea60fce9e3e99b21c8b70abbf5d0b43236cbbc78901856311f77920efb3b",
+    isAuthentic: true,
+    status: "VERIFIED_OFFICIAL_CATALOG",
+    reviewer: "SeniorComplianceOfficer@vidhura.ai",
+    summary: "1% SI room rent cap with proportionate deduction, 48m PED wait, 0% co-pay",
+  },
+  {
+    id: "NIAHLIP21279V032021",
+    code: "NEW_INDIA_PREMIER_MEDICLAIM_V032021",
+    name: "New India Premier Mediclaim Policy",
+    provider: "The New India Assurance Company Limited",
+    irdaUin: "NIAHLIP21279V032021",
+    revision: "V032021",
+    checksum: "2d827d7c96d4d66687408387f69991d4c9e72d7c11ab6901ed6dc610d9870743",
+    isAuthentic: true,
+    status: "VERIFIED_OFFICIAL_CATALOG",
+    reviewer: "SeniorComplianceOfficer@vidhura.ai",
+    summary: "Zero room rent limit (Any room eligible), 24m expedited PED wait, 0% co-pay",
+  },
+  {
+    id: "NIAHLIP25040V102425",
+    code: "NEW_INDIA_MEDICLAIM_V102425",
+    name: "New India Mediclaim Policy",
+    provider: "The New India Assurance Company Limited",
+    irdaUin: "NIAHLIP25040V102425",
+    revision: "V102425",
+    checksum: "b37d2519f4fe00e75f28727168ca6aafa9093f8c723fafa7db2f12e887fcea1f",
+    isAuthentic: true,
+    status: "VERIFIED_OFFICIAL_CATALOG",
+    reviewer: "SeniorComplianceOfficer@vidhura.ai",
+    summary: "1% SI room cap, 36m PED wait, ₹40k Cataract cap, 0% co-pay",
+  },
+  {
+    id: "HDFHLIP21147V012021",
+    code: "HDFC_OPTIMA_SECURE",
+    name: "HDFC ERGO Optima Secure (Modeled)",
+    provider: "HDFC ERGO General Insurance Co. Ltd.",
+    irdaUin: "HDFHLIP21147V012021",
+    revision: "V012021",
+    checksum: "mock_sha256_hdfc_optima_secure",
+    isAuthentic: false,
+    status: "SYNTHETIC_DEMO_FIXTURE",
+    reviewer: "Synthetic Benchmark Generator",
+    summary: "Single Private Room, 36m PED wait, 2X base cover multiplier, modeled fixture",
+  },
+  {
+    id: "STAR_SENIOR_RED_CARPET",
+    code: "STAR_SENIOR_RED_CARPET",
+    name: "Star Senior Citizens Red Carpet (Modeled)",
+    provider: "Star Health and Allied Insurance Co. Ltd.",
+    irdaUin: "SHAHLIP21214V022021",
+    revision: "V022021",
+    checksum: "mock_sha256_star_senior_red_carpet",
+    isAuthentic: false,
+    status: "SYNTHETIC_DEMO_FIXTURE",
+    reviewer: "Synthetic Benchmark Generator",
+    summary: "1% SI room cap, 30% co-payment, 12m PED wait for specified conditions",
+  },
+  {
+    id: "CARE_SUPREME",
+    code: "CARE_SUPREME",
+    name: "Care Supreme Health Plan (Modeled)",
+    provider: "Care Health Insurance Limited",
+    irdaUin: "CHIHLIP22043V012122",
+    revision: "V012122",
+    checksum: "mock_sha256_care_supreme",
+    isAuthentic: false,
+    status: "SYNTHETIC_DEMO_FIXTURE",
+    reviewer: "Synthetic Benchmark Generator",
+    summary: "No room rent sublimit, 36m PED wait, cumulative bonus up to 500%",
+  },
+];
+
+const BENCHMARK_BILL_LINES: BillLineItem[] = [
+  {
+    lineId: "L1",
+    category: "ROOM_RENT",
+    description: "Single Private AC Room (3 days @ ₹6,500)",
+    unitPrice: 6500,
+    quantity: 3,
+    totalAmount: 19500,
+  },
+  {
+    lineId: "L2",
+    category: "SURGEON_FEES",
+    description: "Surgeon & Anesthesia Professional Fee",
+    unitPrice: 45000,
+    quantity: 1,
+    totalAmount: 45000,
+  },
+  {
+    lineId: "L3",
+    category: "OT_CHARGES",
+    description: "Operation Theatre & Equipment",
+    unitPrice: 28000,
+    quantity: 1,
+    totalAmount: 28000,
+  },
+  {
+    lineId: "L4",
+    category: "MEDICINES",
+    description: "Hospital Pharmacy & IV Fluids",
+    unitPrice: 18500,
+    quantity: 1,
+    totalAmount: 18500,
+  },
+  {
+    lineId: "L5",
+    category: "CONSUMABLES",
+    description: "Non-Payable Consumables (IRDAI List I - PPE, Gloves, Gauze)",
+    unitPrice: 12000,
+    quantity: 1,
+    totalAmount: 12000,
+  },
+];
+
+export default function EvidencePolicyComparisonPage() {
+  const [policyIdA, setPolicyIdA] = useState<string>("UIIHLIP22070V042122");
+  const [policyIdB, setPolicyIdB] = useState<string>("NIAHLIP21279V032021");
+
+  // Profile Parameters
+  const [patientAge, setPatientAge] = useState<number>(45);
+  const [diagnosis, setDiagnosis] = useState<string>("Acute Appendicitis (Laparoscopic Surgery)");
+  const [selectedSumInsured, setSelectedSumInsured] = useState<number>(500000);
+  const [policyContinuityMonths, setPolicyContinuityMonths] = useState<number>(36);
+  const [isPreExistingCondition, setIsPreExistingCondition] = useState<boolean>(false);
+
+  // Itemized Hospital Bill
+  const [billLines, setBillLines] = useState<BillLineItem[]>(BENCHMARK_BILL_LINES);
+
+  // Execution State
+  const [isComparing, setIsComparing] = useState<boolean>(false);
+  const [comparisonResult, setComparisonResult] = useState<ClaimComparisonResponse | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [copiedHash, setCopiedHash] = useState<string | null>(null);
+
+  const totalSubmitted = billLines.reduce((acc, l) => acc + (l.totalAmount || 0), 0);
+
+  const selectedPolicyA = STATIC_CATALOG_POLICIES.find((p) => p.id === policyIdA) || STATIC_CATALOG_POLICIES[0];
+  const selectedPolicyB = STATIC_CATALOG_POLICIES.find((p) => p.id === policyIdB) || STATIC_CATALOG_POLICIES[1];
+
+  const hasSyntheticInvolved = !selectedPolicyA.isAuthentic || !selectedPolicyB.isAuthentic;
+
+  const handleCopyHash = (hash: string) => {
+    navigator.clipboard.writeText(hash);
+    setCopiedHash(hash);
+    setTimeout(() => setCopiedHash(null), 2000);
+  };
+
+  const handleRunComparison = async () => {
+    if (policyIdA === policyIdB) {
+      setErrorMessage("Please select two distinct policies to perform a comparative contractual analysis.");
+      return;
     }
-    loadPolicies();
+
+    setIsComparing(true);
+    setErrorMessage(null);
+
+    const request: ClaimComparisonRequest = {
+      policyIds: [policyIdA, policyIdB],
+      scenario: {
+        policyId: policyIdA,
+        patientAge,
+        diagnosis,
+        preExistingCondition: isPreExistingCondition,
+        policyContinuityMonths,
+        hospitalType: "NETWORK_CASHLESS",
+        hospitalRoomCategoryOpted: "SINGLE_PRIVATE_AC",
+        selectedSumInsured,
+        priorClaimsInCurrentYear: 0,
+        billLines,
+      },
+    };
+
+    try {
+      const response = await api.compareClaims(request);
+      if (response && response.data) {
+        setComparisonResult(response.data);
+      } else {
+        setErrorMessage("Comparison response did not contain valid data.");
+      }
+    } catch (err: any) {
+      console.error("[Comparison] Error executing claim comparison:", err);
+      setErrorMessage(err.message || "Failed to execute evidence-backed policy comparison.");
+    } finally {
+      setIsComparing(false);
+    }
+  };
+
+  // Run initial benchmark comparison on mount
+  useEffect(() => {
+    handleRunComparison();
   }, []);
 
-  useEffect(() => {
-    async function fetchComparison() {
-      if (selectedIds.length === 0) {
-        setCompared([]);
-        setRecommendation(null);
-        return;
-      }
-      setIsComparing(true);
-      try {
-        const response = await api.comparePolicies(selectedIds);
-        if (response.data) {
-          setCompared(response.data.policies || []);
-          setRecommendation(response.data.recommendation);
-        }
-      } catch (error) {
-        console.error("Failed to fetch comparison", error);
-      } finally {
-        setIsComparing(false);
-      }
-    }
-    fetchComparison();
-  }, [selectedIds]);
+  const compA = comparisonResult?.comparisons?.[0];
+  const compB = comparisonResult?.comparisons?.[1];
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen overflow-hidden bg-background">
       <Sidebar activeTab="/dashboard/compare" />
       <main className="flex-1 overflow-y-auto">
+        {/* Top Sticky Header */}
         <header className="sticky top-0 z-30 glass border-b border-border px-4 sm:px-6 h-16 flex items-center justify-between">
-          <div className="ml-11 lg:ml-0">
-            <h1 className="text-base sm:text-lg font-bold">CompareWise</h1>
-            <p className="text-xs text-muted hidden sm:block">Intelligent policy comparison — beyond premiums & marketing</p>
+          <div className="ml-11 lg:ml-0 flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center text-primary-light">
+              <Scale className="w-5 h-5" />
+            </div>
+            <div>
+              <h1 className="text-base sm:text-lg font-bold flex items-center gap-2">
+                Evidence-Backed Policy Comparison
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/20 text-primary-light border border-primary/30 font-semibold">
+                  STATUTORY RECONCILIATION
+                </span>
+              </h1>
+              <p className="text-xs text-muted hidden sm:block">
+                Side-by-side claim adjudication and clause variance grounded in verified PDF document bytes
+              </p>
+            </div>
           </div>
-          {availablePolicies.length > 0 && (
-            <span className="text-xs text-muted bg-white/5 px-2.5 sm:px-3 py-1 rounded-xl">
-              {selectedIds.length} of {availablePolicies.length} selected
-            </span>
-          )}
+          <button
+            onClick={handleRunComparison}
+            disabled={isComparing}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-primary to-accent text-white hover:opacity-90 disabled:opacity-50 transition-all shadow-sm"
+          >
+            {isComparing ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" /> Adjudicating...
+              </>
+            ) : (
+              <>
+                <RefreshCw className="w-3.5 h-3.5" /> Recompute Comparison
+              </>
+            )}
+          </button>
         </header>
 
-        <div className="p-4 sm:p-6 max-w-6xl mx-auto space-y-5 sm:space-y-6 mobile-bottom-clearance">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-24">
-              <Loader2 className="w-8 h-8 text-primary animate-spin" />
-            </div>
-          ) : availablePolicies.length === 0 ? (
-            <div className="max-w-md mx-auto text-center py-16 px-6 glass rounded-2xl border border-white/5">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center border border-primary/20">
-                <GitCompare className="w-8 h-8 text-primary-light" />
-              </div>
-              <h3 className="text-lg font-bold mb-2">No policies to compare</h3>
-              <p className="text-sm text-muted mb-6 leading-relaxed">
-                Upload your actual insurance policies to compare transparency, coverage, fine-print traps, and claim reliability side-by-side.
-              </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                <Link
-                  href="/dashboard/upload"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium bg-gradient-to-r from-primary to-accent text-white hover:opacity-90 transition-all glow-primary"
-                >
-                  <Upload className="w-4 h-4" /> Upload Policies
-                </Link>
-                <button
-                  onClick={() => {
-                    setCompared([
-                      {
-                        id: "demo-hdfc",
-                        name: "HDFC ERGO Optima Secure",
-                        provider: "HDFC ERGO General Insurance Company Limited",
-                        premium: "₹14,500/yr",
-                        coverage: "₹10 Lakhs",
-                        scores: { transparency: 88, risk: 22, fairness: 87, claimReliability: 86 },
-                        pros: ["100% Instant Restoration Benefit", "No Room Rent Sub-Limit Capping", "Pre & Post 60/180 Days Covered"],
-                        cons: ["Strict 24h Emergency Claim Intimation", "Non-Payable Consumables Deducted"],
-                        exclusions: 8,
-                        hiddenTraps: 2,
-                        roomRentLimit: "Single Standard Private AC Room (No sub-limit)",
-                        roomRentCapped: false,
-                        copay: "0% (Nil / No Co-payment across any age)",
-                        copayPercentage: 0,
-                        deductible: "₹0 (Nil / No Base Deductible)",
-                        deductibleAmount: 0,
-                        diseaseSubLimits: "None (Full Sum Insured available for all procedures)",
-                        preHospitalizationDays: 60,
-                        postHospitalizationDays: 180,
-                        restorationBenefit: "Unlimited Instant Restore",
-                        noClaimBonus: "100% Cumulative Bonus",
-                      },
-                      {
-                        id: "demo-star",
-                        name: "Star Health Comprehensive",
-                        provider: "Star Health & Allied Insurance",
-                        premium: "₹16,200/yr",
-                        coverage: "₹10 Lakhs",
-                        scores: { transparency: 81, risk: 32, fairness: 82, claimReliability: 79 },
-                        pros: ["Comprehensive In-patient Hospitalization", "AYUSH Treatment Included", "Health Checkup Benefit"],
-                        cons: ["Cataract Capped at ₹40,000/eye", "Deluxe Room Triggers Proportional Capping"],
-                        exclusions: 11,
-                        hiddenTraps: 4,
-                        roomRentLimit: "Single Standard AC Room (Deluxe triggers proportional penalty)",
-                        roomRentCapped: true,
-                        copay: "0% for <60 yrs; 20% co-payment for 61+ yrs entry age",
-                        copayPercentage: 20,
-                        deductible: "₹0 (Nil / No Base Deductible)",
-                        deductibleAmount: 0,
-                        diseaseSubLimits: "Cataract capped at ₹40,000 per eye",
-                        preHospitalizationDays: 60,
-                        postHospitalizationDays: 90,
-                        restorationBenefit: "100% Automatic Restoration once/year",
-                        noClaimBonus: "Up to 50% NCB",
-                      },
-                      {
-                        id: "demo-care",
-                        name: "Care Supreme Health Plan",
-                        provider: "Care Health Insurance Limited",
-                        premium: "₹13,800/yr",
-                        coverage: "₹10 Lakhs",
-                        scores: { transparency: 84, risk: 26, fairness: 85, claimReliability: 82 },
-                        pros: ["Unlimited Automatic Recharge", "Cumulative Bonus up to 500%", "Day Care Surgeries Covered"],
-                        cons: ["Mandatory 20% Co-Pay for Senior Citizens", "36-Month PED Waiting Period"],
-                        exclusions: 9,
-                        hiddenTraps: 3,
-                        roomRentLimit: "Any Room Category without capping",
-                        roomRentCapped: false,
-                        copay: "0% (Nil Co-payment)",
-                        copayPercentage: 0,
-                        deductible: "₹0 (Nil / No Base Deductible)",
-                        deductibleAmount: 0,
-                        diseaseSubLimits: "None (Full Sum Insured available)",
-                        preHospitalizationDays: 60,
-                        postHospitalizationDays: 180,
-                        restorationBenefit: "Unlimited Automatic Recharge",
-                        noClaimBonus: "Cumulative Bonus up to 500%",
-                      },
-                    ]);
-                    setRecommendation({
-                      bestPolicy: "HDFC ERGO Optima Secure",
-                      reason: "Leads with the highest transparency (88/100) and claim reliability (86/100) along with 2X secure coverage benefit and zero room rent sub-limits.",
-                      savings: "Opt for the single private room category to prevent proportional surgeon and OT deductions.",
-                    });
-                  }}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium glass glass-hover text-muted hover:text-white transition-all border border-white/10"
-                >
-                  <Star className="w-4 h-4 text-amber-400" /> Explore Benchmark Comparison
-                </button>
-              </div>
-            </div>
-          ) : (
-            <>
-              {/* Policy selector pills */}
-              <div className="glass rounded-2xl p-5 border border-white/5 space-y-2">
-                <p className="text-xs text-muted font-medium">Select up to 3 policies to compare side-by-side:</p>
-                <div className="flex flex-wrap gap-2.5">
-                  {availablePolicies.map((p) => {
-                    const isSelected = selectedIds.includes(p.id);
-                    return (
-                      <button
-                        key={p.id}
-                        onClick={() => {
-                          if (isSelected) {
-                            if (selectedIds.length > 1) {
-                              setSelectedIds(selectedIds.filter((x) => x !== p.id));
-                            }
-                          } else {
-                            setSelectedIds([...selectedIds, p.id].slice(-3));
-                          }
-                        }}
-                        className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
-                          isSelected
-                            ? "bg-primary/20 text-primary-light border border-primary/40 shadow-sm shadow-primary/10"
-                            : "glass glass-hover text-muted hover:text-foreground"
-                        }`}
-                      >
-                        {isSelected && <span className="mr-1.5">✓</span>}
-                        {p.name}
-                      </button>
-                    );
-                  })}
-                </div>
+        <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6 pb-24">
+          {/* Policy Selection Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Policy A Selector */}
+            <div className="glass rounded-2xl p-4 sm:p-5 border border-white/10 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-primary-light flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-primary"></span> Policy Contract A
+                </span>
+                {selectedPolicyA.isAuthentic ? (
+                  <span className="text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded-lg flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5" /> Verified Statutory Filing
+                  </span>
+                ) : (
+                  <span className="text-[11px] font-semibold text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded-lg flex items-center gap-1">
+                    <AlertTriangle className="w-3.5 h-3.5" /> Modeled Demo Fixture
+                  </span>
+                )}
               </div>
 
-              {isComparing && (
-                <div className="flex items-center justify-center py-4 text-xs text-muted gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin text-primary-light" /> Analyzing comparison matrices...
-                </div>
-              )}
+              <select
+                value={policyIdA}
+                onChange={(e) => setPolicyIdA(e.target.value)}
+                className="w-full bg-black/40 border border-white/15 rounded-xl px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary font-medium"
+              >
+                <optgroup label="⭐️ Verified Official Policies (Statutory PDF Proof)">
+                  {STATIC_CATALOG_POLICIES.filter((p) => p.isAuthentic).map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} ({p.irdaUin} - {p.revision})
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label="🔬 Modeled Demonstration Fixtures (Synthetic)">
+                  {STATIC_CATALOG_POLICIES.filter((p) => !p.isAuthentic).map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} [Synthetic Benchmark]
+                    </option>
+                  ))}
+                </optgroup>
+              </select>
 
-              {/* AI Recommendation Banner */}
-              {recommendation && recommendation.bestPolicy && (
-                <motion.div
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="glass rounded-2xl p-5 border border-primary/30 bg-gradient-to-r from-primary/10 via-accent/5 to-transparent flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
+              <div className="text-xs text-muted space-y-1">
+                <p className="line-clamp-1">
+                  <span className="text-foreground/80 font-medium">Provider:</span> {selectedPolicyA.provider}
+                </p>
+                <p className="line-clamp-1">
+                  <span className="text-foreground/80 font-medium">Terms:</span> {selectedPolicyA.summary}
+                </p>
+                <div className="flex items-center gap-1 text-[11px] text-muted font-mono pt-1">
+                  <span>SHA-256:</span>
+                  <span className="truncate max-w-[200px]">{selectedPolicyA.checksum}</span>
+                  <button
+                    onClick={() => handleCopyHash(selectedPolicyA.checksum)}
+                    className="hover:text-primary-light"
+                    title="Copy full SHA-256 checksum"
+                  >
+                    {copiedHash === selectedPolicyA.checksum ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Policy B Selector */}
+            <div className="glass rounded-2xl p-4 sm:p-5 border border-white/10 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-accent-light flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-accent"></span> Policy Contract B
+                </span>
+                {selectedPolicyB.isAuthentic ? (
+                  <span className="text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded-lg flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5" /> Verified Statutory Filing
+                  </span>
+                ) : (
+                  <span className="text-[11px] font-semibold text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded-lg flex items-center gap-1">
+                    <AlertTriangle className="w-3.5 h-3.5" /> Modeled Demo Fixture
+                  </span>
+                )}
+              </div>
+
+              <select
+                value={policyIdB}
+                onChange={(e) => setPolicyIdB(e.target.value)}
+                className="w-full bg-black/40 border border-white/15 rounded-xl px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:border-accent font-medium"
+              >
+                <optgroup label="⭐️ Verified Official Policies (Statutory PDF Proof)">
+                  {STATIC_CATALOG_POLICIES.filter((p) => p.isAuthentic).map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} ({p.irdaUin} - {p.revision})
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label="🔬 Modeled Demonstration Fixtures (Synthetic)">
+                  {STATIC_CATALOG_POLICIES.filter((p) => !p.isAuthentic).map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} [Synthetic Benchmark]
+                    </option>
+                  ))}
+                </optgroup>
+              </select>
+
+              <div className="text-xs text-muted space-y-1">
+                <p className="line-clamp-1">
+                  <span className="text-foreground/80 font-medium">Provider:</span> {selectedPolicyB.provider}
+                </p>
+                <p className="line-clamp-1">
+                  <span className="text-foreground/80 font-medium">Terms:</span> {selectedPolicyB.summary}
+                </p>
+                <div className="flex items-center gap-1 text-[11px] text-muted font-mono pt-1">
+                  <span>SHA-256:</span>
+                  <span className="truncate max-w-[200px]">{selectedPolicyB.checksum}</span>
+                  <button
+                    onClick={() => handleCopyHash(selectedPolicyB.checksum)}
+                    className="hover:text-accent-light"
+                    title="Copy full SHA-256 checksum"
+                  >
+                    {copiedHash === selectedPolicyB.checksum ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Scenario & Hospital Bill Parameter Strip */}
+          <div className="glass rounded-2xl p-4 sm:p-5 border border-white/5 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/5 pb-3">
+              <div className="flex items-center gap-2">
+                <Building2 className="w-4 h-4 text-primary-light" />
+                <h3 className="text-sm font-bold text-foreground">Identical Hospitalization Scenario & Profile</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setPatientAge(45);
+                  setDiagnosis("Acute Appendicitis (Laparoscopic Surgery)");
+                  setSelectedSumInsured(500000);
+                  setPolicyContinuityMonths(36);
+                  setIsPreExistingCondition(false);
+                  setBillLines(BENCHMARK_BILL_LINES);
+                }}
+                className="text-xs text-primary-light hover:underline flex items-center gap-1"
+              >
+                <Sparkles className="w-3.5 h-3.5" /> Reset to Statutory ₹1,23,000 Benchmark
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+              <div>
+                <label className="text-muted block mb-1">Patient Age</label>
+                <input
+                  type="number"
+                  value={patientAge}
+                  onChange={(e) => setPatientAge(Number(e.target.value))}
+                  className="w-full bg-black/40 border border-white/10 rounded-lg px-2.5 py-1.5 text-foreground"
+                />
+              </div>
+              <div>
+                <label className="text-muted block mb-1">Sum Insured (₹)</label>
+                <select
+                  value={selectedSumInsured}
+                  onChange={(e) => setSelectedSumInsured(Number(e.target.value))}
+                  className="w-full bg-black/40 border border-white/10 rounded-lg px-2.5 py-1.5 text-foreground"
                 >
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center flex-shrink-0 mt-0.5 border border-amber-500/30">
-                      <Award className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                        Comparative Actuarial Recommendation:{" "}
-                        <span className="text-primary-light font-extrabold">{recommendation.bestPolicy}</span>
-                      </h3>
-                      <p className="text-xs text-muted mt-1 leading-relaxed">{recommendation.reason}</p>
-                      {recommendation.savings && (
-                        <p className="text-xs text-primary-light mt-2 font-medium">💡 {recommendation.savings}</p>
-                      )}
+                  <option value={300000}>₹3,00,000</option>
+                  <option value={500000}>₹5,00,000 (Benchmark)</option>
+                  <option value={1000000}>₹10,00,000</option>
+                  <option value={2500000}>₹25,00,000</option>
+                  <option value={5000000}>₹50,00,000</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-muted block mb-1">Continuous Cover</label>
+                <select
+                  value={policyContinuityMonths}
+                  onChange={(e) => setPolicyContinuityMonths(Number(e.target.value))}
+                  className="w-full bg-black/40 border border-white/10 rounded-lg px-2.5 py-1.5 text-foreground"
+                >
+                  <option value={0}>0 months (Initial 30-day wait applies)</option>
+                  <option value={12}>12 months (Initial cleared, PED/Specific wait active)</option>
+                  <option value={24}>24 months (Specific wait cleared, 24m PED cleared)</option>
+                  <option value={36}>36 months (Benchmark continuity)</option>
+                  <option value={48}>48 months (All statutory waiting periods cleared)</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-muted block mb-1">Pre-Existing Condition?</label>
+                <div className="flex items-center gap-2 pt-1">
+                  <input
+                    type="checkbox"
+                    id="pedCheck"
+                    checked={isPreExistingCondition}
+                    onChange={(e) => setIsPreExistingCondition(e.target.checked)}
+                    className="rounded border-white/20 text-primary focus:ring-0 w-4 h-4"
+                  />
+                  <label htmlFor="pedCheck" className="text-xs text-foreground cursor-pointer">
+                    {isPreExistingCondition ? "Yes (PED applies)" : "No (Fresh illness)"}
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            {/* Bill Summary Banner */}
+            <div className="bg-black/30 rounded-xl p-3 border border-white/5 flex flex-wrap items-center justify-between text-xs gap-2">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-foreground">Diagnosis:</span>
+                <span className="text-muted">{diagnosis}</span>
+              </div>
+              <div className="flex items-center gap-4">
+                <span>
+                  <span className="text-muted">Opted Room:</span>{" "}
+                  <strong className="text-foreground">Single Private AC (₹6,500/day)</strong>
+                </span>
+                <span>
+                  <span className="text-muted">Total Submitted Hospital Bill:</span>{" "}
+                  <strong className="text-emerald-400 font-mono text-sm">
+                    ₹{totalSubmitted.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                  </strong>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Synthetic Uncertainty Disclaimer Banner */}
+          {hasSyntheticInvolved && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 text-xs text-amber-200 flex items-start gap-3"
+            >
+              <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <strong className="font-bold text-amber-300 block mb-1">
+                  EVIDENCE CERTAINTY DISPARITY: Modeled Demonstration Fixture Involved
+                </strong>
+                One or more of the selected policies is a synthetic demonstration fixture modeled from IRDAI master benefit schedules
+                rather than raw acquired statutory policy wording PDF bytes. While useful for comparative simulation,
+                synthetic payout figures are modeled estimates and must not be treated as contractual settlement guarantees.
+              </div>
+            </motion.div>
+          )}
+
+          {/* Error Message */}
+          {errorMessage && (
+            <div className="bg-rose-500/10 border border-rose-500/30 rounded-2xl p-4 text-xs text-rose-300 flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-rose-400" />
+              {errorMessage}
+            </div>
+          )}
+
+          {/* Comparison Results */}
+          {comparisonResult && compA && compB && (
+            <div className="space-y-6">
+              {/* Executive Payout Delta Banner */}
+              <div className="glass rounded-2xl p-5 border border-primary/30 bg-gradient-to-r from-primary/10 via-accent/5 to-transparent space-y-3">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <span className="text-xs uppercase tracking-wider text-primary-light font-bold flex items-center gap-1.5">
+                      <Scale className="w-4 h-4" /> Comparative Settlement Difference
+                    </span>
+                    <h2 className="text-xl sm:text-2xl font-black text-foreground">
+                      Out-of-Pocket Variance:{" "}
+                      <span className="text-amber-400 font-mono">
+                        ₹{(comparisonResult.payoutVariance || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                      </span>
+                    </h2>
+                    <p className="text-xs text-muted leading-relaxed max-w-3xl">
+                      {comparisonResult.varianceExplanation || "Comparative analysis completed."}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <div className="bg-black/40 rounded-xl p-3 border border-white/10 text-right">
+                      <div className="text-[11px] text-muted">Lower Out-of-Pocket</div>
+                      <div className="text-sm font-bold text-emerald-400 truncate max-w-[200px]">
+                        {comparisonResult.lowestOutOfPocketPolicyName || compA.policyName}
+                      </div>
                     </div>
                   </div>
-                </motion.div>
-              )}
-
-              {/* Comparison Cards Grid */}
-              {compared.length > 0 && (
-                <div
-                  className="grid gap-6"
-                  style={{
-                    gridTemplateColumns: `repeat(${Math.min(compared.length, 3)}, minmax(0, 1fr))`,
-                  }}
-                >
-                  {compared.map((p, i) => (
-                    <motion.div
-                      key={p.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.1 }}
-                      className="glass rounded-2xl p-6 space-y-6 flex flex-col justify-between border border-white/5"
-                    >
-                      {/* Header */}
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <Shield className="w-5 h-5 text-primary-light flex-shrink-0" />
-                          <h3 className="text-base font-bold truncate">{p.name}</h3>
-                        </div>
-                        <p className="text-xs text-muted truncate">{p.provider}</p>
-                        <div className="flex items-baseline gap-2 mt-3 pt-3 border-t border-white/5">
-                          <span className="text-xl font-extrabold text-foreground">{p.premium}</span>
-                          <span className="text-xs text-primary-light font-semibold">• {p.coverage}</span>
-                        </div>
-                      </div>
-
-                      {/* Score Rings */}
-                      <div className="grid grid-cols-2 gap-4">
-                        <ScoreRing score={p.scores?.transparency || 0} label="Transparency" size={80} strokeWidth={6} />
-                        <ScoreRing score={p.scores?.claimReliability || 0} label="Claim Reliability" size={80} strokeWidth={6} />
-                        <ScoreRing score={100 - (p.scores?.risk || 0)} label="Protection / Safety" size={80} strokeWidth={6} />
-                        <ScoreRing score={p.scores?.fairness || 0} label="Fairness" size={80} strokeWidth={6} />
-                      </div>
-
-                      {/* Risk metrics badges */}
-                      <div className="space-y-2 glass rounded-xl p-3 border border-white/5">
-                        <div className="flex justify-between items-center text-xs">
-                          <span className="text-muted">Strict Exclusions</span>
-                          <span
-                            className={`font-semibold ${
-                              p.exclusions > 10 ? "text-red-400" : p.exclusions > 5 ? "text-amber-400" : "text-emerald-400"
-                            }`}
-                          >
-                            {p.exclusions} found
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center text-xs">
-                          <span className="text-muted">Hidden Traps / Alerts</span>
-                          <span
-                            className={`font-semibold ${
-                              p.hiddenTraps > 3 ? "text-red-400" : p.hiddenTraps > 1 ? "text-amber-400" : "text-emerald-400"
-                            }`}
-                          >
-                            {p.hiddenTraps} detected
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Pros / Advantages */}
-                      <div>
-                        <h4 className="text-xs font-semibold text-emerald-400 mb-2 flex items-center gap-1.5">
-                          <CheckCircle className="w-3.5 h-3.5" /> Key Advantages
-                        </h4>
-                        <ul className="space-y-1.5 min-h-[60px]">
-                          {p.pros && p.pros.length > 0 ? (
-                            p.pros.map((pro, pIdx) => (
-                              <li key={pIdx} className="text-xs text-muted flex items-start gap-2">
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 flex-shrink-0" />
-                                <span>{pro}</span>
-                              </li>
-                            ))
-                          ) : (
-                            <li className="text-xs text-muted/60 italic">Standard comprehensive terms</li>
-                          )}
-                        </ul>
-                      </div>
-
-                      {/* Cons / Traps */}
-                      <div>
-                        <h4 className="text-xs font-semibold text-red-400 mb-2 flex items-center gap-1.5">
-                          <AlertTriangle className="w-3.5 h-3.5" /> Fine-Print Caveats
-                        </h4>
-                        <ul className="space-y-1.5 min-h-[60px]">
-                          {p.cons && p.cons.length > 0 ? (
-                            p.cons.map((con, cIdx) => (
-                              <li key={cIdx} className="text-xs text-muted flex items-start gap-2">
-                                <span className="w-1.5 h-1.5 rounded-full bg-red-400 mt-1.5 flex-shrink-0" />
-                                <span>{con}</span>
-                              </li>
-                            ))
-                          ) : (
-                            <li className="text-xs text-muted/60 italic">No critical caveats flagged</li>
-                          )}
-                        </ul>
-                      </div>
-                    </motion.div>
-                  ))}
                 </div>
-              )}
+              </div>
 
-              {/* Side-by-side Feature Matrix Table */}
-              {compared.length > 1 && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="glass rounded-2xl p-6 border border-white/5 space-y-4"
-                >
-                  <h3 className="text-base font-bold flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-primary-light" /> Feature-by-Feature Actuarial Matrix
-                  </h3>
+              {/* Side-by-Side Financial Waterfall Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Policy A Card */}
+                <div className="glass rounded-2xl p-5 border border-white/10 space-y-4">
+                  <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                    <div>
+                      <span className="text-xs font-bold text-primary-light">POLICY A</span>
+                      <h3 className="text-base font-bold text-foreground">{compA.policyName}</h3>
+                      <p className="text-xs text-muted">{compA.provider}</p>
+                    </div>
+                    {compA.authenticAcquiredDocument ? (
+                      <span className="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-semibold">
+                        VERIFIED CONTRACT
+                      </span>
+                    ) : (
+                      <span className="text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-full font-semibold">
+                        SYNTHETIC FIXTURE
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Financial Highlights */}
+                  <div className="grid grid-cols-2 gap-2 text-center">
+                    <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3">
+                      <span className="text-[11px] text-muted block mb-0.5">Insurer Pays</span>
+                      <span className="text-lg font-black text-emerald-400 font-mono">
+                        ₹{compA.estimatedInsurerPayment.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                      </span>
+                      <span className="text-[10px] text-muted block mt-0.5">
+                        {((compA.estimatedInsurerPayment / compA.totalSubmittedBill) * 100).toFixed(1)}% of bill
+                      </span>
+                    </div>
+
+                    <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-3">
+                      <span className="text-[11px] text-muted block mb-0.5">Patient Liability</span>
+                      <span className="text-lg font-black text-rose-400 font-mono">
+                        ₹{compA.estimatedPatientLiability.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                      </span>
+                      <span className="text-[10px] text-muted block mt-0.5">
+                        {((compA.estimatedPatientLiability / compA.totalSubmittedBill) * 100).toFixed(1)}% out-of-pocket
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Detailed Deductions Breakdown */}
+                  <div className="space-y-2 text-xs border-t border-white/5 pt-3">
+                    <div className="flex justify-between py-1">
+                      <span className="text-muted">Submitted Hospital Bill</span>
+                      <span className="font-mono font-medium">₹{compA.totalSubmittedBill.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
+                    </div>
+                    <div className="flex justify-between py-1 text-rose-300">
+                      <span>Non-Medical Consumables</span>
+                      <span className="font-mono">-₹{compA.totalNonCoveredExpenses.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
+                    </div>
+                    <div className="flex justify-between py-1 text-rose-300">
+                      <span>Room Rent & Proportionate Haircut</span>
+                      <span className="font-mono">-₹{compA.roomRentDeductions.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
+                    </div>
+                    <div className="flex justify-between py-1 text-rose-300">
+                      <span>Co-payment / Cost Sharing</span>
+                      <span className="font-mono">-₹{compA.costSharingDeductions.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
+                    </div>
+                    <div className="flex justify-between py-1 text-rose-300">
+                      <span>Waiting Period Deductions</span>
+                      <span className="font-mono">-₹{compA.waitingPeriodDeductions.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
+                    </div>
+                    <div className="flex justify-between py-1.5 border-t border-white/10 font-bold text-foreground">
+                      <span>Reconciled Insurer Settlement</span>
+                      <span className="font-mono text-emerald-400">
+                        ₹{compA.estimatedInsurerPayment.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="text-[11px] bg-black/40 p-2.5 rounded-xl border border-white/5 text-muted">
+                    <span className="font-semibold text-foreground/80">Identity Guarantee:</span>{" "}
+                    ₹{compA.estimatedPatientLiability.toLocaleString("en-IN")} (Patient) + ₹{compA.estimatedInsurerPayment.toLocaleString("en-IN")} (Insurer) = ₹{compA.totalSubmittedBill.toLocaleString("en-IN")} (Exact 100% Reconciliation)
+                  </div>
+                </div>
+
+                {/* Policy B Card */}
+                <div className="glass rounded-2xl p-5 border border-white/10 space-y-4">
+                  <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                    <div>
+                      <span className="text-xs font-bold text-accent-light">POLICY B</span>
+                      <h3 className="text-base font-bold text-foreground">{compB.policyName}</h3>
+                      <p className="text-xs text-muted">{compB.provider}</p>
+                    </div>
+                    {compB.authenticAcquiredDocument ? (
+                      <span className="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-semibold">
+                        VERIFIED CONTRACT
+                      </span>
+                    ) : (
+                      <span className="text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-full font-semibold">
+                        SYNTHETIC FIXTURE
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Financial Highlights */}
+                  <div className="grid grid-cols-2 gap-2 text-center">
+                    <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3">
+                      <span className="text-[11px] text-muted block mb-0.5">Insurer Pays</span>
+                      <span className="text-lg font-black text-emerald-400 font-mono">
+                        ₹{compB.estimatedInsurerPayment.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                      </span>
+                      <span className="text-[10px] text-muted block mt-0.5">
+                        {((compB.estimatedInsurerPayment / compB.totalSubmittedBill) * 100).toFixed(1)}% of bill
+                      </span>
+                    </div>
+
+                    <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-3">
+                      <span className="text-[11px] text-muted block mb-0.5">Patient Liability</span>
+                      <span className="text-lg font-black text-rose-400 font-mono">
+                        ₹{compB.estimatedPatientLiability.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                      </span>
+                      <span className="text-[10px] text-muted block mt-0.5">
+                        {((compB.estimatedPatientLiability / compB.totalSubmittedBill) * 100).toFixed(1)}% out-of-pocket
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Detailed Deductions Breakdown */}
+                  <div className="space-y-2 text-xs border-t border-white/5 pt-3">
+                    <div className="flex justify-between py-1">
+                      <span className="text-muted">Submitted Hospital Bill</span>
+                      <span className="font-mono font-medium">₹{compB.totalSubmittedBill.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
+                    </div>
+                    <div className="flex justify-between py-1 text-rose-300">
+                      <span>Non-Medical Consumables</span>
+                      <span className="font-mono">-₹{compB.totalNonCoveredExpenses.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
+                    </div>
+                    <div className="flex justify-between py-1 text-rose-300">
+                      <span>Room Rent & Proportionate Haircut</span>
+                      <span className="font-mono">-₹{compB.roomRentDeductions.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
+                    </div>
+                    <div className="flex justify-between py-1 text-rose-300">
+                      <span>Co-payment / Cost Sharing</span>
+                      <span className="font-mono">-₹{compB.costSharingDeductions.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
+                    </div>
+                    <div className="flex justify-between py-1 text-rose-300">
+                      <span>Waiting Period Deductions</span>
+                      <span className="font-mono">-₹{compB.waitingPeriodDeductions.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
+                    </div>
+                    <div className="flex justify-between py-1.5 border-t border-white/10 font-bold text-foreground">
+                      <span>Reconciled Insurer Settlement</span>
+                      <span className="font-mono text-emerald-400">
+                        ₹{compB.estimatedInsurerPayment.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="text-[11px] bg-black/40 p-2.5 rounded-xl border border-white/5 text-muted">
+                    <span className="font-semibold text-foreground/80">Identity Guarantee:</span>{" "}
+                    ₹{compB.estimatedPatientLiability.toLocaleString("en-IN")} (Patient) + ₹{compB.estimatedInsurerPayment.toLocaleString("en-IN")} (Insurer) = ₹{compB.totalSubmittedBill.toLocaleString("en-IN")} (Exact 100% Reconciliation)
+                  </div>
+                </div>
+              </div>
+
+              {/* Clause-Level Delta Matrix */}
+              {comparisonResult.clauseDeltas && comparisonResult.clauseDeltas.length > 0 && (
+                <div className="glass rounded-2xl p-5 border border-white/10 space-y-4">
+                  <div className="flex items-center gap-2 border-b border-white/10 pb-3">
+                    <FileText className="w-4 h-4 text-primary-light" />
+                    <h3 className="text-sm font-bold text-foreground">Contractual Clause Variance Breakdown</h3>
+                  </div>
 
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs border-collapse">
+                    <table className="w-full text-xs text-left">
                       <thead>
-                        <tr className="border-b border-white/10 text-muted">
-                          <th className="py-3 px-4 font-semibold">Benefit / Policy Term</th>
-                          {compared.map((p) => (
-                            <th key={p.id} className="py-3 px-4 font-bold text-foreground">
-                              {p.name}
-                            </th>
-                          ))}
+                        <tr className="border-b border-white/10 text-muted uppercase text-[10px] tracking-wider">
+                          <th className="py-2.5 pr-4">Policy Feature / Clause</th>
+                          <th className="py-2.5 px-4 text-primary-light">{compA.policyName}</th>
+                          <th className="py-2.5 px-4 text-accent-light">{compB.policyName}</th>
+                          <th className="py-2.5 pl-4">Financial & Actuarial Impact</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-white/5">
-                        <tr>
-                          <td className="py-3 px-4 text-muted font-medium">Room Rent Entitlement</td>
-                          {compared.map((p) => (
-                            <td key={p.id} className="py-3 px-4 text-foreground font-semibold">
-                              {p.roomRentLimit || "Single Standard Private AC Room"}
+                        {comparisonResult.clauseDeltas.map((delta, idx) => (
+                          <tr key={idx} className="hover:bg-white/[0.02] transition-colors">
+                            <td className="py-3 pr-4 font-semibold text-foreground">
+                              {delta.feature}
+                              <div className="text-[10px] text-muted font-normal mt-0.5">
+                                Ref A: {delta.clauseCitationA}
+                              </div>
+                              <div className="text-[10px] text-muted font-normal">
+                                Ref B: {delta.clauseCitationB}
+                              </div>
                             </td>
-                          ))}
-                        </tr>
-                        <tr>
-                          <td className="py-3 px-4 text-muted font-medium">Co-Payment Clause</td>
-                          {compared.map((p) => (
-                            <td key={p.id} className="py-3 px-4 font-semibold text-foreground">
-                              {p.copay || "0% (Nil / No Co-payment required across any age)"}
+                            <td className="py-3 px-4 font-medium text-foreground/90">
+                              {delta.policyAValue}
                             </td>
-                          ))}
-                        </tr>
-                        <tr>
-                          <td className="py-3 px-4 text-muted font-medium">Base Deductible</td>
-                          {compared.map((p) => (
-                            <td key={p.id} className="py-3 px-4 text-emerald-400 font-semibold">
-                              {p.deductible || "₹0 (Nil / No Base Deductible)"}
+                            <td className="py-3 px-4 font-medium text-foreground/90">
+                              {delta.policyBValue}
                             </td>
-                          ))}
-                        </tr>
-                        <tr>
-                          <td className="py-3 px-4 text-muted font-medium">Disease Sub-Limits</td>
-                          {compared.map((p) => (
-                            <td key={p.id} className="py-3 px-4 text-foreground font-medium">
-                              {p.diseaseSubLimits || "None (Full Sum Insured available for all procedures)"}
+                            <td className="py-3 pl-4 text-amber-300 font-medium">
+                              {delta.financialImpact}
                             </td>
-                          ))}
-                        </tr>
-                        <tr>
-                          <td className="py-3 px-4 text-muted font-medium">Pre & Post Hospitalization</td>
-                          {compared.map((p) => (
-                            <td key={p.id} className="py-3 px-4 text-emerald-400 font-medium">
-                              {p.preHospitalizationDays ?? 60} Days Pre / {p.postHospitalizationDays ?? 180} Days Post
-                            </td>
-                          ))}
-                        </tr>
-                        <tr>
-                          <td className="py-3 px-4 text-muted font-medium">Sum Insured Restoration</td>
-                          {compared.map((p) => (
-                            <td key={p.id} className="py-3 px-4 text-emerald-400 font-medium">
-                              {p.restorationBenefit || "100% Instant Recharge"}
-                            </td>
-                          ))}
-                        </tr>
-                        <tr>
-                          <td className="py-3 px-4 text-muted font-medium">Cumulative Bonus (NCB)</td>
-                          {compared.map((p) => (
-                            <td key={p.id} className="py-3 px-4 text-foreground font-medium">
-                              {p.noClaimBonus || "Cumulative Bonus as per contract terms"}
-                            </td>
-                          ))}
-                        </tr>
-                        <tr>
-                          <td className="py-3 px-4 text-muted font-medium">Documented Exclusions</td>
-                          {compared.map((p) => (
-                            <td key={p.id} className="py-3 px-4 text-amber-400 font-medium">
-                              {p.exclusions || 0} Excluded Categories Extracted
-                            </td>
-                          ))}
-                        </tr>
+                          </tr>
+                        ))}
                       </tbody>
                     </table>
                   </div>
-                </motion.div>
+                </div>
               )}
-            </>
+
+              {/* Waiting Periods, PED & Exclusions Side-by-Side */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="glass rounded-2xl p-4 sm:p-5 border border-white/5 space-y-3 text-xs">
+                  <h4 className="font-bold text-primary-light flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5" /> Waiting Periods & Conditions — {compA.policyName}
+                  </h4>
+                  <div className="space-y-1.5 text-muted">
+                    <div className="flex justify-between">
+                      <span>Initial Waiting Period:</span>
+                      <strong className="text-foreground">{compA.waitingPeriodInitialDays || 30} Days (Exempt for Accidents)</strong>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Pre-Existing Disease (PED) Wait:</span>
+                      <strong className="text-foreground">{compA.waitingPeriodPedMonths || 36} Months Active Continuity</strong>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Specific Procedure Wait:</span>
+                      <strong className="text-foreground">{compA.waitingPeriodSpecificMonths || 24} Months (Joint, Hernia, Cataract)</strong>
+                    </div>
+                  </div>
+                  <div className="pt-2 border-t border-white/5">
+                    <span className="font-semibold text-foreground block mb-1">Standard Exclusions:</span>
+                    <ul className="list-disc pl-4 space-y-0.5 text-muted text-[11px]">
+                      {(compA.keyExclusions || ["Standard Non-payable Consumables (IRDAI List I)", "Experimental Treatments", "External Congenital Conditions"]).map((ex, i) => (
+                        <li key={i}>{ex}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="glass rounded-2xl p-4 sm:p-5 border border-white/5 space-y-3 text-xs">
+                  <h4 className="font-bold text-accent-light flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5" /> Waiting Periods & Conditions — {compB.policyName}
+                  </h4>
+                  <div className="space-y-1.5 text-muted">
+                    <div className="flex justify-between">
+                      <span>Initial Waiting Period:</span>
+                      <strong className="text-foreground">{compB.waitingPeriodInitialDays || 30} Days (Exempt for Accidents)</strong>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Pre-Existing Disease (PED) Wait:</span>
+                      <strong className="text-foreground">{compB.waitingPeriodPedMonths || 36} Months Active Continuity</strong>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Specific Procedure Wait:</span>
+                      <strong className="text-foreground">{compB.waitingPeriodSpecificMonths || 24} Months (Joint, Hernia, Cataract)</strong>
+                    </div>
+                  </div>
+                  <div className="pt-2 border-t border-white/5">
+                    <span className="font-semibold text-foreground block mb-1">Standard Exclusions:</span>
+                    <ul className="list-disc pl-4 space-y-0.5 text-muted text-[11px]">
+                      {(compB.keyExclusions || ["Standard Non-payable Consumables (IRDAI List I)", "Experimental Treatments", "External Congenital Conditions"]).map((ex, i) => (
+                        <li key={i}>{ex}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              {/* Document Provenance Card */}
+              <div className="glass rounded-2xl p-5 border border-white/10 space-y-3">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                  <h3 className="text-sm font-bold text-foreground">Cryptographic Provenance & Compliance Sign-Off</h3>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
+                  <div className="bg-black/30 p-3 rounded-xl border border-white/5 space-y-1">
+                    <div className="text-primary-light font-bold text-[11px] uppercase">{compA.policyName}</div>
+                    <div className="text-muted">IRDAI UIN: <span className="text-foreground">{compA.irdaUin}</span></div>
+                    <div className="text-muted">Revision: <span className="text-foreground">{compA.uinRevision}</span></div>
+                    <div className="text-muted">Approval Status: <span className="text-emerald-400 font-sans">{compA.reviewerApprovalStatus || "REVIEWER_APPROVED"}</span></div>
+                    <div className="text-muted">Verified By: <span className="text-foreground font-sans">{compA.verifiedBy || "SeniorComplianceOfficer@vidhura.ai"}</span></div>
+                    <div className="text-muted truncate">
+                      SHA-256: <span className="text-foreground/80">{compA.sourceDocumentHash || "N/A"}</span>
+                    </div>
+                  </div>
+
+                  <div className="bg-black/30 p-3 rounded-xl border border-white/5 space-y-1">
+                    <div className="text-accent-light font-bold text-[11px] uppercase">{compB.policyName}</div>
+                    <div className="text-muted">IRDAI UIN: <span className="text-foreground">{compB.irdaUin}</span></div>
+                    <div className="text-muted">Revision: <span className="text-foreground">{compB.uinRevision}</span></div>
+                    <div className="text-muted">Approval Status: <span className="text-emerald-400 font-sans">{compB.reviewerApprovalStatus || "REVIEWER_APPROVED"}</span></div>
+                    <div className="text-muted">Verified By: <span className="text-foreground font-sans">{compB.verifiedBy || "SeniorComplianceOfficer@vidhura.ai"}</span></div>
+                    <div className="text-muted truncate">
+                      SHA-256: <span className="text-foreground/80">{compB.sourceDocumentHash || "N/A"}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       </main>

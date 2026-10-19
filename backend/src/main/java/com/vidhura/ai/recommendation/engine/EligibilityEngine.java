@@ -67,7 +67,13 @@ public class EligibilityEngine {
 
             // 2. Family Type Check
             if (rules.getAllowedFamilyTypes() != null && !rules.getAllowedFamilyTypes().isEmpty()) {
-                if (!rules.getAllowedFamilyTypes().contains(profile.getInsuranceType())) {
+                String reqType = profile.getInsuranceType();
+                boolean matches = rules.getAllowedFamilyTypes().contains(reqType);
+                if (!matches && ("FAMILY_FLOATER".equalsIgnoreCase(reqType) || "FLOATER".equalsIgnoreCase(reqType))) {
+                    matches = rules.getAllowedFamilyTypes().contains("SELF_AND_SPOUSE")
+                            || rules.getAllowedFamilyTypes().contains("FAMILY_WITH_CHILDREN");
+                }
+                if (!matches) {
                     failReasons.add(String.format("Family type '%s' is not supported. Allowed: %s",
                             profile.getInsuranceType(), String.join(", ", rules.getAllowedFamilyTypes())));
                 }
@@ -125,6 +131,60 @@ public class EligibilityEngine {
                     warnings.add(String.format("Your zone '%s' may have different pricing. Allowed zones: %s",
                             profile.getDetectedZone(), String.join(", ", rules.getAllowedZones())));
                 }
+            }
+
+            // 6. User Specific Requirement Checks (Maternity, OPD, Copay)
+            StructuredPolicy.ContractTerms terms = policy.getContractTerms();
+            if (terms != null) {
+                if (profile.isMaternityBenefitNeeded() && !terms.isMaternityCovered()) {
+                    warnings.add("Notice: You requested maternity coverage, but this plan does not offer maternity or newborn benefits.");
+                }
+                if (profile.isOpdBenefitNeeded() && !terms.isOpdCovered()) {
+                    warnings.add("Notice: You requested OPD coverage, but this plan does not cover outpatient consultations.");
+                }
+                if ("NONE".equalsIgnoreCase(profile.getCopayTolerance()) && terms.getCopayPercentage() > 0) {
+                    warnings.add(String.format("Notice: This plan carries a %.0f%% mandatory co-payment despite your preference for zero co-payment.",
+                            terms.getCopayPercentage()));
+                }
+            }
+
+            // 7. Strict Budget Hard Filter (Phase 3 Hard Filter)
+            if (("STRICT".equalsIgnoreCase(profile.getBudgetType()) || "MAX_HARD_LIMIT".equalsIgnoreCase(profile.getBudgetType()))
+                    && profile.getAnnualBudget() > 0) {
+                double estPremium = RankingEngine.estimatePremium(policy, profile);
+                if (estPremium > profile.getAnnualBudget()) {
+                    failReasons.add(String.format("Estimated annual premium ₹%,.0f exceeds strict maximum budget of ₹%,.0f",
+                            estPremium, profile.getAnnualBudget()));
+                }
+            }
+
+            // 8. Senior Citizen Copay Hard Filter (Phase 3)
+            boolean hasSeniorMember = profile.getPrimaryAge() >= 60 ||
+                    (profile.getMembers() != null && profile.getMembers().stream().anyMatch(m -> m.getAge() >= 60));
+            if (hasSeniorMember && "NONE".equalsIgnoreCase(profile.getCopayTolerance()) && terms != null && terms.getCopayPercentage() >= 20.0) {
+                failReasons.add(String.format("Mandatory senior citizen co-payment of %.0f%% violates your zero co-payment requirement",
+                        terms.getCopayPercentage()));
+            }
+
+            // 9. Critical Permanent Exclusion Filter (Phase 3)
+            if (profile.getLikelyTreatmentNeeds() != null && !profile.getLikelyTreatmentNeeds().isBlank()
+                    && !"COMPREHENSIVE".equalsIgnoreCase(profile.getLikelyTreatmentNeeds()) && policy.getExclusions() != null) {
+                String need = profile.getLikelyTreatmentNeeds().trim();
+                String needNorm = need.toLowerCase();
+                for (String excl : policy.getExclusions()) {
+                    String exclNorm = excl.toLowerCase();
+                    if (exclNorm.contains(needNorm) || (needNorm.contains("maternity") && exclNorm.contains("maternity"))) {
+                        failReasons.add(String.format("Requested treatment '%s' is permanently excluded under policy exclusions (%s)",
+                                need, excl));
+                        break;
+                    }
+                }
+            }
+
+            // 10. Synthetic Demonstration Fixture Isolation Gate (Phase 3 Provenance Gate)
+            boolean catalogHasAuthentic = catalog.stream().anyMatch(StructuredPolicy::isAuthenticAcquiredDocument);
+            if (catalogHasAuthentic && policy.isSyntheticFixture() && !profile.isIncludeDemoFixtures()) {
+                failReasons.add("Disqualified demonstration fixture: Authentic verified policies exist in catalog and includeDemoFixtures is false.");
             }
 
             boolean eligible = failReasons.isEmpty();

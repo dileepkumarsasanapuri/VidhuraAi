@@ -24,6 +24,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -50,6 +51,22 @@ public class SecurityConfig {
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/api/auth/register", "/api/auth/login", "/api/auth/google", "/api/auth/refresh",
                                 "/api/auth/forgot-password", "/api/auth/verify-otp", "/api/auth/reset-password").permitAll()
+                        // Public / client read endpoints for catalog policies and statistics
+                        .requestMatchers(org.springframework.http.HttpMethod.GET,
+                                "/api/policies", "/api/policies/catalog/**", "/api/catalog/**", "/api/catalog", "/api/policies/catalog/stats", "/api/catalog/stats").permitAll()
+                        // Strict Role-Based Access Control: Mutating governance actions strictly require ROLE_ADMIN or ROLE_REVIEWER
+                        .requestMatchers("/api/policies/discover", "/api/catalog/discover").hasAnyRole("ADMIN", "REVIEWER")
+                        .requestMatchers("/api/policies/*/verify", "/api/catalog/*/verify", "/api/policies/verify/*", "/api/catalog/verify/*").hasAnyRole("ADMIN", "REVIEWER")
+                        .requestMatchers("/api/policies/*/flag", "/api/catalog/*/flag", "/api/policies/flag/*", "/api/catalog/flag/*").hasAnyRole("ADMIN", "REVIEWER")
+                        .requestMatchers("/api/policies/*/rollback", "/api/catalog/*/rollback", "/api/policies/rollback/*", "/api/catalog/rollback/*").hasAnyRole("ADMIN", "REVIEWER")
+                        .requestMatchers("/api/policies/cache/refresh", "/api/catalog/cache/refresh", "/api/policies/refresh", "/api/catalog/refresh").hasAnyRole("ADMIN", "REVIEWER")
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/policies/sources/**", "/api/catalog/sources/**", "/api/policies/crawl-all", "/api/catalog/crawl-all").hasAnyRole("ADMIN", "REVIEWER")
+
+                        // Read-Only inspection and benchmark evaluation endpoints: Allowed for Reviewers, Admins, and Audit Guests
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/policies/drafts", "/api/catalog/drafts").hasAnyRole("ADMIN", "REVIEWER", "GUEST")
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/policies/sources", "/api/catalog/sources").hasAnyRole("ADMIN", "REVIEWER", "GUEST")
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/policies/documents", "/api/catalog/documents").hasAnyRole("ADMIN", "REVIEWER", "GUEST")
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/policies/quality-report", "/api/catalog/quality-report", "/api/policies/benchmark/**", "/api/catalog/benchmark/**").hasAnyRole("ADMIN", "REVIEWER", "GUEST")
                         .anyRequest().permitAll()
                 );
 

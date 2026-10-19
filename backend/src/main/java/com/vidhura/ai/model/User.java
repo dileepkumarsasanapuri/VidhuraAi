@@ -39,6 +39,9 @@ public class User {
     private String avatar = "";
 
     @Builder.Default
+    private String role = "ROLE_USER"; // ROLE_USER, ROLE_ADMIN, ROLE_REVIEWER
+
+    @Builder.Default
     private UserSettings settings = new UserSettings();
 
     @CreatedDate
