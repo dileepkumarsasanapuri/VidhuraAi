@@ -500,6 +500,82 @@ class ApiClient {
       body: JSON.stringify(data),
     });
   }
+
+  getInsurerMetrics(insurerCode: string, reportingPeriod?: string) {
+    const params = reportingPeriod ? `?reportingPeriod=${encodeURIComponent(reportingPeriod)}` : "";
+    return this.request<{
+      success: boolean;
+      message?: string;
+      data: InsurerPerformanceSummary;
+    }>(`/external-evidence/metrics/${encodeURIComponent(insurerCode)}${params}`);
+  }
+
+  getHospitalNetwork(params: { insurer?: string; city?: string; pinCode?: string }) {
+    const q = new URLSearchParams();
+    if (params.insurer) q.append("insurer", params.insurer);
+    if (params.city) q.append("city", params.city);
+    if (params.pinCode) q.append("pinCode", params.pinCode);
+    const qs = q.toString() ? `?${q.toString()}` : "";
+    return this.request<{
+      success: boolean;
+      message?: string;
+      count?: number;
+      data: HospitalNetworkSummary;
+    }>(`/external-evidence/hospitals${qs}`);
+  }
+
+  getQuote(params: {
+    policyCode: string;
+    age: number;
+    sumInsured: number;
+    pinCode?: string;
+    familyConstruct?: string;
+  }) {
+    const q = new URLSearchParams();
+    q.append("policyCode", params.policyCode);
+    q.append("age", String(params.age));
+    q.append("sumInsured", String(params.sumInsured));
+    if (params.pinCode) q.append("pinCode", params.pinCode);
+    if (params.familyConstruct) q.append("familyConstruct", params.familyConstruct);
+    return this.request<{
+      success: boolean;
+      message?: string;
+      data: QuoteDetail;
+    }>(`/external-evidence/quotes?${q.toString()}`);
+  }
+
+  ingestEvidence(data: IngestEvidenceRequest) {
+    return this.request<{
+      success: boolean;
+      message?: string;
+      data: EvidenceRecord;
+    }>("/external-evidence/ingest", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  verifyEvidence(recordId: string, data: VerifyEvidenceRequest) {
+    return this.request<{
+      success: boolean;
+      message?: string;
+      data: EvidenceRecord;
+    }>(`/external-evidence/verify/${encodeURIComponent(recordId)}`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  ingestHospital(data: IngestHospitalRequest) {
+    return this.request<{
+      success: boolean;
+      message?: string;
+      data: HospitalNode;
+    }>("/external-evidence/hospitals/ingest", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
 }
 
 // Types
@@ -1357,6 +1433,153 @@ export interface ClaimComparisonResponse {
   clauseDeltas?: ClauseDelta[];
   disclaimer: string;
   evaluatedAt: string;
+}
+
+export interface InsurerPerformanceSummary {
+  insurerCode: string;
+  insurerName?: string;
+  reportingPeriod: string;
+  incurredClaimRatio?: string;
+  incurredClaimRatioValue?: number;
+  settlementRatioLessThan3Months?: string;
+  settlementRatioLessThan3MonthsValue?: number;
+  annualSettlementRatio?: string;
+  annualSettlementRatioValue?: number;
+  repudiationRatio?: string;
+  repudiationRatioValue?: number;
+  complaintsPer10kClaims?: string;
+  complaintsPer10kClaimsValue?: number;
+  solvencyRatio?: string;
+  solvencyRatioValue?: number;
+  claimTurnaroundDays?: string;
+  claimTurnaroundDaysValue?: number;
+  overallPerformanceRating: "EXCELLENT" | "VERY_GOOD" | "STANDARD" | "REQUIRES_ATTENTION" | "REQUIRES_VERIFICATION";
+  statutorySourceTitle?: string;
+  statutoryDocumentHash?: string;
+  sourceUrl?: string;
+  verificationStatus: string;
+  verifiedStatutory: boolean;
+}
+
+export interface HospitalNode {
+  hospitalId: string;
+  hospitalName: string;
+  registryRohiniCode: string;
+  address?: string;
+  city: string;
+  pinCode: string;
+  latitude?: number;
+  longitude?: number;
+  category?: string;
+  cashlessActive: boolean;
+  tier: string;
+  agreementValidUntil?: string;
+  verificationStatus: string;
+}
+
+export interface HospitalNetworkSummary {
+  insurerCode: string;
+  city?: string;
+  pinCode?: string;
+  totalNetworkHospitalsInCity: number;
+  preferredTier1Count: number;
+  secondaryCount: number;
+  cashlessAccessibilityScore: number;
+  verificationBadge: string;
+  hospitals: HospitalNode[];
+}
+
+export interface QuoteDetail {
+  quoteId: string;
+  policyCode: string;
+  uinRevision?: string;
+  insurerCode: string;
+  sumInsured: number;
+  age: number;
+  pinCode?: string;
+  zone?: string;
+  familyConstruct: string;
+  quotedAnnualPremium: number;
+  quotedBasePremium?: number;
+  quotedGst?: number;
+  quotingChannel: string;
+  quoteTimestamp: string;
+  quoteReferenceNumber?: string;
+  sourceDocumentHash?: string;
+  isAuthentic: boolean;
+  verificationStatus: string;
+  formattedAnnualPremium: string;
+  isStale: boolean;
+}
+
+export interface EvidenceRecord {
+  id: string;
+  evidenceType: string;
+  insurerCode: string;
+  insurerName?: string;
+  metricCategory: string;
+  metricKey: string;
+  metricValue: string;
+  numericValue: number;
+  metricUnit?: string;
+  reportingPeriod: string;
+  publicationDate?: string;
+  sourceDocumentTitle: string;
+  sourceUrl: string;
+  sourceDocumentHash: string;
+  citationPageNumber?: number;
+  citationTableReference?: string;
+  verificationStatus: string;
+  verifiedBy?: string;
+  verifiedAt?: string;
+  verificationNotes?: string;
+  ingestionTimestamp: string;
+}
+
+export interface IngestEvidenceRequest {
+  evidenceType: string;
+  insurerCode: string;
+  insurerName?: string;
+  metricCategory: string;
+  metricKey: string;
+  metricValue: string;
+  numericValue: number;
+  metricUnit?: string;
+  reportingPeriod: string;
+  publicationDate?: string;
+  sourceDocumentTitle: string;
+  sourceUrl: string;
+  sourceDocumentHash: string;
+  citationPageNumber?: number;
+  citationTableReference?: string;
+  verificationNotes?: string;
+}
+
+export interface VerifyEvidenceRequest {
+  verificationStatus: string;
+  verificationNotes?: string;
+}
+
+export interface IngestHospitalRequest {
+  hospitalId: string;
+  hospitalName: string;
+  registryRohiniCode: string;
+  address?: string;
+  city: string;
+  state?: string;
+  pinCode: string;
+  latitude?: number;
+  longitude?: number;
+  category?: string;
+  cashlessAgreements: Array<{
+    insurerCode: string;
+    insurerName?: string;
+    cashlessActive: boolean;
+    tier?: string;
+    agreementValidUntil?: string;
+    sourceDocumentHash?: string;
+    verificationStatus?: string;
+  }>;
 }
 
 export const api = new ApiClient();
