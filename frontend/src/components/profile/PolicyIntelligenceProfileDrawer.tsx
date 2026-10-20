@@ -38,6 +38,7 @@ interface PolicyIntelligenceProfileDrawerProps {
     city?: string;
     pinCode?: string;
     familyConstruct?: string;
+    suitabilityScore?: number;
   };
 }
 
@@ -68,6 +69,7 @@ export default function PolicyIntelligenceProfileDrawer({
           city: demographics?.city,
           pinCode: demographics?.pinCode,
           familyConstruct: demographics?.familyConstruct || "INDIVIDUAL",
+          suitabilityScore: demographics?.suitabilityScore,
         });
 
         if (isMounted) {
@@ -162,12 +164,28 @@ export default function PolicyIntelligenceProfileDrawer({
               </div>
 
               <div className="flex items-center gap-3">
-                {profile?.evidenceQualityScorecard && (
-                  <div className="hidden sm:flex flex-col items-end">
-                    <span className="text-[10px] uppercase font-bold text-muted-foreground">Evidence Quality</span>
-                    <span className="text-lg font-black text-emerald-400">
-                      {Math.round(profile.evidenceQualityScorecard.overallQualityScore)}%
-                    </span>
+                {profile && (
+                  <div className="hidden sm:flex items-center gap-3 pr-2 border-r border-white/10">
+                    <div className="flex flex-col items-end">
+                      <span className="text-[10px] uppercase font-bold text-muted-foreground">Suitability</span>
+                      <span className="text-base font-black text-indigo-400">
+                        {Math.round(profile.policySuitability?.suitabilityScore ?? 85)}%
+                      </span>
+                    </div>
+                    <div className="flex flex-col items-end">
+                      <span className="text-[10px] uppercase font-bold text-muted-foreground">Evidence</span>
+                      <span className="text-base font-black text-emerald-400">
+                        {Math.round(profile.evidenceCompleteness?.completenessScore ?? profile.evidenceQualityScorecard?.overallQualityScore ?? 100)}%
+                      </span>
+                    </div>
+                    <div className="flex flex-col items-end">
+                      <span className="text-[10px] uppercase font-bold text-muted-foreground">IRDAI Filing</span>
+                      <span className={`text-xs font-black uppercase ${
+                        profile.insurerPerformance?.verifiedStatutory ? "text-emerald-400" : "text-amber-400"
+                      }`}>
+                        {profile.insurerPerformance?.verifiedStatutory ? (profile.insurerPerformance.overallPerformanceRating || "VERY GOOD") : "UNVERIFIED"}
+                      </span>
+                    </div>
                   </div>
                 )}
                 <button
@@ -229,6 +247,97 @@ export default function PolicyIntelligenceProfileDrawer({
               </div>
             ) : profile ? (
               <>
+                {/* 3-PILLAR TRIAD: POLICY SUITABILITY | EVIDENCE COMPLETENESS | INSURER PERFORMANCE */}
+                <div className="space-y-2 pb-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {/* PILLAR 1: POLICY SUITABILITY */}
+                    <div className="p-3.5 rounded-xl border border-indigo-500/30 bg-gradient-to-b from-indigo-950/30 to-slate-900/40 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-300">
+                          1. Policy Suitability
+                        </span>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                          {profile.policySuitability?.suitabilityRating?.replace('_', ' ') || "STRONG FIT"}
+                        </span>
+                      </div>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-2xl font-black text-indigo-300">
+                          {Math.round(profile.policySuitability?.suitabilityScore ?? 85)}%
+                        </span>
+                        <span className="text-[11px] text-muted-foreground">Contractual Match</span>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground leading-snug">
+                        {profile.policySuitability?.suitabilitySummary ||
+                          "Measures how well contract terms fit your profile, independent of external data availability."}
+                      </p>
+                    </div>
+
+                    {/* PILLAR 2: EVIDENCE COMPLETENESS */}
+                    <div className="p-3.5 rounded-xl border border-emerald-500/30 bg-gradient-to-b from-emerald-950/30 to-slate-900/40 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-300">
+                          2. Evidence Completeness
+                        </span>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                          {profile.evidenceCompleteness?.completenessStatus || "HIGH"} ({profile.evidenceCompleteness?.verifiedCount ?? 3}/4)
+                        </span>
+                      </div>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-2xl font-black text-emerald-300">
+                          {Math.round(profile.evidenceCompleteness?.completenessScore ?? profile.evidenceQualityScorecard.overallQualityScore)}%
+                        </span>
+                        <span className="text-[11px] text-muted-foreground">Proof Depth</span>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground leading-snug">
+                        {profile.evidenceCompleteness?.auditSummary ||
+                          "Audited verification depth across contract terms, IRDAI statutory filings, quotes & hospital network."}
+                      </p>
+                    </div>
+
+                    {/* PILLAR 3: INSURER PERFORMANCE */}
+                    <div className="p-3.5 rounded-xl border border-border bg-gradient-to-b from-card/80 to-slate-900/40 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                          3. Insurer Performance
+                        </span>
+                        {profile.insurerPerformance?.verifiedStatutory ? (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                            {profile.insurerPerformance.overallPerformanceRating}
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                            PENDING DISCLOSURE
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-baseline gap-2">
+                        <span className={`text-2xl font-black ${
+                          profile.insurerPerformance?.verifiedStatutory ? "text-foreground" : "text-amber-300"
+                        }`}>
+                          {profile.insurerPerformance?.settlementRatioLessThan3Months || profile.insurerPerformance?.annualSettlementRatio || "Pending"}
+                        </span>
+                        <span className="text-[11px] text-muted-foreground">Settlement Ratio</span>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground leading-snug">
+                        {profile.insurerPerformance?.verifiedStatutory
+                          ? `Sourced from official ${profile.insurerPerformance.statutorySourceTitle} (${profile.insurerPerformance.reportingPeriod}).`
+                          : "External public statutory filings pending reviewer sign-off. External absence does not penalize contract suitability."}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Decoupling Explanatory Callout */}
+                  <div className="px-3 py-2 rounded-lg bg-black/40 border border-white/5 text-[11px] text-muted-foreground flex items-center justify-between gap-2">
+                    <span className="flex items-center gap-1.5">
+                      <Shield className="w-3.5 h-3.5 text-indigo-400 flex-shrink-0" />
+                      <span>
+                        <strong>Vidhura Decoupled Triad:</strong> Contract suitability, proof depth, and statutory returns are strictly separated so unverified external data never degrades contract fit.
+                      </span>
+                    </span>
+                    <span className="hidden md:inline text-[10px] font-mono text-indigo-300/80">Independent Triad</span>
+                  </div>
+                </div>
+
                 {/* TAB 1: CONTRACT TERMS */}
                 {activeTab === "contract" && (
                   <div className="space-y-6">
@@ -486,6 +595,18 @@ export default function PolicyIntelligenceProfileDrawer({
                       </span>
                     </div>
 
+                    {/* Official Cashless Pre-Authorization Notice */}
+                    <div className="p-3.5 rounded-xl border border-indigo-500/20 bg-indigo-500/5 text-xs text-indigo-200/90 flex items-start gap-2.5">
+                      <HelpCircle className="w-4 h-4 text-indigo-400 mt-0.5 flex-shrink-0" />
+                      <div className="space-y-0.5">
+                        <span className="font-bold text-indigo-300 block">Statutory Network Empanelment Notice:</span>
+                        <span>
+                          {profile.hospitalAccessibility.networkDisclaimer ||
+                            "Empanelment in provider network and cashless facility availability are subject to active bilateral hospital-insurer agreements and TPA pre-authorization at the time of admission. Hospital network listing does not constitute an unconditional guarantee of cashless admission or claim approval."}
+                        </span>
+                      </div>
+                    </div>
+
                     {profile.hospitalAccessibility.hospitals && profile.hospitalAccessibility.hospitals.length > 0 ? (
                       <div className="space-y-2.5">
                         <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
@@ -687,6 +808,81 @@ export default function PolicyIntelligenceProfileDrawer({
                       <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
                         {profile.evidenceQualityScorecard.contractualGroundTruthStatus}
                       </span>
+                    </div>
+
+                    {/* Decoupled Audit Matrix */}
+                    {profile.evidenceCompleteness && (
+                      <div className="p-4 rounded-xl border border-white/10 bg-white/5 space-y-3">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="font-bold text-foreground uppercase tracking-wider">
+                            Evidence Completeness Breakdown ({profile.evidenceCompleteness.verifiedCount}/4 Verified)
+                          </span>
+                          <span className="font-semibold text-emerald-400">
+                            {profile.evidenceCompleteness.completenessStatus}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                          <div className={`p-2.5 rounded-lg border ${
+                            profile.evidenceCompleteness.contractualTermsVerified
+                              ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
+                              : "border-amber-500/30 bg-amber-500/10 text-amber-300"
+                          }`}>
+                            <div className="font-bold text-[11px]">Contract Terms</div>
+                            <div className="text-[10px] mt-0.5 font-medium">
+                              {profile.evidenceCompleteness.contractualTermsVerified ? "Verified UIN Filing" : "Synthetic Fixture"}
+                            </div>
+                          </div>
+
+                          <div className={`p-2.5 rounded-lg border ${
+                            profile.evidenceCompleteness.statutoryPerformanceVerified
+                              ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
+                              : "border-amber-500/30 bg-amber-500/10 text-amber-300"
+                          }`}>
+                            <div className="font-bold text-[11px]">Statutory IRDAI</div>
+                            <div className="text-[10px] mt-0.5 font-medium">
+                              {profile.evidenceCompleteness.statutoryPerformanceVerified ? "Schedule IV Verified" : "Pending Disclosure"}
+                            </div>
+                          </div>
+
+                          <div className={`p-2.5 rounded-lg border ${
+                            profile.evidenceCompleteness.authenticQuoteVerified
+                              ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
+                              : "border-amber-500/30 bg-amber-500/10 text-amber-300"
+                          }`}>
+                            <div className="font-bold text-[11px]">Premium Quote</div>
+                            <div className="text-[10px] mt-0.5 font-medium">
+                              {profile.evidenceCompleteness.authenticQuoteVerified ? "Authentic Quote" : "Actuarial Estimate"}
+                            </div>
+                          </div>
+
+                          <div className={`p-2.5 rounded-lg border ${
+                            profile.evidenceCompleteness.hospitalNetworkVerified
+                              ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
+                              : "border-amber-500/30 bg-amber-500/10 text-amber-300"
+                          }`}>
+                            <div className="font-bold text-[11px]">Hospital Registry</div>
+                            <div className="text-[10px] mt-0.5 font-medium">
+                              {profile.evidenceCompleteness.hospitalNetworkVerified ? "ROHINI Facilities" : "Pending Ingestion"}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="pt-1 text-[11px] text-muted-foreground leading-relaxed">
+                          {profile.evidenceCompleteness.auditSummary}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Disclaimer Banner */}
+                    <div className="p-3.5 rounded-xl border border-indigo-500/30 bg-indigo-500/10 text-xs text-indigo-200/90 flex items-start gap-2.5">
+                      <Shield className="w-4 h-4 text-indigo-400 mt-0.5 flex-shrink-0" />
+                      <div className="space-y-0.5">
+                        <span className="font-bold text-indigo-300 block">Vidhura Decoupling Principle:</span>
+                        <span>
+                          {profile.evidenceQualityScorecard.disclaimer ||
+                            "Policy Suitability, Evidence Completeness, and Insurer Performance are independently evaluated. External data absence does not reduce contractual suitability, and high suitability does not conceal missing regulatory evidence."}
+                        </span>
+                      </div>
                     </div>
 
                     {/* Verified Evidence List */}

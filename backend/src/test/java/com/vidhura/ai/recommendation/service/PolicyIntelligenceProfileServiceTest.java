@@ -203,6 +203,21 @@ class PolicyIntelligenceProfileServiceTest {
         assertEquals("VERIFIED_AUTHENTIC_QUOTE", profile.getEvidenceQualityScorecard().getQuoteVerificationStatus());
         assertEquals("VERIFIED_HOSPITAL_REGISTRY", profile.getEvidenceQualityScorecard().getHospitalRegistryStatus());
         assertEquals(100.0, profile.getEvidenceQualityScorecard().getOverallQualityScore());
+        assertNotNull(profile.getEvidenceQualityScorecard().getDisclaimer());
+
+        // 7. Decoupled Triad Validation
+        assertNotNull(profile.getPolicySuitability());
+        assertTrue(profile.getPolicySuitability().isIndependentOfExternalEvidence());
+        assertTrue(profile.getPolicySuitability().getSuitabilityScore() > 0);
+
+        assertNotNull(profile.getEvidenceCompleteness());
+        assertEquals(100.0, profile.getEvidenceCompleteness().getCompletenessScore());
+        assertEquals("COMPLETE", profile.getEvidenceCompleteness().getCompletenessStatus());
+        assertEquals(4, profile.getEvidenceCompleteness().getVerifiedCount());
+        assertTrue(profile.getEvidenceCompleteness().isContractualTermsVerified());
+        assertTrue(profile.getEvidenceCompleteness().isStatutoryPerformanceVerified());
+        assertTrue(profile.getEvidenceCompleteness().isAuthenticQuoteVerified());
+        assertTrue(profile.getEvidenceCompleteness().isHospitalNetworkVerified());
     }
 
     @Test
@@ -228,7 +243,7 @@ class PolicyIntelligenceProfileServiceTest {
                 .insurerCode("UNKNOWN_INSURER")
                 .verificationStatus("UNVERIFIED")
                 .verifiedStatutory(false)
-                .overallPerformanceRating("REQUIRES_VERIFICATION")
+                .overallPerformanceRating("UNVERIFIED_PENDING_DISCLOSURE")
                 .build();
 
         // Empty hospital network
@@ -274,5 +289,15 @@ class PolicyIntelligenceProfileServiceTest {
         assertTrue(missing.stream().anyMatch(m -> m.contains("Insurer Performance")));
         assertTrue(missing.stream().anyMatch(m -> m.contains("Hospital Registry")));
         assertTrue(missing.stream().anyMatch(m -> m.contains("actuarial model estimate")));
+
+        // Decoupled Triad with Missing Data: Suitability remains independent, Evidence Completeness shows LIMITED
+        assertNotNull(profile.getPolicySuitability());
+        assertTrue(profile.getPolicySuitability().isIndependentOfExternalEvidence());
+        assertTrue(profile.getPolicySuitability().getSuitabilityScore() >= 60.0);
+
+        assertNotNull(profile.getEvidenceCompleteness());
+        assertEquals(0.0, profile.getEvidenceCompleteness().getCompletenessScore());
+        assertEquals("LIMITED", profile.getEvidenceCompleteness().getCompletenessStatus());
+        assertEquals(0, profile.getEvidenceCompleteness().getVerifiedCount());
     }
 }

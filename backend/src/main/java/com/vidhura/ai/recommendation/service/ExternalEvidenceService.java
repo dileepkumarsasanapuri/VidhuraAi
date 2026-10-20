@@ -181,7 +181,7 @@ public class ExternalEvidenceService {
             return ExternalEvidenceDto.InsurerPerformanceSummaryDto.builder()
                     .insurerCode(normCode)
                     .reportingPeriod(reportingPeriod != null ? reportingPeriod : "UNVERIFIED")
-                    .overallPerformanceRating("REQUIRES_VERIFICATION")
+                    .overallPerformanceRating("UNVERIFIED_PENDING_DISCLOSURE")
                     .verificationStatus("UNVERIFIED")
                     .verifiedStatutory(false)
                     .build();
@@ -244,7 +244,7 @@ public class ExternalEvidenceService {
         BigDecimal effectiveSettlement = settlement3m != null ? settlement3m : annualSettlement;
 
         if (effectiveSettlement == null) {
-            return "STANDARD";
+            return "UNVERIFIED_PENDING_DISCLOSURE";
         }
 
         double val = effectiveSettlement.doubleValue();
@@ -317,20 +317,27 @@ public class ExternalEvidenceService {
                     .findFirst();
 
             if (agreement.isPresent()) {
-                String tier = agreement.get().getTier();
-                if ("TIER_1_PREFERRED".equalsIgnoreCase(tier) || "GIPSA_PPN".equalsIgnoreCase(tier)) {
-                    preferredCount++;
-                } else {
-                    secondaryCount++;
+                HospitalNetworkNode.CashlessAgreement agr = agreement.get();
+                boolean isAgreementUnverified = agr.getVerificationStatus() != null &&
+                        agr.getVerificationStatus().toUpperCase().contains("UNVERIFIED");
+
+                if (!isAgreementUnverified) {
+                    String tier = agr.getTier();
+                    if ("TIER_1_PREFERRED".equalsIgnoreCase(tier) || "GIPSA_PPN".equalsIgnoreCase(tier)) {
+                        preferredCount++;
+                    } else {
+                        secondaryCount++;
+                    }
                 }
             }
             hospitalDtos.add(mapToHospitalDto(node, normInsurer));
         }
 
-        // Compute accessibility score (0 to 100) based on local availability
+        // Compute accessibility score (0 to 100) based on verified local availability
         int total = matchedNodes.size();
+        int verifiedCount = preferredCount + secondaryCount;
         double score = Math.min(100.0, (preferredCount * 25.0) + (secondaryCount * 10.0));
-        if (total == 0) score = 0.0;
+        if (verifiedCount == 0) score = 0.0;
 
         return ExternalEvidenceDto.HospitalNetworkSummaryDto.builder()
                 .insurerCode(normInsurer)
@@ -340,7 +347,8 @@ public class ExternalEvidenceService {
                 .preferredTier1Count(preferredCount)
                 .secondaryCount(secondaryCount)
                 .cashlessAccessibilityScore(score)
-                .verificationBadge(total > 0 ? "VERIFIED_HOSPITAL_REGISTRY" : "UNVERIFIED")
+                .verificationBadge(verifiedCount > 0 ? "VERIFIED_HOSPITAL_REGISTRY" : "UNVERIFIED_PENDING_REGISTRY_AUDIT")
+                .networkDisclaimer("Empanelment in provider network and cashless facility availability are subject to active bilateral hospital-insurer agreements and TPA pre-authorization at time of admission. Does not constitute guaranteed cashless approval.")
                 .hospitals(hospitalDtos)
                 .build();
     }
@@ -519,12 +527,18 @@ public class ExternalEvidenceService {
                 validUntil = agreement.getAgreementValidUntil();
                 boolean isAgreementExpired = validUntil != null && validUntil.isBefore(java.time.LocalDate.now());
 
+                boolean isAgreementUnverified = agreement.getVerificationStatus() != null &&
+                        agreement.getVerificationStatus().toUpperCase().contains("UNVERIFIED");
+
                 if (!agreement.isCashlessActive()) {
                     cashless = false;
                     status = "CASHLESS_INACTIVE";
                 } else if (isAgreementExpired) {
                     cashless = false;
                     status = "HISTORICAL_AGREEMENT_EXPIRED";
+                } else if (isAgreementUnverified) {
+                    cashless = false;
+                    status = agreement.getVerificationStatus();
                 } else {
                     cashless = true;
                     status = agreement.getVerificationStatus() != null ? agreement.getVerificationStatus() : "VERIFIED_OFFICIAL_DISCLOSURE";

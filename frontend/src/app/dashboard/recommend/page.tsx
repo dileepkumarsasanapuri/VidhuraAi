@@ -2583,6 +2583,7 @@ export default function RecommendPage() {
             sumInsured: desiredSumInsured,
             city: cityOrPincode,
             familyConstruct: insuranceType,
+            suitabilityScore: auditingPolicy?.overallMatchScore,
           }}
         />
       </main>

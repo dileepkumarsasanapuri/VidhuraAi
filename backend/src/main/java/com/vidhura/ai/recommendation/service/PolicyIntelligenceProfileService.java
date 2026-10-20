@@ -43,9 +43,24 @@ public class PolicyIntelligenceProfileService {
             String city,
             String pinCode,
             String familyConstruct) {
+        return getPolicyIntelligenceProfile(policyCodeOrId, age, sumInsured, city, pinCode, familyConstruct, null);
+    }
 
-        log.info("[PolicyIntelligenceProfile] Aggregating profile for policy='{}', age={}, SI={}, city='{}'",
-                policyCodeOrId, age, sumInsured, city);
+    /**
+     * Overloaded aggregator accepting custom suitability score from recommendation engine
+     * while guaranteeing decoupling between Suitability, Evidence Completeness, and Insurer Performance.
+     */
+    public PolicyIntelligenceProfileDto getPolicyIntelligenceProfile(
+            String policyCodeOrId,
+            int age,
+            BigDecimal sumInsured,
+            String city,
+            String pinCode,
+            String familyConstruct,
+            Double customSuitabilityScore) {
+
+        log.info("[PolicyIntelligenceProfile] Aggregating profile for policy='{}', age={}, SI={}, city='{}', customSuitability={}",
+                policyCodeOrId, age, sumInsured, city, customSuitabilityScore);
 
         // 1. Resolve structured policy from repository
         StructuredPolicy policy = policyRepository.findByPolicyCode(policyCodeOrId)
@@ -81,11 +96,21 @@ public class PolicyIntelligenceProfileService {
         PolicyIntelligenceProfileDto.BenchmarkClaimSimulationSummaryDto benchmarkClaim =
                 simulateStandardBenchmarkClaim(policy, rules, effectiveSI);
 
-        // 8. Build Evidence Quality Scorecard
+        // 8. Decoupled Triad: Build Policy Suitability (Contract fit, independent of external data)
+        PolicyIntelligenceProfileDto.PolicySuitabilityDto policySuitability =
+                buildPolicySuitability(policy, rules, customSuitabilityScore);
+
+        // 9. Decoupled Triad: Build Evidence Completeness (Depth of verified proof)
+        PolicyIntelligenceProfileDto.EvidenceCompletenessDto evidenceCompleteness =
+                buildEvidenceCompleteness(policy, insurerPerformance, quotation, hospitalAccessibility);
+
+        // 10. Build Evidence Quality Scorecard
         PolicyIntelligenceProfileDto.EvidenceQualityScorecardDto scorecard =
                 buildEvidenceQualityScorecard(policy, insurerPerformance, quotation, hospitalAccessibility);
 
         return PolicyIntelligenceProfileDto.builder()
+                .policySuitability(policySuitability)
+                .evidenceCompleteness(evidenceCompleteness)
                 .contractOverview(contractOverview)
                 .insurerPerformance(insurerPerformance)
                 .hospitalAccessibility(hospitalAccessibility)
@@ -285,9 +310,13 @@ public class PolicyIntelligenceProfileService {
         String hospitalStatus = "UNVERIFIED";
         if (hospitalNet != null && hospitalNet.getTotalNetworkHospitalsInCity() > 0) {
             hospitalStatus = hospitalNet.getVerificationBadge();
-            verifiedDisclosures.add("Hospital Registry: " + hospitalNet.getTotalNetworkHospitalsInCity()
-                    + " verified network facilities in selected region (" + hospitalNet.getPreferredTier1Count() + " Tier-1 Preferred)");
-            score += 10.0;
+            if ("VERIFIED_HOSPITAL_REGISTRY".equals(hospitalStatus)) {
+                verifiedDisclosures.add("Hospital Registry: " + hospitalNet.getTotalNetworkHospitalsInCity()
+                        + " verified network facilities in selected region (" + hospitalNet.getPreferredTier1Count() + " Tier-1 Preferred)");
+                score += 10.0;
+            } else {
+                pendingOrMissing.add("Hospital Registry: Regional hospital listings pending bilateral cashless verification audit.");
+            }
         } else {
             pendingOrMissing.add("Hospital Registry: Location-specific cashless hospital records pending official provider disclosure ingestion.");
         }
@@ -302,6 +331,115 @@ public class PolicyIntelligenceProfileService {
                 .pendingOrMissingDisclosures(pendingOrMissing)
                 .statutoryDocumentHash(statutoryHash)
                 .lastAuditedDate(policy.getLastAuditedDate() != null ? policy.getLastAuditedDate() : "2024-Q1")
+                .disclaimer("Policy Suitability, Evidence Completeness, and Insurer Performance are independently evaluated. External data absence does not reduce contractual suitability, and high suitability does not conceal missing regulatory evidence.")
+                .build();
+    }
+
+    private PolicyIntelligenceProfileDto.PolicySuitabilityDto buildPolicySuitability(
+            StructuredPolicy policy, ApprovedPolicyRuleResolver.ResolvedPolicyRules rules, Double customSuitabilityScore) {
+
+        double score;
+        List<String> keyFitFactors = new ArrayList<>();
+        List<String> potentialGaps = new ArrayList<>();
+
+        if (customSuitabilityScore != null && customSuitabilityScore > 0) {
+            score = customSuitabilityScore;
+            if (!rules.isRoomRentCapped()) {
+                keyFitFactors.add("No room rent sublimit: Inpatient room charges covered without proportionate deduction.");
+            }
+            if (rules.getCopayPercentage().compareTo(BigDecimal.ZERO) == 0) {
+                keyFitFactors.add("Zero mandatory co-payment: Insurer covers 100% of approved claim expenses.");
+            }
+        } else {
+            // Compute contract baseline suitability
+            double base = 70.0;
+            if (!rules.isRoomRentCapped()) {
+                base += 15.0;
+                keyFitFactors.add("No room rent sublimit: Covers up to single private room or sum insured without proportionate deduction penalty.");
+            } else {
+                base -= 8.0;
+                potentialGaps.add(String.format("Room rent capped at ₹%s/day: Exceeding room ceiling triggers proportionate deductions across associated medical charges.",
+                        rules.getRoomRentCapPerDay()));
+            }
+
+            if (rules.getCopayPercentage().compareTo(BigDecimal.ZERO) == 0) {
+                base += 10.0;
+                keyFitFactors.add("Zero mandatory co-payment: No co-pay deduction regardless of age or hospital network status.");
+            } else {
+                base -= 10.0;
+                potentialGaps.add(String.format("Mandatory %s%% co-payment on all hospital claims.", rules.getCopayPercentage()));
+            }
+
+            if (rules.getWaitingPeriodPedMonths() <= 24) {
+                base += 5.0;
+                keyFitFactors.add(String.format("Expedited pre-existing disease waiting period: Only %d months.", rules.getWaitingPeriodPedMonths()));
+            } else if (rules.getWaitingPeriodPedMonths() >= 48) {
+                potentialGaps.add(String.format("Standard %d-month pre-existing condition waiting period.", rules.getWaitingPeriodPedMonths()));
+            }
+
+            score = Math.min(95.0, Math.max(50.0, base));
+        }
+
+        String rating;
+        if (score >= 88.0) rating = "EXCELLENT_FIT";
+        else if (score >= 75.0) rating = "STRONG_FIT";
+        else if (score >= 60.0) rating = "MODERATE_FIT";
+        else rating = "CONDITIONAL_FIT";
+
+        String summary = String.format("Contract terms provide %s compatibility (%s/100). Suitability is strictly decoupled from external statutory disclosure availability.",
+                rating.toLowerCase().replace('_', ' '), Math.round(score));
+
+        return PolicyIntelligenceProfileDto.PolicySuitabilityDto.builder()
+                .suitabilityScore(score)
+                .suitabilityRating(rating)
+                .suitabilitySummary(summary)
+                .keyFitFactors(keyFitFactors)
+                .potentialGaps(potentialGaps)
+                .independentOfExternalEvidence(true)
+                .build();
+    }
+
+    private PolicyIntelligenceProfileDto.EvidenceCompletenessDto buildEvidenceCompleteness(
+            StructuredPolicy policy,
+            ExternalEvidenceDto.InsurerPerformanceSummaryDto insurerPerf,
+            ExternalEvidenceDto.QuoteDetailDto quotation,
+            ExternalEvidenceDto.HospitalNetworkSummaryDto hospitalNet) {
+
+        boolean contractVerified = !policy.isSyntheticFixture() && "VERIFIED_OFFICIAL_CATALOG".equals(policy.getVerificationStatus());
+        boolean perfVerified = insurerPerf != null && insurerPerf.isVerifiedStatutory();
+        boolean quoteVerified = quotation != null && quotation.isAuthentic() && !quotation.isStale();
+        boolean hospVerified = hospitalNet != null && "VERIFIED_HOSPITAL_REGISTRY".equals(hospitalNet.getVerificationBadge());
+
+        int verifiedCount = 0;
+        if (contractVerified) verifiedCount++;
+        if (perfVerified) verifiedCount++;
+        if (quoteVerified) verifiedCount++;
+        if (hospVerified) verifiedCount++;
+
+        double completenessScore = (verifiedCount / 4.0) * 100.0;
+        String status;
+        if (completenessScore >= 99.0) status = "COMPLETE";
+        else if (completenessScore >= 74.0) status = "HIGH";
+        else if (completenessScore >= 49.0) status = "PARTIAL";
+        else status = "LIMITED";
+
+        String audit = String.format("Verified %d of 4 core evidence dimensions (%s). Contract: %s, Statutory: %s, Quote: %s, Hospitals: %s.",
+                verifiedCount, status,
+                contractVerified ? "Verified Official Catalog" : (policy.isSyntheticFixture() ? "Synthetic Demo Fixture" : "Pending Verification"),
+                perfVerified ? "Verified Statutory IRDAI" : "Unverified Pending Filing",
+                quoteVerified ? "Verified Authentic Quote" : (quotation != null && quotation.isStale() ? "Expired Stale Quote" : "Actuarial Model Estimate"),
+                hospVerified ? ("Verified (" + hospitalNet.getTotalNetworkHospitalsInCity() + " Network Facilities)") : "Pending Regional Records");
+
+        return PolicyIntelligenceProfileDto.EvidenceCompletenessDto.builder()
+                .completenessScore(completenessScore)
+                .completenessStatus(status)
+                .contractualTermsVerified(contractVerified)
+                .statutoryPerformanceVerified(perfVerified)
+                .authenticQuoteVerified(quoteVerified)
+                .hospitalNetworkVerified(hospVerified)
+                .verifiedCount(verifiedCount)
+                .totalRequiredCount(4)
+                .auditSummary(audit)
                 .build();
     }
 

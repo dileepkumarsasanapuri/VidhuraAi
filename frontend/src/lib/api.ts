@@ -552,6 +552,7 @@ class ApiClient {
       city?: string;
       pinCode?: string;
       familyConstruct?: string;
+      suitabilityScore?: number;
     }
   ) {
     const q = new URLSearchParams();
@@ -560,6 +561,7 @@ class ApiClient {
     if (params?.city) q.append("city", params.city);
     if (params?.pinCode) q.append("pinCode", params.pinCode);
     if (params?.familyConstruct) q.append("familyConstruct", params.familyConstruct);
+    if (params?.suitabilityScore !== undefined) q.append("suitabilityScore", String(params.suitabilityScore));
     const qs = q.toString() ? `?${q.toString()}` : "";
     return this.request<{
       success: boolean;
@@ -1510,6 +1512,7 @@ export interface HospitalNetworkSummary {
   secondaryCount: number;
   cashlessAccessibilityScore: number;
   verificationBadge: string;
+  networkDisclaimer?: string;
   hospitals: HospitalNode[];
 }
 
@@ -1660,9 +1663,33 @@ export interface EvidenceQualityScorecard {
   pendingOrMissingDisclosures: string[];
   statutoryDocumentHash?: string;
   lastAuditedDate?: string;
+  disclaimer?: string;
+}
+
+export interface PolicySuitability {
+  suitabilityScore: number;
+  suitabilityRating: string;
+  suitabilitySummary: string;
+  keyFitFactors: string[];
+  potentialGaps: string[];
+  independentOfExternalEvidence: boolean;
+}
+
+export interface EvidenceCompleteness {
+  completenessScore: number;
+  completenessStatus: string;
+  contractualTermsVerified: boolean;
+  statutoryPerformanceVerified: boolean;
+  authenticQuoteVerified: boolean;
+  hospitalNetworkVerified: boolean;
+  verifiedCount: number;
+  totalRequiredCount: number;
+  auditSummary: string;
 }
 
 export interface PolicyIntelligenceProfile {
+  policySuitability: PolicySuitability;
+  evidenceCompleteness: EvidenceCompleteness;
   contractOverview: PolicyContractOverview;
   insurerPerformance: InsurerPerformanceSummary;
   hospitalAccessibility: HospitalNetworkSummary;

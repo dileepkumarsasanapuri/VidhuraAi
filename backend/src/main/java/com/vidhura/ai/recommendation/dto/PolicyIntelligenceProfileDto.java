@@ -20,12 +20,43 @@ import java.util.List;
 @AllArgsConstructor
 public class PolicyIntelligenceProfileDto {
 
+    private PolicySuitabilityDto policySuitability;
+    private EvidenceCompletenessDto evidenceCompleteness;
     private PolicyContractOverviewDto contractOverview;
     private ExternalEvidenceDto.InsurerPerformanceSummaryDto insurerPerformance;
     private ExternalEvidenceDto.HospitalNetworkSummaryDto hospitalAccessibility;
     private ExternalEvidenceDto.QuoteDetailDto premiumQuotation;
     private BenchmarkClaimSimulationSummaryDto benchmarkClaimSimulation;
     private EvidenceQualityScorecardDto evidenceQualityScorecard;
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class PolicySuitabilityDto {
+        private double suitabilityScore; // 0 to 100
+        private String suitabilityRating; // EXCELLENT_FIT, STRONG_FIT, MODERATE_FIT, CONDITIONAL_FIT
+        private String suitabilitySummary;
+        private List<String> keyFitFactors;
+        private List<String> potentialGaps;
+        private boolean independentOfExternalEvidence; // strictly true: missing external evidence never degrades contract fit
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class EvidenceCompletenessDto {
+        private double completenessScore; // 0 to 100
+        private String completenessStatus; // COMPLETE, HIGH, PARTIAL, LIMITED
+        private boolean contractualTermsVerified;
+        private boolean statutoryPerformanceVerified;
+        private boolean authenticQuoteVerified;
+        private boolean hospitalNetworkVerified;
+        private int verifiedCount;
+        private int totalRequiredCount;
+        private String auditSummary;
+    }
 
     @Data
     @Builder
@@ -93,5 +124,6 @@ public class PolicyIntelligenceProfileDto {
         private List<String> pendingOrMissingDisclosures;
         private String statutoryDocumentHash;
         private String lastAuditedDate;
+        private String disclaimer;
     }
 }

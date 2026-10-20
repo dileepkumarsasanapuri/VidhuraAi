@@ -72,13 +72,14 @@ class PolicyIntelligenceProfileControllerTest {
                 .build();
 
         when(profileService.getPolicyIntelligenceProfile(
-                eq("HDFC_OPTIMA_SECURE"), anyInt(), any(), any(), any(), any()))
+                eq("HDFC_OPTIMA_SECURE"), anyInt(), any(), any(), any(), any(), any()))
                 .thenReturn(mockDto);
 
         mockMvc.perform(get("/api/v1/policies/HDFC_OPTIMA_SECURE/intelligence-profile")
                         .param("age", "35")
                         .param("sumInsured", "1000000")
                         .param("city", "Mumbai")
+                        .param("suitabilityScore", "88.5")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))

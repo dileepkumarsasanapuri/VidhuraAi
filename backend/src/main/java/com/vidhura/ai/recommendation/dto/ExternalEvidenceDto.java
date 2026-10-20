@@ -175,6 +175,7 @@ public class ExternalEvidenceDto {
         private int secondaryCount;
         private double cashlessAccessibilityScore; // 0 to 100
         private String verificationBadge; // "VERIFIED_HOSPITAL_REGISTRY" or "UNVERIFIED"
+        private String networkDisclaimer;
 
         @Builder.Default
         private List<HospitalNodeDto> hospitals = new ArrayList<>();

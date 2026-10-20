@@ -39,13 +39,14 @@ public class PolicyIntelligenceProfileController {
             @RequestParam(defaultValue = "1000000") BigDecimal sumInsured,
             @RequestParam(required = false) String city,
             @RequestParam(required = false) String pinCode,
-            @RequestParam(defaultValue = "INDIVIDUAL") String familyConstruct) {
+            @RequestParam(defaultValue = "INDIVIDUAL") String familyConstruct,
+            @RequestParam(required = false) Double suitabilityScore) {
 
-        log.info("[PolicyIntelligenceProfileController] Request for policy='{}', age={}, SI={}, city='{}'",
-                policyCode, age, sumInsured, city);
+        log.info("[PolicyIntelligenceProfileController] Request for policy='{}', age={}, SI={}, city='{}', suitabilityScore={}",
+                policyCode, age, sumInsured, city, suitabilityScore);
 
         PolicyIntelligenceProfileDto profile = profileService.getPolicyIntelligenceProfile(
-                policyCode, age, sumInsured, city, pinCode, familyConstruct);
+                policyCode, age, sumInsured, city, pinCode, familyConstruct, suitabilityScore);
 
         return ResponseEntity.ok(ApiResponse.<PolicyIntelligenceProfileDto>builder()
                 .success(true)
