@@ -101,11 +101,11 @@ class PolicyDiscoveryAndIngestionTest {
 
     @Test
     void testCatalogEvaluatesFromMongoDbInsteadOfFixedList() {
-        // Initially 7 verified policies
+        // Initially 2 verified non-synthetic policies (under Phase 5.7 governance)
         List<StructuredPolicy> initialCatalog = recommendationService.getCatalog();
-        assertEquals(7, initialCatalog.size(), "Initial catalog should contain 7 verified policies from MongoDB");
+        assertEquals(2, initialCatalog.size(), "Initial catalog should contain 2 verified non-synthetic policies from MongoDB");
 
-        // Verify that adding an 8th verified policy in MongoDB dynamically expands the catalog without engine changes
+        // Verify that adding a verified policy in MongoDB dynamically expands the catalog without engine changes
         StructuredPolicy newPolicy = StructuredPolicy.builder()
                 .id(UUID.randomUUID().toString())
                 .policyCode("TATA_AIG_MEDICARE_PREMIER")
@@ -164,7 +164,7 @@ class PolicyDiscoveryAndIngestionTest {
         recommendationService.refreshCatalog();
 
         List<StructuredPolicy> expandedCatalog = recommendationService.getCatalog();
-        assertEquals(8, expandedCatalog.size(), "Catalog should now dynamically contain 8 policies from MongoDB");
+        assertEquals(3, expandedCatalog.size(), "Catalog should now dynamically contain 3 policies from MongoDB");
 
         // Run full recommendation pipeline with 8 policies
         RecommendationRequestDto request = RecommendationRequestDto.builder()
@@ -181,7 +181,7 @@ class PolicyDiscoveryAndIngestionTest {
 
         RecommendationResponseDto response = recommendationService.generateRecommendations("user-test", request);
         assertNotNull(response);
-        assertEquals(8, response.getTotalPoliciesEvaluated(), "Recommendation engine should evaluate all 8 policies from MongoDB without code change");
+        assertEquals(3, response.getTotalPoliciesEvaluated(), "Recommendation engine should evaluate all 3 publication-ready policies from MongoDB without code change");
         assertTrue(response.getRankedPolicies().stream().anyMatch(p -> "TATA_AIG_MEDICARE_PREMIER".equals(p.getPolicyCode())),
                 "Tata AIG should be successfully ranked in recommendations");
     }

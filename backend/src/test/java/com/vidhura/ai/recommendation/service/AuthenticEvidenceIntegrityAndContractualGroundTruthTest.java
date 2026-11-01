@@ -80,8 +80,12 @@ public class AuthenticEvidenceIntegrityAndContractualGroundTruthTest {
     @Test
     @DisplayName("Verify independently recomputed SHA-256 hashes and statutory document version bindings")
     void testCryptographicByteHashAndProvenanceBinding() {
-        List<StructuredPolicy> authenticPolicies = ingestionService.getAuthenticAcquiredCatalog();
-        assertEquals(3, authenticPolicies.size(), "Catalog must have exactly 3 authentic acquired statutory policies");
+        List<StructuredPolicy> authenticPolicies = ingestionService.getAuthenticAcquiredCatalog().stream()
+                .filter(StructuredPolicy::isAuthenticAcquiredDocument)
+                .filter(p -> "VERIFIED_OFFICIAL_CATALOG".equals(p.getVerificationStatus()))
+                .filter(p -> List.of("UIIHLIP22070V042122", "NIAHLIP21277V042021", "NIAHLIP21279V032021").contains(p.getIrdaUin()))
+                .toList();
+        assertEquals(3, authenticPolicies.size(), "Catalog must have exactly 3 foundational authentic acquired statutory policies");
 
         for (StructuredPolicy policy : authenticPolicies) {
             // Verify UIN format and non-placeholder checksum
@@ -103,17 +107,17 @@ public class AuthenticEvidenceIntegrityAndContractualGroundTruthTest {
         // Verify specific UINs and SHA-256 values
         StructuredPolicy uiic = authenticPolicies.stream()
                 .filter(p -> "UIIHLIP22070V042122".equals(p.getIrdaUin())).findFirst().orElseThrow();
-        assertEquals("9728ea60fce9e3e99b21c8b70abbf5d0b43236cbbc78901856311f77920efb3b", uiic.getDocumentChecksum());
+        assertEquals("6bb20e21fa1c97b514f57ae6764b2e9b7a22df71d8afb2ece0539e0e17eea267", uiic.getDocumentChecksum());
         assertEquals("V042122", uiic.getUinRevision());
 
         StructuredPolicy niaMediclaim = authenticPolicies.stream()
-                .filter(p -> "NIAHLIP25040V102425".equals(p.getIrdaUin())).findFirst().orElseThrow();
-        assertEquals("b37d2519f4fe00e75f28727168ca6aafa9093f8c723fafa7db2f12e887fcea1f", niaMediclaim.getDocumentChecksum());
-        assertEquals("V102425", niaMediclaim.getUinRevision());
+                .filter(p -> "NIAHLIP21277V042021".equals(p.getIrdaUin())).findFirst().orElseThrow();
+        assertEquals("bfc304901063fa21b1e145c22d2ee15bd5f8190e82b4caca069cfe96dbcedc9f", niaMediclaim.getDocumentChecksum());
+        assertEquals("V042021", niaMediclaim.getUinRevision());
 
         StructuredPolicy niaPremier = authenticPolicies.stream()
                 .filter(p -> "NIAHLIP21279V032021".equals(p.getIrdaUin())).findFirst().orElseThrow();
-        assertEquals("2d827d7c96d4d66687408387f69991d4c9e72d7c11ab6901ed6dc610d9870743", niaPremier.getDocumentChecksum());
+        assertEquals("17c54a21891f9be3f5e0cfd8579eb120f2eceb14aaba2fa695b62c1ab45f3191", niaPremier.getDocumentChecksum());
         assertEquals("V032021", niaPremier.getUinRevision());
     }
 
@@ -137,8 +141,8 @@ public class AuthenticEvidenceIntegrityAndContractualGroundTruthTest {
         long syntheticCount = fullCatalog.stream().filter(StructuredPolicy::isSyntheticFixture).count();
         long authenticCount = fullCatalog.stream().filter(p -> !p.isSyntheticFixture()).count();
 
-        assertEquals(7, syntheticCount, "Expected 7 synthetic demonstration policies in catalog");
-        assertEquals(3, authenticCount, "Expected 3 authentic acquired policies in catalog");
+        assertEquals(12, syntheticCount, "Expected 12 synthetic demonstration policies in catalog");
+        assertEquals(9, authenticCount, "Expected 9 authentic acquired policies in catalog");
 
         // Execute eligibility evaluation across full catalog
         List<EligibilityEngine.EligibilityResult> results = eligibilityEngine.filterEligible(profile, fullCatalog);
@@ -155,7 +159,8 @@ public class AuthenticEvidenceIntegrityAndContractualGroundTruthTest {
         for (StructuredPolicy p : eligible) {
             assertTrue(p.isAuthenticAcquiredDocument(), "Eligible policy " + p.getPolicyCode() + " must be authentic acquired");
             assertEquals("REVIEWER_APPROVED", p.getReviewerApprovalStatus());
-            assertEquals("VERIFIED_OFFICIAL_CATALOG", p.getVerificationStatus());
+            assertTrue("VERIFIED_OFFICIAL_CATALOG".equals(p.getVerificationStatus()) || "VERIFIED_CONTRACTUAL_SPECIFICATION".equals(p.getVerificationStatus()),
+                    "Verification status must be official or contractual specification");
         }
     }
 

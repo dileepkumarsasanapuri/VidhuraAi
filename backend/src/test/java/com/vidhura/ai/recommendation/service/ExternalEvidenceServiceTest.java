@@ -92,7 +92,7 @@ class ExternalEvidenceServiceTest {
                 .citationTableReference("Table IV.12")
                 .build();
 
-        when(evidenceRepository.existsBySourceDocumentHashAndMetricKey(eq(VALID_SHA256), eq("settlement_ratio_3m")))
+        lenient().when(evidenceRepository.existsBySourceDocumentHashAndMetricKey(eq(VALID_SHA256), eq("settlement_ratio_3m")))
                 .thenReturn(false);
 
         when(evidenceRepository.save(any(ExternalEvidenceRecord.class)))
@@ -127,7 +127,7 @@ class ExternalEvidenceServiceTest {
                 .sourceDocumentHash(VALID_SHA256)
                 .build();
 
-        when(evidenceRepository.existsBySourceDocumentHashAndMetricKey(eq(VALID_SHA256), eq("icr_annual")))
+        lenient().when(evidenceRepository.existsBySourceDocumentHashAndMetricKey(eq(VALID_SHA256), eq("icr_annual")))
                 .thenReturn(false);
 
         when(evidenceRepository.save(any(ExternalEvidenceRecord.class)))
@@ -166,10 +166,12 @@ class ExternalEvidenceServiceTest {
                 .evidenceType("IRDAI_ANNUAL_REPORT")
                 .insurerCode("HDFC_ERGO")
                 .metricKey("settlement_ratio_3m")
+                .reportingPeriod("FY2023-24")
                 .sourceDocumentHash(VALID_SHA256)
                 .build();
 
-        when(evidenceRepository.existsBySourceDocumentHashAndMetricKey(eq(VALID_SHA256), eq("settlement_ratio_3m")))
+        when(evidenceRepository.existsByInsurerCodeAndMetricKeyAndReportingPeriodAndRevision(
+                eq("HDFC_ERGO"), eq("settlement_ratio_3m"), eq("FY2023-24"), anyInt()))
                 .thenReturn(true);
 
         assertThrows(IllegalArgumentException.class, () ->
@@ -189,6 +191,9 @@ class ExternalEvidenceServiceTest {
 
         ExternalEvidenceRecord staged = ExternalEvidenceRecord.builder()
                 .id("ev-101")
+                .sourceDocumentHash(VALID_SHA256)
+                .citationTableReference("Table IV.12")
+                .citationPageNumber(142)
                 .verificationStatus("UNVERIFIED_PENDING_REVIEW")
                 .build();
 

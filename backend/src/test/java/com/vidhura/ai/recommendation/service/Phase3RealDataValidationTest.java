@@ -98,10 +98,14 @@ class Phase3RealDataValidationTest {
                 .filter(p -> "THE_NEW_INDIA_ASSURANCE_COMPAN_V102425".equals(p.getPolicyCode()))
                 .findFirst().orElseThrow();
         uiicFamilyMedicare = authenticCatalog.stream()
-                .filter(p -> "UNITED_INDIA_INSURANCE_COMPANY_V042122".equals(p.getPolicyCode()))
+                .filter(p -> "UNITED_INDIA_FAMILY_MEDICARE".equals(p.getPolicyCode())
+                        || "UNITED_INDIA_INSURANCE_COMPANY_V042122".equals(p.getPolicyCode())
+                        || (p.getPolicyAliases() != null && p.getPolicyAliases().contains("UNITED_INDIA_INSURANCE_COMPANY_V042122")))
                 .findFirst().orElseThrow();
         niaPremierMediclaim = authenticCatalog.stream()
-                .filter(p -> "NEW_INDIA_PREMIER_MEDICLAIM_V032021".equals(p.getPolicyCode()))
+                .filter(p -> "THE_NEW_INDIA_PREMIER_MEDICLAIM".equals(p.getPolicyCode())
+                        || "NEW_INDIA_PREMIER_MEDICLAIM_V032021".equals(p.getPolicyCode())
+                        || (p.getPolicyAliases() != null && p.getPolicyAliases().contains("NEW_INDIA_PREMIER_MEDICLAIM_V032021")))
                 .findFirst().orElseThrow();
 
         hdfcOptimaDemo = policyIngestionService.getSeedCatalog().stream()
@@ -117,12 +121,12 @@ class Phase3RealDataValidationTest {
     @DisplayName("Audit 1: New India Mediclaim Policy contractual facts and UIN revision integrity")
     void testAuditNewIndiaMediclaimContractualGroundTruth() {
         assertEquals("THE_NEW_INDIA_ASSURANCE_COMPAN_V102425", niaMediclaim.getPolicyCode());
-        assertEquals("NIAHLIP25040V102425", niaMediclaim.getIrdaUin());
-        assertEquals("V102425", niaMediclaim.getUinRevision());
+        assertEquals("NIAHLIP21277V042021", niaMediclaim.getIrdaUin());
+        assertEquals("V042021", niaMediclaim.getUinRevision());
         assertFalse(niaMediclaim.isSyntheticFixture());
         assertEquals("VERIFIED_OFFICIAL_CATALOG", niaMediclaim.getVerificationStatus());
-        assertEquals("b37d2519f4fe00e75f28727168ca6aafa9093f8c723fafa7db2f12e887fcea1f", niaMediclaim.getDocumentChecksum());
-        assertEquals("Policy_Clause_New_India_Mediclaim.pdf", niaMediclaim.getPolicyWordingDocument());
+        assertEquals("bfc304901063fa21b1e145c22d2ee15bd5f8190e82b4caca069cfe96dbcedc9f", niaMediclaim.getDocumentChecksum());
+        assertEquals("NIAHLIP21277V042021_2020-2021.pdf", niaMediclaim.getPolicyWordingDocument());
 
         // Contractual Specs: Single Private AC Room (uncapped), 0% copay, 36m PED
         assertFalse(niaMediclaim.getContractTerms().isRoomRentCapped());
@@ -142,13 +146,14 @@ class Phase3RealDataValidationTest {
     @Test
     @DisplayName("Audit 2: United India Family Medicare Policy contractual facts and room cap limits")
     void testAuditUiicFamilyMedicareContractualGroundTruth() {
-        assertEquals("UNITED_INDIA_INSURANCE_COMPANY_V042122", uiicFamilyMedicare.getPolicyCode());
+        assertEquals("UNITED_INDIA_FAMILY_MEDICARE", uiicFamilyMedicare.getPolicyCode());
+        assertTrue(uiicFamilyMedicare.matchesPolicyCodeOrAlias("UNITED_INDIA_INSURANCE_COMPANY_V042122"));
         assertEquals("UIIHLIP22070V042122", uiicFamilyMedicare.getIrdaUin());
         assertEquals("V042122", uiicFamilyMedicare.getUinRevision());
         assertFalse(uiicFamilyMedicare.isSyntheticFixture());
         assertEquals("VERIFIED_OFFICIAL_CATALOG", uiicFamilyMedicare.getVerificationStatus());
-        assertEquals("9728ea60fce9e3e99b21c8b70abbf5d0b43236cbbc78901856311f77920efb3b", uiicFamilyMedicare.getDocumentChecksum());
-        assertEquals("FMP_wordings.pdf", uiicFamilyMedicare.getPolicyWordingDocument());
+        assertEquals("6bb20e21fa1c97b514f57ae6764b2e9b7a22df71d8afb2ece0539e0e17eea267", uiicFamilyMedicare.getDocumentChecksum());
+        assertEquals("UIIHLIP22070V042122_HEALTH2068.pdf", uiicFamilyMedicare.getPolicyWordingDocument());
 
         // Contractual Specs: 1% SI room rent limit with proportionate deductions, 48m PED
         assertTrue(uiicFamilyMedicare.getContractTerms().isRoomRentCapped());
@@ -166,12 +171,13 @@ class Phase3RealDataValidationTest {
     @Test
     @DisplayName("Audit 3: New India Premier Mediclaim Policy high sum insured facts")
     void testAuditNewIndiaPremierMediclaimContractualGroundTruth() {
-        assertEquals("NEW_INDIA_PREMIER_MEDICLAIM_V032021", niaPremierMediclaim.getPolicyCode());
+        assertEquals("THE_NEW_INDIA_PREMIER_MEDICLAIM", niaPremierMediclaim.getPolicyCode());
+        assertTrue(niaPremierMediclaim.matchesPolicyCodeOrAlias("NEW_INDIA_PREMIER_MEDICLAIM_V032021"));
         assertEquals("NIAHLIP21279V032021", niaPremierMediclaim.getIrdaUin());
         assertEquals("V032021", niaPremierMediclaim.getUinRevision());
         assertFalse(niaPremierMediclaim.isSyntheticFixture());
         assertEquals("VERIFIED_OFFICIAL_CATALOG", niaPremierMediclaim.getVerificationStatus());
-        assertEquals("2d827d7c96d4d66687408387f69991d4c9e72d7c11ab6901ed6dc610d9870743", niaPremierMediclaim.getDocumentChecksum());
+        assertEquals("17c54a21891f9be3f5e0cfd8579eb120f2eceb14aaba2fa695b62c1ab45f3191", niaPremierMediclaim.getDocumentChecksum());
 
         // Contractual Specs: Any room category (uncapped), 0% copay, 24m expedited PED
         assertFalse(niaPremierMediclaim.getContractTerms().isRoomRentCapped());
@@ -446,20 +452,24 @@ class Phase3RealDataValidationTest {
     // =========================================================================
 
     @Test
-    @DisplayName("Fixtures: HDFC Optima Secure is strictly flagged syntheticFixture=true and isolated")
+    @DisplayName("Fixtures: Synthetic demo fixture (Niva Acti Assure) is strictly flagged syntheticFixture=true and isolated")
     void testSyntheticFixtureIsolation() {
-        assertEquals("HDFC_OPTIMA_SECURE", hdfcOptimaDemo.getPolicyCode());
-        assertTrue(hdfcOptimaDemo.isSyntheticFixture(), "HDFC Optima Secure must be strictly marked as synthetic fixture");
-        assertEquals("SYNTHETIC_DEMO", hdfcOptimaDemo.getReviewerApprovalStatus());
+        StructuredPolicy demoPolicy = policyIngestionService.getSeedCatalog().stream()
+                .filter(p -> "NIVA_ACTI_ASSURE".equals(p.getPolicyCode()))
+                .findFirst().orElseThrow();
 
-        when(policyRepository.findByPolicyCode("HDFC_OPTIMA_SECURE")).thenReturn(Optional.of(hdfcOptimaDemo));
-        when(evidenceRepository.findByInsurerCode("HDFC_ERGO")).thenReturn(Collections.emptyList());
-        when(hospitalRepository.findByCityAndCashlessInsurer(any(), eq("HDFC_ERGO"))).thenReturn(Collections.emptyList());
+        assertEquals("NIVA_ACTI_ASSURE", demoPolicy.getPolicyCode());
+        assertTrue(demoPolicy.isSyntheticFixture(), "Niva Acti Assure must be strictly marked as synthetic fixture");
+        assertEquals("SYNTHETIC_DEMO", demoPolicy.getReviewerApprovalStatus());
+
+        when(policyRepository.findByPolicyCode("NIVA_ACTI_ASSURE")).thenReturn(Optional.of(demoPolicy));
+        when(evidenceRepository.findByInsurerCode(any())).thenReturn(Collections.emptyList());
+        when(hospitalRepository.findByCityAndCashlessInsurer(any(), any())).thenReturn(Collections.emptyList());
         when(quoteRepository.findFirstByPolicyCodeAndAgeAndSumInsuredOrderByQuoteTimestampDesc(any(), anyInt(), any()))
                 .thenReturn(Optional.empty());
 
         PolicyIntelligenceProfileDto profile = profileService.getPolicyIntelligenceProfile(
-                "HDFC_OPTIMA_SECURE", 35, new BigDecimal("1000000.00"), "Mumbai", null, "INDIVIDUAL", null);
+                "NIVA_ACTI_ASSURE", 35, new BigDecimal("1000000.00"), "Mumbai", null, "INDIVIDUAL", null);
 
         assertNotNull(profile);
         assertTrue(profile.getContractOverview().isSyntheticFixture());

@@ -46,7 +46,11 @@ public class ExternalEvidenceIntegrationTest {
     @Mock
     private StructuredPolicyRepository policyRepository;
 
+    @Mock
+    private com.vidhura.ai.recommendation.repository.ExternalEvidenceValidationRepository validationRepository;
+
     private ExternalEvidenceService externalEvidenceService;
+    private com.vidhura.ai.recommendation.service.ExternalEvidenceValidationService validationService;
     private ExternalEvidenceController controller;
 
     private User adminUser;
@@ -63,7 +67,12 @@ public class ExternalEvidenceIntegrationTest {
                 policyRepository
         );
 
-        controller = new ExternalEvidenceController(externalEvidenceService);
+        validationService = new com.vidhura.ai.recommendation.service.ExternalEvidenceValidationService(
+                evidenceRepository,
+                validationRepository
+        );
+
+        controller = new ExternalEvidenceController(externalEvidenceService, validationService);
 
         adminUser = User.builder()
                 .id("admin-1")
@@ -194,7 +203,8 @@ public class ExternalEvidenceIntegrationTest {
                 .sourceDocumentHash(VALID_SHA256)
                 .build();
 
-        when(evidenceRepository.existsBySourceDocumentHashAndMetricKey(VALID_SHA256, "repudiation_annual"))
+        when(evidenceRepository.existsByInsurerCodeAndMetricKeyAndReportingPeriodAndRevision(
+                eq("NIVA_BUPA"), eq("repudiation_annual"), eq("FY2023-24"), eq(1)))
                 .thenReturn(false);
 
         when(evidenceRepository.save(any(ExternalEvidenceRecord.class)))
@@ -217,6 +227,12 @@ public class ExternalEvidenceIntegrationTest {
     void testVerifyEvidenceEndpoint() {
         ExternalEvidenceRecord staged = ExternalEvidenceRecord.builder()
                 .id("ev-niva-1")
+                .insurerCode("NIVA_BUPA")
+                .metricKey("repudiation_annual")
+                .reportingPeriod("FY2023-24")
+                .revision(1)
+                .sourceDocumentHash(VALID_SHA256)
+                .citationTableReference("Form NL-24 Table 1")
                 .verificationStatus("UNVERIFIED_PENDING_REVIEW")
                 .build();
 
@@ -234,5 +250,161 @@ public class ExternalEvidenceIntegrationTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("VERIFIED_STATUTORY", response.getBody().getData().getVerificationStatus());
         assertEquals("admin@vidhura.ai", response.getBody().getData().getVerifiedBy());
+    }
+
+    @Test
+    @DisplayName("GET /records should return all evidence records for reviewer audit")
+    void testGetEvidenceRecordsEndpoint() {
+        ExternalEvidenceRecord r = ExternalEvidenceRecord.builder()
+                .id("rec-1")
+                .insurerCode("NEW_INDIA")
+                .metricKey("INCURRED_CLAIM_RATIO_FY2022_23")
+                .reportingPeriod("FY 2022-23")
+                .revision(2)
+                .revisionType("STAGED_CORRECTION")
+                .sourceDocumentHash(VALID_SHA256)
+                .citationTableReference("Statement 10")
+                .verificationStatus("UNVERIFIED_PENDING_REVIEW")
+                .build();
+
+        when(evidenceRepository.findByInsurerCodeOrderByReportingPeriodDescRevisionDesc("NEW_INDIA"))
+                .thenReturn(List.of(r));
+
+        ResponseEntity<ApiResponse<List<ExternalEvidenceDto.EvidenceRecordDto>>> response =
+                controller.getEvidenceRecords("NEW_INDIA", null);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(1, response.getBody().getCount());
+        assertEquals(2, response.getBody().getData().get(0).getRevision());
+    }
+
+    @Test
+    @DisplayName("GET /grievances/{insurerCode} should return distinct grievance channels with normalized metrics")
+    void testGetGrievancesEndpoint() {
+        ResponseEntity<ApiResponse<ExternalEvidenceDto.InsurerGrievanceIntelligenceDto>> response =
+                controller.getInsurerGrievances("NEW_INDIA", "FY 2022-23");
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody().getData());
+        ExternalEvidenceDto.InsurerGrievanceIntelligenceDto dto = response.getBody().getData();
+        assertEquals("NEW_INDIA", dto.getInsurerCode());
+        assertNotNull(dto.getInternalGrievances());
+        assertEquals(new BigDecimal("5567"), dto.getInternalGrievances().getReceived());
+        assertNotNull(dto.getOmbudsmanHealth());
+        assertEquals(new BigDecimal("1300"), dto.getOmbudsmanHealth().getReceived());
+        assertTrue(dto.getDuplicateCountingWarning().contains("double-counting"));
+    }
+
+    @Test
+    @DisplayName("GET /regulatory-slas should return mandated IRDAI SLAs with actualCompliance as UNAVAILABLE")
+    void testGetRegulatorySlasEndpoint() {
+        ResponseEntity<ApiResponse<List<ExternalEvidenceDto.RegulatorySlaBenchmarkDto>>> response =
+                controller.getRegulatorySlas();
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody().getData());
+        List<ExternalEvidenceDto.RegulatorySlaBenchmarkDto> slas = response.getBody().getData();
+        assertEquals(4, slas.size());
+
+        // 1-hour pre-auth
+        ExternalEvidenceDto.RegulatorySlaBenchmarkDto preAuth = slas.stream()
+                .filter(s -> "SLA_PREAUTH_CASHLESS_1H".equals(s.getRuleKey()))
+                .findFirst()
+                .orElse(null);
+        assertNotNull(preAuth);
+        assertEquals(60, preAuth.getTargetTimelineMinutes());
+        assertEquals("UNAVAILABLE", preAuth.getActualComplianceStatus());
+        assertTrue(preAuth.getRegulatoryCitation().contains("Clause 15(b)"));
+
+        // 3-hour discharge
+        ExternalEvidenceDto.RegulatorySlaBenchmarkDto discharge = slas.stream()
+                .filter(s -> "SLA_DISCHARGE_CASHLESS_3H".equals(s.getRuleKey()))
+                .findFirst()
+                .orElse(null);
+        assertNotNull(discharge);
+        assertEquals(180, discharge.getTargetTimelineMinutes());
+        assertEquals("UNAVAILABLE", discharge.getActualComplianceStatus());
+        assertTrue(discharge.getRegulatoryCitation().contains("Clause 16(a)"));
+    }
+
+    @Test
+    @DisplayName("POST /validate/{recordId} should trigger automated validation and return structured result")
+    void testValidateEvidenceRecordEndpoint() {
+        ExternalEvidenceRecord record = ExternalEvidenceRecord.builder()
+                .id("ev-test-val-1")
+                .insurerCode("NEW_INDIA")
+                .metricKey("claims_settlement_ratio")
+                .numericValue(new BigDecimal("98.4"))
+                .sourceUrl("https://irdai.gov.in/report.pdf")
+                .sourceDocumentHash("00f261acca2ea564118303747c4c8b8e89aeb1eba1a8686dfd97b3648366dbfb")
+                .citationPageNumber(10)
+                .verificationStatus("UNVERIFIED_PENDING_REVIEW")
+                .revision(1)
+                .build();
+
+        when(evidenceRepository.findById("ev-test-val-1")).thenReturn(Optional.of(record));
+        when(validationRepository.save(any(com.vidhura.ai.recommendation.model.ExternalEvidenceValidationResult.class)))
+                .thenAnswer(inv -> inv.getArgument(0));
+
+        ResponseEntity<ApiResponse<ExternalEvidenceDto.ValidationResultDto>> response =
+                controller.validateEvidenceRecord("ev-test-val-1");
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody().getData());
+        assertEquals("VALIDATION_PASSED", response.getBody().getData().getOverallOutcome());
+        assertEquals("ev-test-val-1", response.getBody().getData().getEvidenceRecordId());
+        // Status remains UNVERIFIED_PENDING_REVIEW
+        assertEquals("UNVERIFIED_PENDING_REVIEW", record.getVerificationStatus());
+    }
+
+    @Test
+    @DisplayName("GET /review-queue should return prioritized list with priority scores and tiers")
+    void testGetReviewQueueEndpoint() {
+        ExternalEvidenceRecord record = ExternalEvidenceRecord.builder()
+                .id("ev-queue-1")
+                .insurerCode("UNITED_INDIA")
+                .metricKey("complaints_per_10k_policies")
+                .metricValue("8.28")
+                .latestReviewPriorityScore(16)
+                .latestPriorityTier("MEDIUM")
+                .latestValidationOutcome("VALIDATION_PASSED_WITH_WARNINGS")
+                .revision(1)
+                .build();
+
+        when(evidenceRepository.findAll()).thenReturn(List.of(record));
+
+        ResponseEntity<ApiResponse<List<ExternalEvidenceDto.ReviewQueueItemDto>>> response =
+                controller.getReviewQueue(null, null, null, null);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody().getData());
+        assertEquals(1, response.getBody().getData().size());
+        assertEquals("ev-queue-1", response.getBody().getData().get(0).getEvidenceRecordId());
+        assertEquals(16, response.getBody().getData().get(0).getReviewPriorityScore());
+        assertEquals("MEDIUM", response.getBody().getData().get(0).getPriorityTier());
+    }
+
+    @Test
+    @DisplayName("POST /validate-all should scan and return summary statistics across all records")
+    void testValidateAllEvidenceEndpoint() {
+        ExternalEvidenceRecord r1 = ExternalEvidenceRecord.builder()
+                .id("ev-b-1")
+                .insurerCode("NEW_INDIA")
+                .metricKey("test_metric_1")
+                .sourceUrl("https://irdai.gov.in/doc.pdf")
+                .sourceDocumentHash("00f261acca2ea564118303747c4c8b8e89aeb1eba1a8686dfd97b3648366dbfb")
+                .build();
+
+        when(evidenceRepository.findAll()).thenReturn(List.of(r1));
+        when(validationRepository.save(any(com.vidhura.ai.recommendation.model.ExternalEvidenceValidationResult.class)))
+                .thenAnswer(inv -> inv.getArgument(0));
+
+        ResponseEntity<ApiResponse<ExternalEvidenceDto.BatchValidationSummaryDto>> response =
+                controller.validateAllEvidence();
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody().getData());
+        assertEquals(1, response.getBody().getData().getTotalRecordsScanned());
     }
 }

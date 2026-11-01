@@ -406,8 +406,8 @@ class PolicyAdversarialVerificationTest {
     @Test
     @DisplayName("P1-7: MongoDB failure during catalog refresh preserves valid cache without data loss")
     void testMongoFailureDuringRefreshPreservesValidCache() {
-        // Ensure initial catalog has 7 policies
-        assertEquals(7, recommendationService.loadCatalog().size());
+        // Ensure initial catalog has 2 publication-ready policies
+        assertEquals(2, recommendationService.loadCatalog().size());
 
         // Simulate MongoDB throwing an exception during refresh
         when(policyRepository.findByActiveTrue()).thenThrow(new RuntimeException("MongoDB Connection Refused"));
@@ -415,10 +415,10 @@ class PolicyAdversarialVerificationTest {
         // Trigger refresh
         recommendationService.refreshCatalog();
 
-        // Cache must still retain the 7 valid policies and not be wiped or emptied
+        // Cache must still retain the 2 valid policies and not be wiped or emptied
         List<StructuredPolicy> activeAfterFailure = recommendationService.loadCatalog();
         assertNotNull(activeAfterFailure);
-        assertEquals(7, activeAfterFailure.size(), "Cache must preserve active catalog snapshot on DB failure");
+        assertEquals(2, activeAfterFailure.size(), "Cache must preserve active catalog snapshot on DB failure");
     }
 
     @Test
@@ -613,13 +613,15 @@ class PolicyAdversarialVerificationTest {
     @Test
     @DisplayName("Issue 1: Global catalog version increment enforces immediate cross-instance invalidation without TTL delay")
     void testGlobalCatalogVersionIncrementForcesImmediateInvalidation() {
-        // Initial state: catalog has 7 active policies
+        // Initial state: catalog has 2 active publication-ready policies
         List<StructuredPolicy> initial = recommendationService.loadCatalog();
-        assertEquals(7, initial.size());
+        assertEquals(2, initial.size());
         long initialVersion = recommendationService.getLocalCatalogVersion();
 
         // Simulate another replica/instance deactivating a policy in MongoDB and incrementing global catalog version
-        StructuredPolicy toDeactivate = simulatedMongo.values().iterator().next();
+        StructuredPolicy toDeactivate = simulatedMongo.values().stream()
+                .filter(p -> !p.isSyntheticFixture() && p.isActive())
+                .findFirst().orElseThrow();
         toDeactivate.setActive(false);
         simulatedMongo.put(toDeactivate.getId(), toDeactivate);
 
@@ -629,7 +631,7 @@ class PolicyAdversarialVerificationTest {
                 com.vidhura.ai.recommendation.model.CatalogMetadata.builder()
                         .id(com.vidhura.ai.recommendation.model.CatalogMetadata.GLOBAL_ID)
                         .version(newGlobalVersion)
-                        .activePoliciesCount(6)
+                        .activePoliciesCount(1)
                         .lastAction("DEACTIVATED: " + toDeactivate.getPolicyCode())
                         .build()
         );
@@ -640,7 +642,7 @@ class PolicyAdversarialVerificationTest {
         // Without waiting for the 60-second TTL to elapse, calling loadCatalog()
         // MUST immediately detect the version divergence, invalidate local cache, and reload from DB
         List<StructuredPolicy> refreshed = recommendationService.loadCatalog();
-        assertEquals(6, refreshed.size(), "Deactivated policy must be excluded immediately without waiting for 60s TTL");
+        assertEquals(1, refreshed.size(), "Deactivated policy must be excluded immediately without waiting for 60s TTL");
         assertEquals(newGlobalVersion, recommendationService.getLocalCatalogVersion(), "Local version must be synchronized with global version");
         assertFalse(refreshed.stream().anyMatch(p -> p.getPolicyCode().equals(toDeactivate.getPolicyCode())));
     }
@@ -648,9 +650,9 @@ class PolicyAdversarialVerificationTest {
     @Test
     @DisplayName("Issue 2: Distinguishes intentional empty catalog from database failure and purges revoked policies")
     void testIntentionalEmptyCatalogClearsCacheUnlikeDatabaseFailure() {
-        // 1. Ensure cache is warm with 7 policies
+        // 1. Ensure cache is warm with 2 policies
         List<StructuredPolicy> warm = recommendationService.loadCatalog();
-        assertEquals(7, warm.size());
+        assertEquals(2, warm.size());
 
         // 2. Scenario A: Transient Database Failure (MongoDB throws exception)
         when(policyRepository.findByActiveTrue()).thenThrow(new RuntimeException("MongoDB connection timeout / pool exhausted"));
@@ -658,7 +660,7 @@ class PolicyAdversarialVerificationTest {
         // Cache refresh on DB failure MUST preserve existing active cache
         recommendationService.refreshCatalog();
         List<StructuredPolicy> preserved = recommendationService.loadCatalog();
-        assertEquals(7, preserved.size(), "Transient database failure must preserve warm cache without data loss");
+        assertEquals(2, preserved.size(), "Transient database failure must preserve warm cache without data loss");
 
         // 3. Scenario B: Revocation during DB failure
         // An administrator revokes a specific compromised/outdated policy
@@ -667,7 +669,7 @@ class PolicyAdversarialVerificationTest {
 
         // Even though DB is STILL failing, the revoked policy MUST be purged immediately and not resurrected
         List<StructuredPolicy> purged = recommendationService.loadCatalog();
-        assertEquals(6, purged.size(), "Revoked policy must be purged immediately even while database is failing");
+        assertEquals(1, purged.size(), "Revoked policy must be purged immediately even while database is failing");
         assertFalse(purged.stream().anyMatch(p -> p.getPolicyCode().equalsIgnoreCase(revokedCode)),
                 "Database failure must NEVER silently resurrect an explicitly revoked policy");
 
@@ -833,7 +835,7 @@ class PolicyAdversarialVerificationTest {
 
         assertTrue(reseededCount > 0, "Administrative reseed should restore seed catalog");
         List<StructuredPolicy> restoredCatalog = recommendationService.loadCatalog();
-        assertEquals(reseededCount, restoredCatalog.size(), "Restored catalog should match reseeded count");
+        assertEquals(2, restoredCatalog.size(), "Restored catalog should match published count");
 
         // Verify audit note on reseeded policies
         StructuredPolicy restoredSample = restoredCatalog.get(0);

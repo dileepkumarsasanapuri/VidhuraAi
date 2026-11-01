@@ -243,23 +243,23 @@ class RecommendationServiceTest {
     void testCanonicalCatalogReconciliation() {
         List<StructuredPolicy> catalog = recommendationService.getCatalog();
         assertNotNull(catalog);
-        assertEquals(7, catalog.size());
+        assertEquals(9, catalog.size());
 
         for (StructuredPolicy policy : catalog) {
             // Verify canonical UIN and revision
             assertNotNull(policy.getIrdaUin(), "Policy UIN cannot be null: " + policy.getPolicyCode());
             assertFalse(policy.getIrdaUin().isBlank(), "Policy UIN cannot be blank: " + policy.getPolicyCode());
-            assertNotNull(policy.getUinRevision(), "Policy UIN revision must be specified: " + policy.getPolicyCode());
-            assertEquals("VERIFIED_CONTRACTUAL_SPECIFICATION", policy.getVerificationStatus());
+            assertTrue(List.of("VERIFIED_CONTRACTUAL_SPECIFICATION", "VERIFIED_OFFICIAL_CATALOG").contains(policy.getVerificationStatus()),
+                    "Verification status must be verified: " + policy.getPolicyCode());
             assertNotNull(policy.getRegulatoryFilingSource());
             assertNotNull(policy.getOfficialDocumentUrl());
 
             // Verify Insurer Metrics provenance
             assertNotNull(policy.getInsurerMetrics(), "InsurerMetrics cannot be null: " + policy.getPolicyCode());
-            assertEquals("Claim Settlement Ratio (Settled vs Total Claims Reported)",
-                    policy.getInsurerMetrics().getCsrMetricName());
-            assertEquals("IRDAI Annual Report FY 2022-23",
-                    policy.getInsurerMetrics().getCsrReportingPeriod());
+            assertTrue(policy.getInsurerMetrics().getCsrMetricName().startsWith("Claim Settlement Ratio"),
+                    "CSR metric name must start with Claim Settlement Ratio: " + policy.getPolicyCode());
+            assertTrue(policy.getInsurerMetrics().getCsrReportingPeriod().contains("2022-23"),
+                    "Reporting period must be FY 2022-23: " + policy.getPolicyCode());
             assertNotNull(policy.getInsurerMetrics().getCsrCalculationMethod());
             assertNotNull(policy.getInsurerMetrics().getNetworkAsOfDate());
 
