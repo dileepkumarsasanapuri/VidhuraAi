@@ -66,6 +66,19 @@ public class RecommendationRequestDto {
     )
     private String primaryPriority;
 
+    /**
+     * Category-specific recommendation routing (Section 3 & 8).
+     * RETAIL_MEDICAL (default), GROUP_HEALTH, PERSONAL_ACCIDENT, TRAVEL, BENEFIT_BASED, RIDER, or ALL.
+     */
+    @Builder.Default
+    private String targetCategory = "RETAIL_MEDICAL";
+
+    // Category-specific parameters
+    private Integer groupSize; // For GROUP_HEALTH (minimum 7 members as per IRDAI group guidelines)
+    private String destinationCountry; // For TRAVEL
+    private Integer tripDurationDays; // For TRAVEL
+    private String basePolicyCode; // For RIDER (parent product mapping)
+
     // =========================================================================
     // STEP B: Additional Inputs That Improve Accuracy
     // =========================================================================
@@ -104,6 +117,14 @@ public class RecommendationRequestDto {
 
     @Builder.Default
     private String strictRoomPreference = "SINGLE_PRIVATE_AC"; // SINGLE_PRIVATE_AC, DELUXE, SHARED, NO_PREFERENCE
+
+    private String roomRentPreference;
+
+    @Builder.Default
+    private Boolean restorationBenefitNeeded = false;
+
+    @Builder.Default
+    private Boolean consentGiven = true;
 
     @Builder.Default
     private Boolean includeDemoFixtures = false; // Production winner rankings exclude synthetic fixtures by default

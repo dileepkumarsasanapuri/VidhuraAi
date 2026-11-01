@@ -34,6 +34,9 @@ public class StructuredPolicy {
     @Indexed(unique = true)
     private String policyCode; // e.g. "HDFC_OPTIMA_SECURE"
 
+    @Builder.Default
+    private List<String> policyAliases = new ArrayList<>();
+
     private String policyName; // "HDFC ERGO Optima Secure"
     private String provider; // "HDFC ERGO General Insurance Co. Ltd."
     private String irdaUin; // "HDFHLIP21147V012021"
@@ -47,6 +50,16 @@ public class StructuredPolicy {
     @Builder.Default
     private String verificationStatus = "VERIFIED_CONTRACTUAL_SPECIFICATION";
     private String uinRevision; // e.g. "V012021"
+
+    @Builder.Default
+    private List<String> historicalUins = new ArrayList<>();
+
+    @Builder.Default
+    private Map<String, String> uinRelationships = new HashMap<>();
+
+    @Builder.Default
+    private String uinRevisionStatus = "VERIFIED_CANONICAL"; // VERIFIED_CANONICAL, REVIEW_REQUIRED, SUPERSEDED
+
     @Builder.Default
     private String regulatoryFilingSource = "IRDAI Health Product Registry & Insurer Public Disclosure";
     @Builder.Default
@@ -56,6 +69,8 @@ public class StructuredPolicy {
     // Cryptographic & Reviewer Provenance Identification
     @Builder.Default
     private boolean syntheticFixture = false; // true if this is a synthetic demonstration fixture
+    @Builder.Default
+    private String documentAuthenticityStatus = "VERIFIED_OFFICIAL_SOURCE"; // VERIFIED_OFFICIAL_SOURCE, TEST_FIXTURE_OR_SYNTHETIC, UNVERIFIED_SOURCE, SOURCE_UNAVAILABLE, PRODUCT_IDENTITY_MISMATCH, ARTIFACT_INTEGRITY_FAILURE, MANUAL_VERIFICATION_REQUIRED
     private String documentChecksum; // 64-character SHA-256 integrity checksum
     private String sourceRecordId; // Reference to acquired source document / filing
     @Builder.Default
@@ -245,6 +260,9 @@ public class StructuredPolicy {
         private String verbatimText; // Exact quote from document
         private String verifiedFact; // Human plain language fact
         private String tag; // ROOM_RENT, PED, RESTORATION, COPAY, SUBLIMIT, CLAIM
+        private Integer pageNumber; // PDF page number where clause is located
+        private String verifiedSha256; // 64-char SHA-256 of physical policy wording document
+        private String documentUrl; // Canonical source URL
         @Builder.Default
         private String evidenceConfidence = "VERIFIED_CONTRACT_CLAUSE";
         @Builder.Default
@@ -317,5 +335,38 @@ public class StructuredPolicy {
             return policyWordingDocument.substring(7).trim();
         }
         return null;
+    }
+
+    public boolean matchesPolicyCodeOrAlias(String codeOrAlias) {
+        if (codeOrAlias == null) return false;
+        if (codeOrAlias.equalsIgnoreCase(this.policyCode)) return true;
+        if (this.policyAliases != null) {
+            for (String alias : this.policyAliases) {
+                if (codeOrAlias.equalsIgnoreCase(alias)) return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean matchesUinOrHistorical(String uin) {
+        if (uin == null) return false;
+        if (uin.equalsIgnoreCase(this.irdaUin)) return true;
+        if (this.historicalUins != null) {
+            for (String hist : this.historicalUins) {
+                if (uin.equalsIgnoreCase(hist)) return true;
+            }
+        }
+        return false;
+    }
+
+    public String getCanonicalCategory() {
+        if (category == null) return "RETAIL_MEDICAL";
+        String c = category.toUpperCase();
+        if (c.contains("GROUP")) return "GROUP_HEALTH";
+        if (c.contains("TRAVEL") || c.contains("OVERSEAS")) return "TRAVEL";
+        if (c.contains("ACCIDENT")) return "PERSONAL_ACCIDENT";
+        if (c.contains("CRITICAL") || c.contains("BENEFIT") || c.contains("CASH")) return "BENEFIT_BASED";
+        if (c.contains("RIDER") || c.contains("ADD-ON") || c.contains("ADD ON")) return "RIDER";
+        return "RETAIL_MEDICAL";
     }
 }

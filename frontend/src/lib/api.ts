@@ -383,6 +383,72 @@ class ApiClient {
     return this.request<{ success: boolean; data: RecommendationQualityReport }>("/policies/quality-report");
   }
 
+  // Phase 5.6: Automated Policy Discovery & Operator Controls
+  getDiscoveryRuns() {
+    return this.request<{ success: boolean; data: PolicyDiscoveryRun[]; count: number }>("/policies/discovery/runs");
+  }
+
+  triggerPolicyDiscovery(targetUrls?: string[]) {
+    return this.request<{ success: boolean; data: PolicyDiscoveryRun }>("/policies/discovery/trigger", {
+      method: "POST",
+      body: targetUrls ? JSON.stringify(targetUrls) : undefined,
+    });
+  }
+
+  getDiscoveryCandidates(stage?: string) {
+    const query = stage ? `?stage=${encodeURIComponent(stage)}` : "";
+    return this.request<{ success: boolean; data: PolicyDiscoveryCandidate[]; count: number }>(`/policies/discovery/candidates${query}`);
+  }
+
+  acquireDiscoveryCandidate(id: string) {
+    return this.request<{ success: boolean; data: PolicyDiscoveryCandidate }>(`/policies/discovery/candidates/${id}/acquire`, {
+      method: "POST",
+    });
+  }
+
+  extractDiscoveryCandidate(id: string) {
+    return this.request<{ success: boolean; data: PolicyDiscoveryCandidate }>(`/policies/discovery/candidates/${id}/extract`, {
+      method: "POST",
+    });
+  }
+
+  publishDiscoveryCandidate(id: string, notes?: string) {
+    return this.request<{ success: boolean; data: PolicyDiscoveryCandidate }>(`/policies/discovery/candidates/${id}/publish`, {
+      method: "POST",
+      body: JSON.stringify({ notes }),
+    });
+  }
+
+  getDocumentRevisions(uin?: string) {
+    const query = uin ? `?uin=${encodeURIComponent(uin)}` : "";
+    return this.request<{ success: boolean; data: PolicyDocumentRevision[]; count: number }>(`/policies/discovery/revisions${query}`);
+  }
+
+  rejectDiscoveryCandidate(id: string, reason?: string) {
+    return this.request<{ success: boolean; data: PolicyDiscoveryCandidate }>(`/policies/discovery/candidates/${id}/reject`, {
+      method: "POST",
+      body: JSON.stringify({ reason }),
+    });
+  }
+
+  withdrawPolicy(policyCode: string, reason?: string) {
+    return this.request<{ success: boolean; data: any }>(`/policies/catalog/${encodeURIComponent(policyCode)}/withdraw`, {
+      method: "POST",
+      body: JSON.stringify({ reason }),
+    });
+  }
+
+  runDiscoverySmokeTest(targetUrl?: string) {
+    return this.request<{ success: boolean; data: any }>("/policies/discovery/smoke-test", {
+      method: "POST",
+      body: JSON.stringify({ targetUrl }),
+    });
+  }
+
+  getCatalogAuthenticityAudit() {
+    return this.request<{ success: boolean; data: any }>("/policies/catalog/audit");
+  }
+
   // Compare
   comparePolicies(policyIds?: string[]) {
     return this.request<{ success: boolean; data: ComparisonResult }>("/compare", {
@@ -601,6 +667,80 @@ class ApiClient {
       method: "POST",
       body: JSON.stringify(data),
     });
+  }
+
+  // Policy Document Intelligence & Human Reviewer API (Phase 6.3/6.4)
+  getIntelligenceSummary() {
+    return this.request<{
+      success: boolean;
+      data: IntelligencePipelineSummary;
+    }>("/policies/intelligence/summary");
+  }
+
+  getConflictQueue() {
+    return this.request<{
+      success: boolean;
+      data: ConflictQueueItem[];
+    }>("/policies/intelligence/conflicts");
+  }
+
+  getPolicyExtractions(params?: {
+    documentSha256?: string;
+    registryRecordId?: string;
+    verificationStatus?: string;
+    extractionStatus?: string;
+  }) {
+    const q = new URLSearchParams();
+    if (params?.documentSha256) q.append("documentSha256", params.documentSha256);
+    if (params?.registryRecordId) q.append("registryRecordId", params.registryRecordId);
+    if (params?.verificationStatus) q.append("verificationStatus", params.verificationStatus);
+    if (params?.extractionStatus) q.append("extractionStatus", params.extractionStatus);
+    const qs = q.toString() ? `?${q.toString()}` : "";
+    return this.request<{
+      success: boolean;
+      data: PolicyDocumentExtraction[];
+    }>(`/policies/intelligence/extractions${qs}`);
+  }
+
+  getExtractionById(id: string) {
+    return this.request<{
+      success: boolean;
+      data: PolicyDocumentExtraction;
+    }>(`/policies/intelligence/extractions/${encodeURIComponent(id)}`);
+  }
+
+  reviewExtraction(extractionId: string, data: { action: string; notes?: string }) {
+    return this.request<{
+      success: boolean;
+      data: PolicyDocumentExtraction;
+    }>(`/policies/intelligence/verify/${encodeURIComponent(extractionId)}`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  correctExtraction(extractionId: string, data: {
+    correctedValue?: string;
+    correctedNumeric?: number;
+    correctedUnit?: string;
+    correctedEvidenceRole?: string;
+    notes?: string;
+    approveAfterCorrection?: boolean;
+  }) {
+    return this.request<{
+      success: boolean;
+      data: PolicyDocumentExtraction;
+    }>(`/policies/intelligence/correct/${encodeURIComponent(extractionId)}`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  getPolicyReadiness(documentIdentifier: string) {
+    return this.request<{
+      success: boolean;
+      data: PolicyEvidenceReadinessResult;
+    }>(`/policies/intelligence/readiness/${encodeURIComponent(documentIdentifier)}`);
   }
 }
 
@@ -904,6 +1044,9 @@ export interface PolicyEvidenceItem {
   clauseName: string;
   sectionReference: string;
   documentName: string;
+  pageNumber?: number;
+  verifiedSha256?: string;
+  documentUrl?: string;
   verbatimText: string;
   verifiedFact: string;
   tag: string;
@@ -1194,6 +1337,75 @@ export interface CrawlSummary {
   failureDetails?: string[];
   messages: string[];
   domainDiagnostics?: DomainDiagnostics[];
+}
+
+export interface PolicyDiscoveryRun {
+  id: string;
+  triggerType: string;
+  startedAt: string;
+  completedAt?: string;
+  status: string;
+  sourcesScanned: number;
+  candidatesDiscovered: number;
+  candidatesNew: number;
+  candidatesDuplicate: number;
+  candidatesAcquired: number;
+  candidatesPendingReview: number;
+  candidatesPublished: number;
+  failuresCount: number;
+  perSourceSummary: Record<string, string>;
+  logMessages: string[];
+  errorMessage?: string;
+}
+
+export interface PolicyDiscoveryCandidate {
+  id: string;
+  insurerCode: string;
+  insurerName: string;
+  productName: string;
+  normalizedProductCode: string;
+  irdaUin?: string;
+  uinRevision?: string;
+  variantName?: string;
+  sourceUrl: string;
+  finalAcquisitionUrl?: string;
+  discoveryRunId?: string;
+  discoveredAt?: string;
+  documentArtifactId?: string;
+  verifiedSha256?: string;
+  fileSizeBytes?: number;
+  mediaType?: string;
+  lifecycleStage: string;
+  contractConfidenceScore: number;
+  pricingConfidenceScore: number;
+  contractUncertainFields: string[];
+  pricingUncertainFields: string[];
+  auditFindings: string[];
+  rejectionReason?: string;
+  linkedPolicyId?: string;
+  retryCount: number;
+  lastErrorMessage?: string;
+  roomRentSummary?: string;
+  pedWaitingSummary?: string;
+  copaySummary?: string;
+  restorationSummary?: string;
+  reviewedBy?: string;
+  reviewedAt?: string;
+  reviewerNotes?: string;
+}
+
+export interface PolicyDocumentRevision {
+  id: string;
+  irdaUin: string;
+  uinRevision: string;
+  insurerCode: string;
+  policyCode: string;
+  productName: string;
+  documentArtifactId: string;
+  verifiedSha256: string;
+  fileSizeBytes?: number;
+  sourceUrl: string;
+  status: string;
 }
 
 export interface FactDiff {
@@ -1696,6 +1908,101 @@ export interface PolicyIntelligenceProfile {
   premiumQuotation: QuoteDetail;
   benchmarkClaimSimulation: BenchmarkClaimSimulationSummary;
   evidenceQualityScorecard: EvidenceQualityScorecard;
+}
+
+export interface IntelligencePipelineSummary {
+  totalEligibleDocuments: number;
+  totalDocumentsProcessed: number;
+  totalExtractedAttributes: number;
+  extractedCount: number;
+  reviewRequiredCount: number;
+  verifiedCount: number;
+  rejectedCount: number;
+  attributesByCategory: Record<string, number>;
+  attributesByField: Record<string, number>;
+  engineVersion: string;
+  generatedAt: string;
+}
+
+export interface ConflictingCandidate {
+  candidateValue?: string;
+  numericValue?: number;
+  unit?: string;
+  originalPageNumber?: number;
+  confidenceScore?: number;
+  evidenceRole?: string;
+  originalClauseText?: string;
+  clauseNumberOrHeading?: string;
+}
+
+export interface ConflictQueueItem {
+  extractionId: string;
+  documentSha256: string;
+  canonicalUin: string;
+  registryRecordId: string;
+  documentRevisionId: string;
+  productName: string;
+  insurerName: string;
+  productVariant: string;
+  fieldName: string;
+  taxonomyCategory: string;
+  candidateValue: string;
+  numericValue?: number | null;
+  unit: string;
+  pageNumber?: number | null;
+  evidenceRole: string;
+  verbatimClauseText: string;
+  conflictReason: string;
+  disposition: string;
+  conflictingCandidates?: ConflictingCandidate[];
+}
+
+export interface PolicyDocumentExtraction {
+  id: string;
+  registryRecordId?: string;
+  documentRevisionId?: string;
+  documentSha256: string;
+  canonicalPolicyUin?: string;
+  taxonomyCategory: string;
+  extractedFieldName: string;
+  typedFieldValue: string;
+  numericValue?: number | null;
+  unit?: string;
+  currency?: string;
+  conditions?: string;
+  exceptions?: string;
+  originalClauseText?: string;
+  originalPageNumber?: number;
+  clauseNumberOrHeading?: string;
+  evidenceRole: string;
+  productName?: string;
+  insurerName?: string;
+  productVariant?: string;
+  hasConflict?: boolean;
+  conflictingCandidates?: ConflictingCandidate[];
+  extractionMethod?: string;
+  extractionEngineVersion?: string;
+  confidenceScore?: number;
+  extractionStatus?: string;
+  verificationStatus: string;
+  conflictReason?: string;
+  reviewerNotes?: string;
+  reviewedBy?: string;
+  reviewedAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface PolicyEvidenceReadinessResult {
+  documentSha256: string;
+  canonicalUin?: string;
+  readinessStatus: string;
+  completenessScore: number;
+  missingMandatoryFields: string[];
+  unresolvedConflictFields: string[];
+  verifiedFieldsCount: number;
+  totalRequiredFields: number;
+  readinessSummary: string;
 }
 
 export const api = new ApiClient();

@@ -23,11 +23,26 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import com.vidhura.ai.recommendation.model.PolicyDiscoveryCandidate;
+import com.vidhura.ai.recommendation.model.PolicyDiscoveryRun;
+import com.vidhura.ai.recommendation.model.PolicyDocumentRevision;
+import com.vidhura.ai.recommendation.repository.PolicyDiscoveryCandidateRepository;
+import com.vidhura.ai.recommendation.repository.PolicyDiscoveryRunRepository;
+import com.vidhura.ai.recommendation.repository.PolicyDocumentRevisionRepository;
+import com.vidhura.ai.recommendation.service.PolicyDiscoveryOrchestratorService;
+import com.vidhura.ai.recommendation.service.PolicyDiscoverySchedulerService;
+import com.vidhura.ai.recommendation.service.PolicyRegistrySyncService;
 
+import java.io.File;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import com.vidhura.ai.recommendation.service.OfficialSourceAcquisitionService;
+import com.vidhura.ai.recommendation.service.PolicyIngestionService;
+import com.vidhura.ai.recommendation.service.PersistentArtifactStorageService;
 
 /**
  * REST API for policy discovery, ingestion pipeline, catalog management,
@@ -47,8 +62,18 @@ public class PolicyCatalogController {
     private final StructuredPolicyRepository policyRepository;
     private final PolicySourceRepository sourceRepository;
     private final DiscoveredDocumentRepository documentRepository;
+
     private final PolicySourceMonitor sourceMonitor;
     private final RecommendationQualityBenchmarkService benchmarkService;
+    private final PolicyDiscoverySchedulerService discoverySchedulerService;
+    private final PolicyDiscoveryOrchestratorService discoveryOrchestratorService;
+    private final PolicyDiscoveryCandidateRepository candidateRepository;
+    private final PolicyDiscoveryRunRepository runRepository;
+    private final PolicyDocumentRevisionRepository revisionRepository;
+    private final PolicyRegistrySyncService registrySyncService;
+    private final OfficialSourceAcquisitionService acquisitionService;
+    private final PolicyIngestionService policyIngestionService;
+    private final PersistentArtifactStorageService persistentStorage;
 
     @Autowired
     public PolicyCatalogController(
@@ -59,7 +84,16 @@ public class PolicyCatalogController {
             @Autowired(required = false) PolicySourceRepository sourceRepository,
             @Autowired(required = false) DiscoveredDocumentRepository documentRepository,
             @Autowired(required = false) PolicySourceMonitor sourceMonitor,
-            @Autowired(required = false) RecommendationQualityBenchmarkService benchmarkService) {
+            @Autowired(required = false) RecommendationQualityBenchmarkService benchmarkService,
+            @Autowired(required = false) PolicyDiscoverySchedulerService discoverySchedulerService,
+            @Autowired(required = false) PolicyDiscoveryOrchestratorService discoveryOrchestratorService,
+            @Autowired(required = false) PolicyDiscoveryCandidateRepository candidateRepository,
+            @Autowired(required = false) PolicyDiscoveryRunRepository runRepository,
+            @Autowired(required = false) PolicyDocumentRevisionRepository revisionRepository,
+            @Autowired(required = false) PolicyRegistrySyncService registrySyncService,
+            @Autowired(required = false) OfficialSourceAcquisitionService acquisitionService,
+            @Autowired(required = false) PolicyIngestionService policyIngestionService,
+            @Autowired(required = false) PersistentArtifactStorageService persistentStorage) {
         this.discoveryPipelineService = discoveryPipelineService;
         this.publicationService = publicationService;
         this.recommendationService = recommendationService;
@@ -68,6 +102,15 @@ public class PolicyCatalogController {
         this.documentRepository = documentRepository;
         this.sourceMonitor = sourceMonitor;
         this.benchmarkService = benchmarkService;
+        this.discoverySchedulerService = discoverySchedulerService;
+        this.discoveryOrchestratorService = discoveryOrchestratorService;
+        this.candidateRepository = candidateRepository;
+        this.runRepository = runRepository;
+        this.revisionRepository = revisionRepository;
+        this.registrySyncService = registrySyncService;
+        this.acquisitionService = acquisitionService;
+        this.policyIngestionService = policyIngestionService;
+        this.persistentStorage = persistentStorage;
     }
 
     public PolicyCatalogController(
@@ -75,8 +118,24 @@ public class PolicyCatalogController {
             PolicyPublicationService publicationService,
             RecommendationService recommendationService,
             StructuredPolicyRepository policyRepository) {
-        this(discoveryPipelineService, publicationService, recommendationService, policyRepository, null, null, null, null);
+        this(discoveryPipelineService, publicationService, recommendationService, policyRepository,
+                null, null, null, null, null, null, null, null, null, null, null, null, null);
     }
+
+    public PolicyCatalogController(
+            PolicyDiscoveryPipelineService discoveryPipelineService,
+            PolicyPublicationService publicationService,
+            RecommendationService recommendationService,
+            StructuredPolicyRepository policyRepository,
+            PolicySourceRepository sourceRepository,
+            DiscoveredDocumentRepository documentRepository,
+            PolicySourceMonitor sourceMonitor,
+            RecommendationQualityBenchmarkService benchmarkService) {
+        this(discoveryPipelineService, publicationService, recommendationService, policyRepository,
+                sourceRepository, documentRepository, sourceMonitor, benchmarkService,
+                null, null, null, null, null, null, null, null, null);
+    }
+
 
     private void assertReviewerOrAdmin(User user) {
         if (user == null || user.getRole() == null
@@ -281,6 +340,39 @@ public class PolicyCatalogController {
         return ResponseEntity.ok(ApiResponse.ok(Map.of(
                 "message", "Policy catalog cache successfully refreshed from MongoDB.",
                 "activeVerifiedPoliciesCount", count
+        )));
+    }
+
+    /**
+     * Reseeds the catalog policies into MongoDB and synchronizes the policy registry.
+     * Strictly restricted to ROLE_ADMIN or ROLE_REVIEWER.
+     */
+    @PreAuthorize("hasAnyRole('ADMIN', 'REVIEWER')")
+    @PostMapping({"/admin/reseed", "/reseed"})
+    public ResponseEntity<ApiResponse<Map<String, Object>>> reseedCatalog(
+            @AuthenticationPrincipal User currentUser) {
+        assertReviewerOrAdmin(currentUser);
+        String userEmail = currentUser != null ? currentUser.getEmail() : "admin@vidhura.ai";
+        log.info("[PolicyCatalogController] Reseed requested by {}", userEmail);
+        int reseeded = recommendationService.adminReseedCatalog(userEmail, "Admin manual reseed");
+        int insurersSynced = 0;
+        int policiesSynced = 0;
+        int sourcesSynced = 0;
+        if (registrySyncService != null) {
+            try {
+                PolicyRegistrySyncService.SyncResult syncRes = registrySyncService.synchronizePolicyRegistry();
+                insurersSynced = syncRes.insurersSynced();
+                policiesSynced = syncRes.policiesSynced();
+                sourcesSynced = syncRes.sourcesSynced();
+            } catch (Exception e) {
+                log.warn("[PolicyCatalogController] Registry sync warning: {}", e.getMessage());
+            }
+        }
+        return ResponseEntity.ok(ApiResponse.ok(Map.of(
+                "reseededCount", reseeded,
+                "insurersSynced", insurersSynced,
+                "policiesSynced", policiesSynced,
+                "sourcesSynced", sourcesSynced
         )));
     }
 
@@ -492,5 +584,300 @@ public class PolicyCatalogController {
         log.info("[PolicyCatalogController] Running Recommendation Quality Benchmark Suite requested by {}", currentUser.getEmail());
         RecommendationQualityReport report = benchmarkService.runBenchmarkSuite();
         return ResponseEntity.ok(ApiResponse.ok(report));
+    }
+
+    // =========================================================================
+    // PHASE 5.6: AUTOMATED POLICY DISCOVERY & OPERATOR CONTROLS
+    // =========================================================================
+
+    /**
+     * Retrieves recent discovery run execution history.
+     */
+    @PreAuthorize("hasAnyRole('ADMIN', 'REVIEWER', 'GUEST')")
+    @GetMapping({"/discovery/runs", "/discovery-runs"})
+    public ResponseEntity<ApiResponse<List<PolicyDiscoveryRun>>> getDiscoveryRuns(
+            @AuthenticationPrincipal User currentUser) {
+        assertReviewerOrAuditor(currentUser);
+        List<PolicyDiscoveryRun> runs;
+        try {
+            runs = runRepository != null
+                    ? runRepository.findTop20ByOrderByStartedAtDesc()
+                    : List.of();
+        } catch (Exception e) {
+            log.warn("[PolicyCatalogController] Exception reading discovery runs: {}", e.getMessage());
+            runs = List.of();
+        }
+        return ResponseEntity.ok(ApiResponse.ok(runs, runs.size()));
+    }
+
+    /**
+     * Triggers manual official-source discovery.
+     */
+    @PreAuthorize("hasAnyRole('ADMIN', 'REVIEWER')")
+    @PostMapping({"/discovery/trigger", "/trigger-discovery"})
+    public ResponseEntity<ApiResponse<PolicyDiscoveryRun>> triggerDiscovery(
+            @RequestBody(required = false) List<String> targetUrls,
+            @AuthenticationPrincipal User currentUser) {
+        assertReviewerOrAdmin(currentUser);
+        if (discoverySchedulerService == null) {
+            return ResponseEntity.status(503).body(ApiResponse.err("PolicyDiscoverySchedulerService is not available."));
+        }
+        log.info("[PolicyCatalogController] Manual discovery triggered by {}", currentUser != null ? currentUser.getEmail() : "SYSTEM");
+        PolicyDiscoveryRun run = discoverySchedulerService.executeDiscoveryRun("MANUAL_ADMIN", targetUrls);
+        return ResponseEntity.ok(ApiResponse.ok(run));
+    }
+
+    /**
+     * Retrieves discovered candidate products (with optional stage filter).
+     */
+    @PreAuthorize("hasAnyRole('ADMIN', 'REVIEWER', 'GUEST')")
+    @GetMapping({"/discovery/candidates", "/discovery-candidates"})
+    public ResponseEntity<ApiResponse<List<PolicyDiscoveryCandidate>>> getDiscoveryCandidates(
+            @RequestParam(required = false) String stage,
+            @AuthenticationPrincipal User currentUser) {
+        assertReviewerOrAuditor(currentUser);
+        List<PolicyDiscoveryCandidate> candidates;
+        try {
+            if (candidateRepository == null) {
+                candidates = List.of();
+            } else if (stage != null && !stage.isBlank()) {
+                candidates = candidateRepository.findByLifecycleStage(stage);
+            } else {
+                candidates = candidateRepository.findAll();
+            }
+        } catch (Exception e) {
+            log.warn("[PolicyCatalogController] Exception reading discovery candidates: {}", e.getMessage());
+            candidates = List.of();
+        }
+        return ResponseEntity.ok(ApiResponse.ok(candidates, candidates.size()));
+    }
+
+    /**
+     * Triggers physical document acquisition for a candidate.
+     */
+    @PreAuthorize("hasAnyRole('ADMIN', 'REVIEWER')")
+    @PostMapping("/discovery/candidates/{id}/acquire")
+    public ResponseEntity<ApiResponse<PolicyDiscoveryCandidate>> acquireCandidate(
+            @PathVariable String id,
+            @AuthenticationPrincipal User currentUser) {
+        assertReviewerOrAdmin(currentUser);
+        if (discoveryOrchestratorService == null) {
+            return ResponseEntity.status(503).body(ApiResponse.err("PolicyDiscoveryOrchestratorService is not available."));
+        }
+        PolicyDiscoveryCandidate candidate = discoveryOrchestratorService.acquireCandidateDocument(id);
+        return ResponseEntity.ok(ApiResponse.ok(candidate));
+    }
+
+    /**
+     * Triggers extraction and validation for an acquired candidate.
+     */
+    @PreAuthorize("hasAnyRole('ADMIN', 'REVIEWER')")
+    @PostMapping("/discovery/candidates/{id}/extract")
+    public ResponseEntity<ApiResponse<PolicyDiscoveryCandidate>> extractCandidate(
+            @PathVariable String id,
+            @AuthenticationPrincipal User currentUser) {
+        assertReviewerOrAdmin(currentUser);
+        if (discoveryOrchestratorService == null) {
+            return ResponseEntity.status(503).body(ApiResponse.err("PolicyDiscoveryOrchestratorService is not available."));
+        }
+        PolicyDiscoveryCandidate candidate = discoveryOrchestratorService.extractAndValidateCandidate(id);
+        return ResponseEntity.ok(ApiResponse.ok(candidate));
+    }
+
+    /**
+     * Publishes a candidate policy to the active MongoDB catalog after human review.
+     */
+    @PreAuthorize("hasAnyRole('ADMIN', 'REVIEWER')")
+    @PostMapping("/discovery/candidates/{id}/publish")
+    public ResponseEntity<ApiResponse<PolicyDiscoveryCandidate>> publishCandidate(
+            @PathVariable String id,
+            @RequestBody(required = false) Map<String, String> body,
+            @AuthenticationPrincipal User currentUser) {
+        assertReviewerOrAdmin(currentUser);
+        if (discoveryOrchestratorService == null) {
+            return ResponseEntity.status(503).body(ApiResponse.err("PolicyDiscoveryOrchestratorService is not available."));
+        }
+        String reviewer = currentUser != null ? currentUser.getEmail() : "ADMIN_OPERATOR";
+        String notes = (body != null && body.containsKey("notes")) ? body.get("notes") : "Approved after human review.";
+        PolicyDiscoveryCandidate published = discoveryOrchestratorService.publishCandidate(id, reviewer, notes);
+        return ResponseEntity.ok(ApiResponse.ok(published));
+    }
+
+    /**
+     * Retrieves document revisions for multi-version tracking.
+     */
+    @PreAuthorize("hasAnyRole('ADMIN', 'REVIEWER', 'GUEST')")
+    @GetMapping({"/discovery/revisions", "/discovery-revisions"})
+    public ResponseEntity<ApiResponse<List<PolicyDocumentRevision>>> getDocumentRevisions(
+            @RequestParam(required = false) String uin,
+            @AuthenticationPrincipal User currentUser) {
+        assertReviewerOrAuditor(currentUser);
+        List<PolicyDocumentRevision> revs;
+        if (revisionRepository == null) {
+            revs = List.of();
+        } else if (uin != null && !uin.isBlank()) {
+            revs = revisionRepository.findByIrdaUin(uin);
+        } else {
+            revs = revisionRepository.findAll();
+        }
+        return ResponseEntity.ok(ApiResponse.ok(revs, revs.size()));
+    }
+
+    /**
+     * Phase 5.7: Deterministic Catalogue Authenticity and Provenance Audit.
+     * Evaluates every policy currently stored in MongoDB or registered in the catalogue,
+     * recomputing physical byte SHA-256 hashes, PDF page structures, and authenticity statuses.
+     */
+    @PreAuthorize("hasAnyRole('ADMIN', 'REVIEWER', 'GUEST')")
+    @GetMapping({"/catalog/audit", "/audit"})
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getCatalogueAudit(
+            @AuthenticationPrincipal User currentUser) {
+        assertReviewerOrAuditor(currentUser);
+
+        List<StructuredPolicy> policies = policyRepository != null ? policyRepository.findAll() : List.of();
+        if (policies.isEmpty() && policyIngestionService != null) {
+            policies = policyIngestionService.getAllCatalogPolicies();
+        }
+
+        List<Map<String, Object>> auditItems = new ArrayList<>();
+        int verifiedOfficialCount = 0;
+        int syntheticFixtureCount = 0;
+        int integrityFailures = 0;
+
+        for (StructuredPolicy p : policies) {
+            Map<String, Object> item = new HashMap<>();
+            item.put("policyCode", p.getPolicyCode());
+            item.put("policyName", p.getPolicyName());
+            item.put("provider", p.getProvider());
+            item.put("irdaUin", p.getIrdaUin());
+            item.put("uinRevision", p.getUinRevision());
+            item.put("officialDocumentUrl", p.getOfficialDocumentUrl());
+            item.put("policyWordingDocument", p.getPolicyWordingDocument());
+            item.put("recordedChecksum", p.getDocumentChecksum());
+            item.put("syntheticFixture", p.isSyntheticFixture());
+            item.put("verificationStatus", p.getVerificationStatus());
+            item.put("reviewerApprovalStatus", p.getReviewerApprovalStatus());
+            item.put("active", p.isActive());
+
+            // Check physical file resolution
+            String docName = p.getPolicyWordingDocument();
+            File f = null;
+            if (docName != null) {
+                f = new File("src/main/resources/evidence/policies/" + docName);
+                if (!f.exists() && persistentStorage != null && p.getDocumentChecksum() != null) {
+                    f = persistentStorage.resolveArtifact(p.getDocumentChecksum()).orElse(null);
+                }
+            }
+
+            boolean fileExists = (f != null && f.exists());
+            item.put("physicalFileExists", fileExists);
+
+            String recomputedHash = null;
+            boolean hashesMatch = false;
+            int pageCount = -1;
+            long fileSizeBytes = 0;
+
+            if (fileExists) {
+                fileSizeBytes = f.length();
+                recomputedHash = PersistentArtifactStorageService.computeFileSha256(f);
+                hashesMatch = p.getDocumentChecksum() != null && p.getDocumentChecksum().equalsIgnoreCase(recomputedHash);
+                try (org.apache.pdfbox.pdmodel.PDDocument doc = org.apache.pdfbox.Loader.loadPDF(f)) {
+                    pageCount = doc.getNumberOfPages();
+                } catch (Exception ignored) {}
+            }
+
+            item.put("fileSizeBytes", fileSizeBytes);
+            item.put("pageCount", pageCount);
+            item.put("recomputedChecksum", recomputedHash);
+            item.put("hashesMatch", hashesMatch);
+
+            String authStatus;
+            if (p.isSyntheticFixture() || "TEST_FIXTURE_OR_SYNTHETIC".equalsIgnoreCase(p.getDocumentAuthenticityStatus()) || (pageCount <= 2 && fileSizeBytes < 10000)) {
+                authStatus = "TEST_FIXTURE_OR_SYNTHETIC";
+                syntheticFixtureCount++;
+            } else if (!hashesMatch && fileExists) {
+                authStatus = "ARTIFACT_INTEGRITY_FAILURE";
+                integrityFailures++;
+            } else if (!fileExists) {
+                authStatus = "SOURCE_UNAVAILABLE";
+            } else if (p.getIrdaUin() != null && !p.getIrdaUin().startsWith("UNKNOWN") && hashesMatch && pageCount > 5) {
+                authStatus = "VERIFIED_OFFICIAL_SOURCE";
+                verifiedOfficialCount++;
+            } else {
+                authStatus = "UNVERIFIED_SOURCE";
+            }
+
+            item.put("documentAuthenticityStatus", authStatus);
+            item.put("recommendationEligible", recommendationService != null && recommendationService.isPublicationReady(p));
+            auditItems.add(item);
+        }
+
+        Map<String, Object> summary = Map.of(
+                "totalAudited", auditItems.size(),
+                "verifiedOfficialSourceCount", verifiedOfficialCount,
+                "syntheticFixtureCount", syntheticFixtureCount,
+                "integrityFailureCount", integrityFailures,
+                "auditTimestamp", Instant.now().toString(),
+                "auditItems", auditItems
+        );
+
+        return ResponseEntity.ok(ApiResponse.ok(summary));
+    }
+
+    /**
+     * Phase 5.7: Explicit rejection of unverified or suspect discovery candidates.
+     */
+    @PreAuthorize("hasAnyRole('ADMIN', 'REVIEWER')")
+    @PostMapping("/discovery/candidates/{id}/reject")
+    public ResponseEntity<ApiResponse<PolicyDiscoveryCandidate>> rejectCandidate(
+            @PathVariable String id,
+            @RequestBody(required = false) Map<String, String> body,
+            @AuthenticationPrincipal User currentUser) {
+        assertReviewerOrAdmin(currentUser);
+        if (discoveryOrchestratorService == null) {
+            return ResponseEntity.status(503).body(ApiResponse.err("PolicyDiscoveryOrchestratorService is not available."));
+        }
+        String reviewer = currentUser != null ? currentUser.getEmail() : "ADMIN_OPERATOR";
+        String reason = (body != null && body.containsKey("reason")) ? body.get("reason") : "Rejected by reviewer.";
+        PolicyDiscoveryCandidate rejected = discoveryOrchestratorService.rejectCandidate(id, reviewer, reason);
+        return ResponseEntity.ok(ApiResponse.ok(rejected));
+    }
+
+    /**
+     * Phase 5.7: Administrative withdrawal of published policy with cache invalidation.
+     */
+    @PreAuthorize("hasAnyRole('ADMIN', 'REVIEWER')")
+    @PostMapping({"/catalog/{policyCode}/withdraw", "/{policyCode}/withdraw"})
+    public ResponseEntity<ApiResponse<StructuredPolicy>> withdrawPolicy(
+            @PathVariable String policyCode,
+            @RequestBody(required = false) Map<String, String> body,
+            @AuthenticationPrincipal User currentUser) {
+        assertReviewerOrAdmin(currentUser);
+        if (discoveryOrchestratorService == null) {
+            return ResponseEntity.status(503).body(ApiResponse.err("PolicyDiscoveryOrchestratorService is not available."));
+        }
+        String reviewer = currentUser != null ? currentUser.getEmail() : "ADMIN_OPERATOR";
+        String reason = (body != null && body.containsKey("reason")) ? body.get("reason") : "Administrative policy withdrawal.";
+        StructuredPolicy withdrawn = discoveryOrchestratorService.withdrawPolicy(policyCode, reviewer, reason);
+        return ResponseEntity.ok(ApiResponse.ok(withdrawn));
+    }
+
+    /**
+     * Phase 5.7: Controlled Real-Source Smoke Test endpoint.
+     */
+    @PreAuthorize("hasAnyRole('ADMIN', 'REVIEWER')")
+    @PostMapping("/discovery/smoke-test")
+    public ResponseEntity<ApiResponse<OfficialSourceAcquisitionService.LiveSmokeTestResult>> runLiveSmokeTest(
+            @RequestBody(required = false) Map<String, String> body,
+            @AuthenticationPrincipal User currentUser) {
+        assertReviewerOrAdmin(currentUser);
+        if (acquisitionService == null) {
+            return ResponseEntity.status(503).body(ApiResponse.err("OfficialSourceAcquisitionService is not available."));
+        }
+        String targetUrl = (body != null && body.containsKey("targetUrl"))
+                ? body.get("targetUrl")
+                : "https://uiic.co.in/sites/default/files/uploads/product/Individual%20Health%20Insurance%20Policy%20-%20Policy%20Wordings.pdf";
+        OfficialSourceAcquisitionService.LiveSmokeTestResult res = acquisitionService.runControlledSourceSmokeTest(targetUrl);
+        return ResponseEntity.ok(ApiResponse.ok(res));
     }
 }

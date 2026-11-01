@@ -25,4 +25,18 @@ public interface ExternalEvidenceRepository extends MongoRepository<ExternalEvid
     boolean existsBySourceDocumentHashAndMetricKey(String sourceDocumentHash, String metricKey);
 
     boolean existsByInsurerCodeAndMetricKeyAndReportingPeriod(String insurerCode, String metricKey, String reportingPeriod);
+
+    boolean existsByInsurerCodeAndMetricKeyAndReportingPeriodAndRevision(String insurerCode, String metricKey, String reportingPeriod, int revision);
+
+    Optional<ExternalEvidenceRecord> findByInsurerCodeAndMetricKeyAndReportingPeriodAndRevision(String insurerCode, String metricKey, String reportingPeriod, int revision);
+
+    List<ExternalEvidenceRecord> findByInsurerCodeAndMetricKeyAndReportingPeriodOrderByRevisionDesc(String insurerCode, String metricKey, String reportingPeriod);
+
+    List<ExternalEvidenceRecord> findByInsurerCodeOrderByReportingPeriodDescRevisionDesc(String insurerCode);
+
+    List<ExternalEvidenceRecord> findAllByOrderByInsurerCodeAscMetricKeyAscRevisionDesc();
+
+    List<ExternalEvidenceRecord> findByEvidenceType(String evidenceType);
+
+    List<ExternalEvidenceRecord> findByComplaintChannel(String complaintChannel);
 }

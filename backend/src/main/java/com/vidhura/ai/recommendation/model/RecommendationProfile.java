@@ -44,6 +44,12 @@ public class RecommendationProfile {
     private long desiredSumInsured; // 500000, 1000000, 2500000, 5000000, etc.
     private boolean helpMeDecideSumInsured;
     private String primaryPriority; // AFFORDABLE_PREMIUMS, BROADER_COVERAGE, LOWER_OUT_OF_POCKET, BALANCED
+    @Builder.Default
+    private String targetCategory = "RETAIL_MEDICAL";
+    private Integer groupSize;
+    private String destinationCountry;
+    private Integer tripDurationDays;
+    private String basePolicyCode;
 
     // Step B: Additional Inputs for Accuracy
     @Builder.Default
@@ -68,6 +74,7 @@ public class RecommendationProfile {
     private String likelyTreatmentNeeds = "COMPREHENSIVE";
     @Builder.Default
     private String strictRoomPreference = "SINGLE_PRIVATE_AC";
+    private String roomRentPreference;
     @Builder.Default
     private boolean includeDemoFixtures = false;
 

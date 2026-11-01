@@ -6,8 +6,8 @@ import com.vidhura.ai.recommendation.dto.PolicyIntelligenceProfileDto;
 import com.vidhura.ai.recommendation.engine.DeterministicClaimEngine;
 import com.vidhura.ai.recommendation.model.StructuredPolicy;
 import com.vidhura.ai.recommendation.repository.StructuredPolicyRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -23,7 +23,6 @@ import java.util.NoSuchElementException;
  * profile for any policy in one single read call.
  */
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class PolicyIntelligenceProfileService {
 
@@ -31,6 +30,29 @@ public class PolicyIntelligenceProfileService {
     private final ApprovedPolicyRuleResolver ruleResolver;
     private final DeterministicClaimEngine claimEngine;
     private final ExternalEvidenceService externalEvidenceService;
+    private final RecommendationService recommendationService;
+
+    @Autowired
+    public PolicyIntelligenceProfileService(
+            StructuredPolicyRepository policyRepository,
+            ApprovedPolicyRuleResolver ruleResolver,
+            DeterministicClaimEngine claimEngine,
+            ExternalEvidenceService externalEvidenceService,
+            @Autowired(required = false) RecommendationService recommendationService) {
+        this.policyRepository = policyRepository;
+        this.ruleResolver = ruleResolver;
+        this.claimEngine = claimEngine;
+        this.externalEvidenceService = externalEvidenceService;
+        this.recommendationService = recommendationService;
+    }
+
+    public PolicyIntelligenceProfileService(
+            StructuredPolicyRepository policyRepository,
+            ApprovedPolicyRuleResolver ruleResolver,
+            DeterministicClaimEngine claimEngine,
+            ExternalEvidenceService externalEvidenceService) {
+        this(policyRepository, ruleResolver, claimEngine, externalEvidenceService, null);
+    }
 
     /**
      * Aggregates contractual ground truth, insurer statutory performance,
@@ -62,10 +84,26 @@ public class PolicyIntelligenceProfileService {
         log.info("[PolicyIntelligenceProfile] Aggregating profile for policy='{}', age={}, SI={}, city='{}', customSuitability={}",
                 policyCodeOrId, age, sumInsured, city, customSuitabilityScore);
 
-        // 1. Resolve structured policy from repository
-        StructuredPolicy policy = policyRepository.findByPolicyCode(policyCodeOrId)
-                .or(() -> policyRepository.findById(policyCodeOrId))
-                .orElseThrow(() -> new NoSuchElementException("Policy not found with code or ID: " + policyCodeOrId));
+        // 1. Resolve structured policy from repository with in-memory fallback
+        StructuredPolicy policy = null;
+        try {
+            policy = policyRepository.findByPolicyCode(policyCodeOrId)
+                    .or(() -> policyRepository.findById(policyCodeOrId))
+                    .orElse(null);
+        } catch (Exception e) {
+            log.warn("[PolicyIntelligenceProfile] Mongo query failed for '{}': {}", policyCodeOrId, e.getMessage());
+        }
+
+        if (policy == null && recommendationService != null) {
+            policy = recommendationService.loadCatalog().stream()
+                    .filter(p -> policyCodeOrId.equalsIgnoreCase(p.getPolicyCode()) || policyCodeOrId.equalsIgnoreCase(p.getId()))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        if (policy == null) {
+            throw new NoSuchElementException("Policy not found with code or ID: " + policyCodeOrId);
+        }
 
         BigDecimal effectiveSI = (sumInsured != null && sumInsured.compareTo(BigDecimal.ZERO) > 0)
                 ? sumInsured

@@ -45,14 +45,40 @@ public class EligibilityEngine {
 
             StructuredPolicy.EligibilityRules rules = policy.getEligibility();
             if (rules == null) {
-                // No eligibility rules defined — assume eligible with warning
-                warnings.add("No eligibility rules defined for this product; verify manually.");
+                failReasons.add("Eligibility cannot be assessed — missing contractual terms in policy record. (Not a confirmed rejection by insurer).");
                 results.add(EligibilityResult.builder()
                         .policy(policy)
-                        .eligible(true)
+                        .eligible(false)
+                        .eligibilityUnknown(true)
+                        .eligibilityStatus("UNASSESSED_MISSING_DATA")
+                        .failReasons(failReasons)
                         .warnings(warnings)
                         .build());
                 continue;
+            }
+
+
+            // 0. Independent Category Routing (Section 3 & 8)
+            String targetCat = profile.getTargetCategory() != null && !profile.getTargetCategory().isBlank()
+                    ? profile.getTargetCategory().toUpperCase()
+                    : "RETAIL_MEDICAL";
+
+            String policyCat = policy.getCanonicalCategory();
+            if (!"ALL".equals(targetCat) && !targetCat.equals(policyCat)) {
+                failReasons.add(String.format("Product category '%s' does not match requested recommendation category '%s'. Incompatible insurance categories are isolated from each other.", policyCat, targetCat));
+            }
+
+            // 0a. Rider / Add-on Parent Product Dependency Check
+            if ("RIDER".equals(policyCat) && (profile.getBasePolicyCode() == null || profile.getBasePolicyCode().isBlank())) {
+                failReasons.add("Rider and add-on products cannot be recommended standalone without an eligible, verified base policy relationship.");
+            }
+
+            // 0b. Group Health Eligibility Check
+            if ("GROUP_HEALTH".equals(policyCat)) {
+                if (profile.getGroupSize() == null || profile.getGroupSize() < 7) {
+                    failReasons.add(String.format("Group Health Insurance requires a formal group structure with at least 7 eligible members as per IRDAI group regulations (provided group size: %s).",
+                            profile.getGroupSize() != null ? profile.getGroupSize() : "unspecified"));
+                }
             }
 
             // 1. Primary Adult Age Check
@@ -191,6 +217,8 @@ public class EligibilityEngine {
             results.add(EligibilityResult.builder()
                     .policy(policy)
                     .eligible(eligible)
+                    .eligibilityUnknown(false)
+                    .eligibilityStatus(eligible ? "ELIGIBLE" : "INELIGIBLE")
                     .failReasons(failReasons)
                     .warnings(warnings)
                     .build());
@@ -224,6 +252,9 @@ public class EligibilityEngine {
     public static class EligibilityResult {
         private StructuredPolicy policy;
         private boolean eligible;
+        @lombok.Builder.Default
+        private boolean eligibilityUnknown = false;
+        private String eligibilityStatus;
         @lombok.Builder.Default
         private List<String> failReasons = new ArrayList<>();
         @lombok.Builder.Default

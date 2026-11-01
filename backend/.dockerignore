@@ -1,8 +1,45 @@
-target/
+# ============================================
+# Vidhura AI Backend — Docker Ignore Configuration
+# Context: ./backend
+# ============================================
+
+# ── Version Control ────────────────────────
 .git
 .gitignore
+
+# ── Environment & Secrets ──────────────────
 .env
+.env.*
+!.env.example
+
+# ── Build Outputs & Dependencies ───────────
+target/
+*.class
+*.jar
+*.war
+
+# ── Documentation & Reports ────────────────
 *.md
+docs/
+
+# ── IDE & Editor Files ─────────────────────
 .vscode
 .idea
 *.iml
+
+# ── Logs & Debug Files ─────────────────────
+*.log
+*.stackdump
+
+# ── Local & External Policy Storage ────────
+scratch/
+data/
+policies/
+manifests/
+content-addressed/
+quarantine/
+
+# ── Large Downloaded Documents ─────────────
+*.pdf
+!src/main/resources/evidence/**
+!src/test/resources/**

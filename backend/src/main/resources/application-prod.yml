@@ -12,7 +12,7 @@ spring:
     name: vidhura-ai-backend
   data:
     mongodb:
-      uri: ${MONGODB_URI:mongodb://mongodb:27017/vidhura}
+      uri: ${MONGODB_URI}
   servlet:
     multipart:
       max-file-size: 25MB
@@ -33,6 +33,9 @@ ai:
     model: ${GROQ_MODEL:llama-3.3-70b-versatile}
     fallback-model: ${GROQ_FALLBACK_MODEL:llama-3.1-8b-instant}
     api-url: ${GROQ_API_URL:https://api.groq.com/openai/v1/chat/completions}
+  gemini:
+    api-key: ${GEMINI_API_KEY:}
+    model: ${GEMINI_MODEL:gemini-1.5-flash}
   hf:
     token: ${HF_TOKEN:}
     model: ${HF_MODEL:meta-llama/Llama-3.3-70B-Instruct}
@@ -45,7 +48,7 @@ hf:
 
 # Production CORS — restrict to actual frontend origin
 cors:
-  allowed-origins: ${CORS_ALLOWED_ORIGINS:*}
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
 
 # Actuator for health/monitoring
 management:
@@ -72,3 +75,15 @@ logging:
 # Rate limiting
 rate-limit:
   requests-per-minute: ${RATE_LIMIT_RPM:60}
+
+vidhura:
+  discovery:
+    enabled: false
+    schedule-cron: "-"
+  freshness:
+    enabled: false
+    schedule-cron: "-"
+  policy:
+    discovery:
+      enabled: false
+      cron: "-"

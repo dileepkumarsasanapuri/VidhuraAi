@@ -27,10 +27,23 @@ import java.util.*;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class ApprovedPolicyRuleResolver {
 
     private final StructuredPolicyRepository policyRepository;
+    private final PolicyIngestionService policyIngestionService;
+
+    public ApprovedPolicyRuleResolver(StructuredPolicyRepository policyRepository) {
+        this(policyRepository, null);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public ApprovedPolicyRuleResolver(
+            StructuredPolicyRepository policyRepository,
+            @org.springframework.beans.factory.annotation.Autowired(required = false)
+            PolicyIngestionService policyIngestionService) {
+        this.policyRepository = policyRepository;
+        this.policyIngestionService = policyIngestionService;
+    }
 
     @Data
     @Builder
@@ -121,13 +134,17 @@ public class ApprovedPolicyRuleResolver {
             throw new IllegalArgumentException("Policy identifier is required for claim simulation.");
         }
 
-        // Look up by ID or PolicyCode or IRDA UIN
         Optional<StructuredPolicy> policyOpt = policyRepository.findById(policyIdOrCode);
         if (policyOpt.isEmpty()) {
             policyOpt = policyRepository.findByPolicyCode(policyIdOrCode);
         }
         if (policyOpt.isEmpty()) {
             policyOpt = policyRepository.findByIrdaUin(policyIdOrCode);
+        }
+        if (policyOpt.isEmpty() && policyIngestionService != null) {
+            policyOpt = policyIngestionService.getAllCatalogPolicies().stream()
+                    .filter(p -> p.matchesPolicyCodeOrAlias(policyIdOrCode) || p.matchesUinOrHistorical(policyIdOrCode))
+                    .findFirst();
         }
 
         if (policyOpt.isEmpty()) {
