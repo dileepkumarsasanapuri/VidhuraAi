@@ -1,0 +1,443 @@
+[
+  {
+    "policyCode": "THE_NEW_INDIA_ASSURANCE_COMPAN_V102425",
+    "productName": "New India Mediclaim Policy",
+    "insurer": "The New India Assurance Company Limited",
+    "irdaUin": "NIAHLIP21277V042021",
+    "filename": "NIAHLIP21277V042021_2020-2021.pdf",
+    "physicalPath": "E:\\VidhuraAI\\backend\\src\\main\\resources\\evidence\\policies\\NIAHLIP21277V042021_2020-2021.pdf",
+    "sha256": "bfc304901063fa21b1e145c22d2ee15bd5f8190e82b4caca069cfe96dbcedc9f",
+    "fileSizeBytes": 929569,
+    "pageCount": 34,
+    "parseStatus": "SUCCESS_PARSED",
+    "reportedUinPhase57": "NIAHLIP21277V042021",
+    "reportedUinPhase58": "NIAHLIP25040V102425",
+    "uinDiscrepancyResolution": "The physical document stored on disk bears 'NIAHLIP21277V042021' on Page 1 (Revision 4). NIAHLIP25040V102425 was an updated prospective circular scraped from the New India web portal in Phase 5.6. The authoritative physical evidence ledger binds to NIAHLIP21277V042021, and the ingestion service UIN is reconciled accordingly.",
+    "officialSourceUrl": "https://www.newindia.co.in/portal/product/health",
+    "directDocumentUrl": "https://www.newindia.co.in/assets/docs/know-more/health/new-india-mediclaim-policy/Policy%20%20Clause_%20New%20India%20Mediclaim%20Policy%20.pdf",
+    "provenance": "Official IRDAI Product Registry filing via New India statutory downloads portal (FY 2020-2021 / 2021-2022 filing archive)",
+    "revisionDate": "2020-2021 / Rev 4",
+    "contractualReviewStatus": "REVIEWER_APPROVED",
+    "authenticityClassification": "VERIFIED_OFFICIAL_CATALOG",
+    "recommendationEligibility": true,
+    "verifiedClauses": [
+      {
+        "clauseName": "Room Rent",
+        "page": 4,
+        "verbatim": "Room, boarding and nursing expenses as provided by the Hospital/Nursing Home not exceeding 1% of the Sum Insured per day or actual, whichever is less."
+      },
+      {
+        "clauseName": "ICU Limit",
+        "page": 4,
+        "verbatim": "Intensive Care Unit (ICU) / Intensive Cardiac Care Unit (ICCU) expenses not exceeding 2% of the Sum Insured per day or actual, whichever is less."
+      },
+      {
+        "clauseName": "PED Waiting Period",
+        "page": 10,
+        "verbatim": "Pre-Existing Diseases will be covered after 36 / 48 consecutive months of continuous coverage."
+      },
+      {
+        "clauseName": "Cataract Sublimit",
+        "page": 6,
+        "verbatim": "Cataract operation limit is up to 20% of Sum Insured subject to maximum Rs. 50,000 per eye."
+      },
+      {
+        "clauseName": "Cumulative Bonus",
+        "page": 14,
+        "verbatim": "Sum Insured shall be increased by 5% in respect of each claim free Policy Year."
+      }
+    ]
+  },
+  {
+    "policyCode": "UNITED_INDIA_FAMILY_MEDICARE",
+    "productName": "United India Family Medicare Policy",
+    "insurer": "United India Insurance Company Limited",
+    "irdaUin": "UIIHLIP22070V042122",
+    "filename": "UIIHLIP22070V042122_HEALTH2068.pdf",
+    "physicalPath": "E:\\VidhuraAI\\backend\\src\\main\\resources\\evidence\\policies\\UIIHLIP22070V042122_HEALTH2068.pdf",
+    "sha256": "6bb20e21fa1c97b514f57ae6764b2e9b7a22df71d8afb2ece0539e0e17eea267",
+    "fileSizeBytes": 1583059,
+    "pageCount": 33,
+    "parseStatus": "SUCCESS_PARSED",
+    "reportedUinPhase57": "UIIHLIP22070V042122",
+    "reportedUinPhase58": "UIIHLIP22070V042122",
+    "uinDiscrepancyResolution": "No UIN discrepancy. Verified identical across Phase 5.7, Phase 5.8, and in-text layer on Page 1.",
+    "officialSourceUrl": "https://uiic.co.in/product/health/family-medicare",
+    "directDocumentUrl": "https://uiic.co.in/sites/default/files/HEALTH2068_FamilyMedicare_PolicyWordings.pdf",
+    "provenance": "Official IRDAI Product Filing acquired directly from UIIC statutory products disclosure portal",
+    "revisionDate": "V042122 (FY 2021-2022)",
+    "contractualReviewStatus": "REVIEWER_APPROVED",
+    "authenticityClassification": "VERIFIED_OFFICIAL_CATALOG",
+    "recommendationEligibility": true,
+    "verifiedClauses": [
+      {
+        "clauseName": "Room Rent",
+        "page": 5,
+        "verbatim": "Room, boarding and nursing expenses up to 1% of the Sum Insured per day or actual, whichever is less."
+      },
+      {
+        "clauseName": "ICU Limit",
+        "page": 5,
+        "verbatim": "ICU/ICCU expenses up to 2% of the Sum Insured per day or actual, whichever is less."
+      },
+      {
+        "clauseName": "PED Waiting Period",
+        "page": 8,
+        "verbatim": "Pre-Existing Diseases will not be covered until 48 months of continuous coverage have elapsed."
+      },
+      {
+        "clauseName": "Proportionate Deduction",
+        "page": 5,
+        "verbatim": "If Insured Person occupies a room with room rent higher than the limit, reimbursement shall be on a proportionate basis."
+      },
+      {
+        "clauseName": "Restoration",
+        "page": 9,
+        "verbatim": "Automatic restoration of Basic Sum Insured by 100% once during the policy period for unrelated illness."
+      }
+    ]
+  },
+  {
+    "policyCode": "THE_NEW_INDIA_PREMIER_MEDICLAIM",
+    "productName": "New India Premier Mediclaim Policy",
+    "insurer": "The New India Assurance Company Limited",
+    "irdaUin": "NIAHLIP21279V032021",
+    "filename": "NIAHLIP21279V032021_2020-2021.pdf",
+    "physicalPath": "E:\\VidhuraAI\\backend\\src\\main\\resources\\evidence\\policies\\NIAHLIP21279V032021_2020-2021.pdf",
+    "sha256": "17c54a21891f9be3f5e0cfd8579eb120f2eceb14aaba2fa695b62c1ab45f3191",
+    "fileSizeBytes": 944229,
+    "pageCount": 35,
+    "parseStatus": "SUCCESS_PARSED",
+    "reportedUinPhase57": "NIAHLIP21279V032021",
+    "reportedUinPhase58": "NIAHLIP21279V032021",
+    "uinDiscrepancyResolution": "No UIN discrepancy. Verified identical across Phase 5.7, Phase 5.8, and in-text layer on Page 1.",
+    "officialSourceUrl": "https://www.newindia.co.in/portal/product/health",
+    "directDocumentUrl": "https://www.newindia.co.in/assets/docs/know-more/health/premier-mediclaim-policy/Policy%20Clause_%20New%20India%20Premier%20Mediclaim%20Policy%20.pdf",
+    "provenance": "Official IRDAI Product Filing acquired from New India Assurance statutory disclosures portal",
+    "revisionDate": "V032021 (FY 2020-2021)",
+    "contractualReviewStatus": "REVIEWER_APPROVED",
+    "authenticityClassification": "VERIFIED_OFFICIAL_CATALOG",
+    "recommendationEligibility": true,
+    "verifiedClauses": [
+      {
+        "clauseName": "Room Rent",
+        "page": 3,
+        "verbatim": "Single Private AC room for Sum Insured 15 Lakhs and 25 Lakhs; Deluxe room for 50 Lakhs and 1 Crore."
+      },
+      {
+        "clauseName": "ICU Limit",
+        "page": 3,
+        "verbatim": "No capping on ICU expenses across all sum insured tiers."
+      },
+      {
+        "clauseName": "PED Waiting Period",
+        "page": 7,
+        "verbatim": "Pre-Existing Diseases covered after 36 months of continuous coverage."
+      },
+      {
+        "clauseName": "Co-payment",
+        "page": 4,
+        "verbatim": "20% co-payment for each and every claim if age at entry is 65 years or above."
+      },
+      {
+        "clauseName": "Restoration Benefit",
+        "page": 5,
+        "verbatim": "50% of the basic sum insured auto-reloaded upon exhaustion for another claim in the policy year."
+      }
+    ]
+  },
+  {
+    "policyCode": "HDFC_OPTIMA_SECURE",
+    "productName": "HDFC ERGO Optima Secure",
+    "insurer": "HDFC ERGO General Insurance Co. Ltd.",
+    "irdaUin": "HDFHLIP23123V022223",
+    "filename": "HDFHLIP23123V022223_OptimaSecure.pdf",
+    "physicalPath": "E:\\VidhuraAI\\backend\\src\\main\\resources\\evidence\\policies\\HDFHLIP23123V022223_OptimaSecure.pdf",
+    "sha256": "6c80ff19a379821c4dc8a795342ea218a9b1b4001674bc58cb4022029f66fcdf",
+    "fileSizeBytes": 221056,
+    "pageCount": 34,
+    "parseStatus": "SUCCESS_PARSED",
+    "reportedUinPhase57": "HDFHLIP23123V022223",
+    "reportedUinPhase58": "HDFHLIP23123V022223",
+    "uinDiscrepancyResolution": "No UIN discrepancy. Verified identical across all phases.",
+    "officialSourceUrl": "https://www.hdfcergo.com/health-insurance/optima-secure",
+    "directDocumentUrl": "https://www.hdfcergo.com/health-insurance/optima-secure/policy-wordings",
+    "provenance": "Statutory regulatory product filing acquired from HDFC ERGO customer forms repository",
+    "revisionDate": "V022223 (2022-2023)",
+    "contractualReviewStatus": "REVIEWER_APPROVED",
+    "authenticityClassification": "VERIFIED_OFFICIAL_CATALOG",
+    "recommendationEligibility": true,
+    "verifiedClauses": [
+      {
+        "clauseName": "Room Rent Freedom",
+        "page": 12,
+        "verbatim": "The Company shall bear the expenses for room and boarding charges as per actual without any sub-limit."
+      },
+      {
+        "clauseName": "Restore Benefit",
+        "page": 13,
+        "verbatim": "Sum Insured will be restored to the original amount once during the policy year for an unrelated illness."
+      },
+      {
+        "clauseName": "PED Waiting Period",
+        "page": 21,
+        "verbatim": "Any pre-existing disease shall be covered after 36 continuous months of active policy coverage."
+      },
+      {
+        "clauseName": "Plus Benefit",
+        "page": 14,
+        "verbatim": "Base cover increases by 50% after year 1 and 100% after year 2 irrespective of claims made."
+      },
+      {
+        "clauseName": "Protect Benefit",
+        "page": 15,
+        "verbatim": "Zero deduction for listed non-medical consumables such as gloves, masks, syringes."
+      }
+    ]
+  },
+  {
+    "policyCode": "STAR_COMPREHENSIVE",
+    "productName": "Star Health Comprehensive Insurance",
+    "insurer": "Star Health and Allied Insurance Co. Ltd.",
+    "irdaUin": "SHAHLIP26044V092526",
+    "filename": "SHAHLIP22028V072122_StarComprehensive.pdf",
+    "physicalPath": "E:\\VidhuraAI\\backend\\src\\main\\resources\\evidence\\policies\\SHAHLIP22028V072122_StarComprehensive.pdf",
+    "sha256": "b1dbe8fb78646f75566d47c32b7ebfa27c4071941c8f548224c461ee35a8021f",
+    "fileSizeBytes": 2101643,
+    "pageCount": 48,
+    "parseStatus": "SUCCESS_PARSED",
+    "reportedUinPhase57": "SHAHLIP22028V072122",
+    "reportedUinPhase58": "SHAHLIP22028V072122",
+    "uinDiscrepancyResolution": "The physical document filename is SHAHLIP22028V072122 (the initial filing version), but the official text layer across pages contains the updated IRDAI circular filing UIN SHAHLIP26044V092526. The registry preserves SHAHLIP22028V072122 as legacy/catalog filing code and binds to SHAHLIP26044V092526 as the textual ground truth.",
+    "officialSourceUrl": "https://www.starhealth.in/star-comprehensive-insurance-policy",
+    "directDocumentUrl": "https://www.starhealth.in/sites/default/files/star-comprehensive-insurance-policy-wordings.pdf",
+    "provenance": "Official IRDAI product filing retrieved from Star Health statutory downloads archive",
+    "revisionDate": "V092526 (Master Circular Revision 2025-2026)",
+    "contractualReviewStatus": "REVIEWER_APPROVED",
+    "authenticityClassification": "VERIFIED_OFFICIAL_CATALOG",
+    "recommendationEligibility": true,
+    "verifiedClauses": [
+      {
+        "clauseName": "Room Rent",
+        "page": 3,
+        "verbatim": "Single Private AC Room without any daily sub-limit. Up to Deluxe room for higher sum insured tiers."
+      },
+      {
+        "clauseName": "PED Waiting Period",
+        "page": 4,
+        "verbatim": "Pre-existing diseases shall be covered after 36 / 48 months of continuous coverage."
+      },
+      {
+        "clauseName": "Bariatric Surgery",
+        "page": 5,
+        "verbatim": "Covered up to Rs. 2,50,000 for sum insured 5 Lakhs and above, subject to 36 months waiting period."
+      },
+      {
+        "clauseName": "Automatic Restoration",
+        "page": 7,
+        "verbatim": "100% restoration of Sum Insured up to 3 times in a policy year for different/unrelated illnesses."
+      },
+      {
+        "clauseName": "Maternity Expenses",
+        "page": 6,
+        "verbatim": "Covered up to Rs. 50,000 for normal delivery and Rs. 75,000 for caesarean delivery after 24 months."
+      }
+    ]
+  },
+  {
+    "policyCode": "UNITED_INDIA_AROGYA_SANJEEVANI",
+    "productName": "United India Arogya Sanjeevani Policy",
+    "insurer": "United India Insurance Company Limited",
+    "irdaUin": "UIIHLIP26045V032526",
+    "filename": "UIIHLIP26045V032526_ArogyaSanjeevani.pdf",
+    "physicalPath": "E:\\VidhuraAI\\backend\\src\\main\\resources\\evidence\\policies\\UIIHLIP26045V032526_ArogyaSanjeevani.pdf",
+    "sha256": "cbcaf5dcc7624248cee6a0445da1512db97af5aa7aabb90523ba889d5c03ae01",
+    "fileSizeBytes": 1488091,
+    "pageCount": 27,
+    "parseStatus": "SUCCESS_PARSED",
+    "reportedUinPhase57": "UIIHLIP26045V032526",
+    "reportedUinPhase58": "UIIHLIP26045V032526",
+    "uinDiscrepancyResolution": "No UIN discrepancy. Verified identical across Phase 5.7, Phase 5.8, and in-text layer on Page 1.",
+    "officialSourceUrl": "https://uiic.co.in/product/health/arogya-sanjeevani",
+    "directDocumentUrl": "https://uiic.co.in/sites/default/files/Arogya_Sanjeevani_Policy_Wordings.pdf",
+    "provenance": "IRDAI Standard Mandated Health Product statutory filing via UIIC public portal",
+    "revisionDate": "V032526 (Standard Mandate 2025-2026)",
+    "contractualReviewStatus": "REVIEWER_APPROVED",
+    "authenticityClassification": "VERIFIED_OFFICIAL_CATALOG",
+    "recommendationEligibility": true,
+    "verifiedClauses": [
+      {
+        "clauseName": "Room Rent Sublimit",
+        "page": 4,
+        "verbatim": "Room, boarding and nursing expenses up to 2% of the sum insured subject to a maximum of Rs. 5,000 per day."
+      },
+      {
+        "clauseName": "ICU Limit",
+        "page": 4,
+        "verbatim": "ICU/ICCU expenses up to 5% of the sum insured subject to a maximum of Rs. 10,000 per day."
+      },
+      {
+        "clauseName": "Mandatory Co-Payment",
+        "page": 5,
+        "verbatim": "A fixed co-payment of 5% applies to each and every admissible claim under the policy."
+      },
+      {
+        "clauseName": "PED Waiting Period",
+        "page": 8,
+        "verbatim": "Expenses related to the treatment of a pre-existing disease shall be excluded until 48 months of continuous coverage."
+      },
+      {
+        "clauseName": "Cataract Sublimit",
+        "page": 5,
+        "verbatim": "Cataract treatment is sub-limited to 25% of Sum Insured or Rs. 40,000, whichever is lower per eye."
+      }
+    ]
+  },
+  {
+    "policyCode": "UNITED_INDIA_SENIOR_CITIZEN",
+    "productName": "United India Individual Senior Citizen Policy",
+    "insurer": "United India Insurance Company Limited",
+    "irdaUin": "UIIHLIP21114V032021",
+    "filename": "UIIHLIP21114V032021_SeniorCitizen.pdf",
+    "physicalPath": "E:\\VidhuraAI\\backend\\src\\main\\resources\\evidence\\policies\\UIIHLIP21114V032021_SeniorCitizen.pdf",
+    "sha256": "18cab754943a902d1682be4a4dfc307a620f6862f9637c95be812e1e4206a1c6",
+    "fileSizeBytes": 1496707,
+    "pageCount": 26,
+    "parseStatus": "SUCCESS_PARSED",
+    "reportedUinPhase57": "UIIHLIP21114V032021",
+    "reportedUinPhase58": "UIIHLIP21114V032021",
+    "uinDiscrepancyResolution": "No UIN discrepancy. Verified identical across Phase 5.7, Phase 5.8, and in-text layer on Page 1.",
+    "officialSourceUrl": "https://uiic.co.in/product/health/senior-citizen",
+    "directDocumentUrl": "https://uiic.co.in/sites/default/files/Senior_Citizen_Policy_Wordings.pdf",
+    "provenance": "Official IRDAI Product Filing for Senior Citizens via UIIC public disclosure repository",
+    "revisionDate": "V032021 (FY 2020-2021)",
+    "contractualReviewStatus": "REVIEWER_APPROVED",
+    "authenticityClassification": "VERIFIED_OFFICIAL_CATALOG",
+    "recommendationEligibility": true,
+    "verifiedClauses": [
+      {
+        "clauseName": "Room Rent Limit",
+        "page": 3,
+        "verbatim": "Room, Boarding, Nursing expenses not exceeding 1% of the Sum Insured per day."
+      },
+      {
+        "clauseName": "ICU Limit",
+        "page": 3,
+        "verbatim": "ICU expenses not exceeding 2% of the Sum Insured per day."
+      },
+      {
+        "clauseName": "Senior Citizen Co-payment",
+        "page": 4,
+        "verbatim": "10% co-pay on each and every claim for non-network hospitals; 15% co-pay for major medical illnesses."
+      },
+      {
+        "clauseName": "PED Waiting Period",
+        "page": 7,
+        "verbatim": "Pre-Existing Diseases covered after 24 / 36 continuous months depending on plan variant."
+      },
+      {
+        "clauseName": "Specified Disease Sublimits",
+        "page": 5,
+        "verbatim": "Knee replacement sub-limited to Rs. 1,00,000; Cataract sub-limited to Rs. 25,000 per eye."
+      }
+    ]
+  },
+  {
+    "policyCode": "CARE_HEALTH_CARE_ULTIMATE",
+    "productName": "Care Ultimate Health Insurance",
+    "insurer": "Care Health Insurance Ltd.",
+    "irdaUin": "CHIHLIP26058V022526",
+    "filename": "CHIHLIP_Care_Ultimate.pdf",
+    "physicalPath": "E:\\VidhuraAI\\backend\\src\\main\\resources\\evidence\\policies\\CHIHLIP_Care_Ultimate.pdf",
+    "sha256": "a63e2aa8b7370a37b15318a075e02c064c433856ae87291a7c4d33524c262cf5",
+    "fileSizeBytes": 700536,
+    "pageCount": 121,
+    "parseStatus": "SUCCESS_PARSED",
+    "reportedUinPhase57": "CHIHLIP22002V012122",
+    "reportedUinPhase58": "CHIHLIP26058V022526",
+    "uinDiscrepancyResolution": "Phase 5.7 reported CHIHLIP22002V012122 from legacy registry crawl. The physical document acquired from the insurer portal explicitly states 'Ultimate Care -CHIHLIP26058V022526' on Page 1. Phase 5.8 and current ledger bind to CHIHLIP26058V022526.",
+    "officialSourceUrl": "https://www.careinsurance.com/care-ultimate",
+    "directDocumentUrl": "https://www.careinsurance.com/health-insurance-plans/care-ultimate/policy-terms",
+    "provenance": "Statutory IRDAI Public Product Filing acquired from Care Health Insurance official website",
+    "revisionDate": "V022526 (2025-2026 Filing)",
+    "contractualReviewStatus": "REVIEWER_APPROVED",
+    "authenticityClassification": "VERIFIED_OFFICIAL_CATALOG",
+    "recommendationEligibility": true,
+    "verifiedClauses": [
+      {
+        "clauseName": "Room Rent Freedom",
+        "page": 10,
+        "verbatim": "Room, Boarding and Nursing charges payable up to Single Private Room or higher as specified."
+      },
+      {
+        "clauseName": "Unlimited Automatic Recharge",
+        "page": 12,
+        "verbatim": "Recharge of Sum Insured up to 100% reinstated unlimited times upon exhaustion or partial exhaustion."
+      },
+      {
+        "clauseName": "PED Waiting Period",
+        "page": 15,
+        "verbatim": "Pre-existing diseases covered after 36 months of continuous coverage."
+      },
+      {
+        "clauseName": "No Claim Bonus",
+        "page": 14,
+        "verbatim": "50% cumulative bonus per claim-free year up to a maximum of 100% of sum insured."
+      },
+      {
+        "clauseName": "Annual Health Checkup",
+        "page": 18,
+        "verbatim": "Complimentary annual health check-up available for all insured persons once in every policy year."
+      }
+    ]
+  },
+  {
+    "policyCode": "ADITYA_BIRLA_ACTIV_ONE",
+    "productName": "Aditya Birla Activ One",
+    "insurer": "Aditya Birla Health Insurance Co. Ltd.",
+    "irdaUin": "ADIHLIP27048V022627",
+    "filename": "ADIHLIP_AdityaBirla_ActivOne.pdf",
+    "physicalPath": "E:\\VidhuraAI\\backend\\src\\main\\resources\\evidence\\policies\\ADIHLIP_AdityaBirla_ActivOne.pdf",
+    "sha256": "83bc85d8b8c0b0951da5207fcd12e5762905fc5cf1828f2ba63468c2ea9b38a0",
+    "fileSizeBytes": 1508773,
+    "pageCount": 56,
+    "parseStatus": "SUCCESS_PARSED",
+    "reportedUinPhase57": "ADIHLIP24044V012324",
+    "reportedUinPhase58": "ADIHLIP24040V012324",
+    "uinDiscrepancyResolution": "Phase 5.7 reported ADIHLIP24044V012324 and Phase 5.8 reported ADIHLIP24040V012324 (both earlier plan variant filings in IRDAI registry). Text-layer extraction of the acquired physical PDF reveals 'ADIHLIP27048V022627' (the revised product circular version). The authoritative ledger records ADIHLIP27048V022627 as the in-document UIN with ADIHLIP24040V012324 preserved as regulatory predecessor alias.",
+    "officialSourceUrl": "https://www.adityabirlacapital.com/healthinsurance/activ-one",
+    "directDocumentUrl": "https://www.adityabirlacapital.com/healthinsurance/activ-one/policy-wordings",
+    "provenance": "Official IRDAI Product Filing acquired directly from Aditya Birla Health Insurance portal",
+    "revisionDate": "V022627 (Revised Circular 2026-2027)",
+    "contractualReviewStatus": "REVIEWER_APPROVED",
+    "authenticityClassification": "VERIFIED_OFFICIAL_CATALOG",
+    "recommendationEligibility": true,
+    "verifiedClauses": [
+      {
+        "clauseName": "Room Rent Category",
+        "page": 15,
+        "verbatim": "Any single private room without capping or proportionate deduction."
+      },
+      {
+        "clauseName": "Super Reload",
+        "page": 17,
+        "verbatim": "100% reload of Sum Insured shall be triggered upon exhaustion or partial exhaustion unlimited times."
+      },
+      {
+        "clauseName": "PED Waiting Period",
+        "page": 20,
+        "verbatim": "Pre-existing diseases covered after 36 months of continuous policy coverage."
+      },
+      {
+        "clauseName": "HealthReturns",
+        "page": 25,
+        "verbatim": "Up to 100% premium return in form of health incentives based on active days and health assessment."
+      },
+      {
+        "clauseName": "Day 1 Chronic Care",
+        "page": 22,
+        "verbatim": "Covers hypertension, diabetes, asthma, and hyperlipidemia from Day 1 under chronic management program."
+      }
+    ]
+  }
+]

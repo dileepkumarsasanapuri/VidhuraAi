@@ -120,6 +120,7 @@ frontend/scratch/
 backend-springboot/
 .archify/
 scripts/*.json
+!scripts/reconciled_evidence_ledger.json
 scripts/*.py
 !scripts/acquire_irdai_policies.py
 
