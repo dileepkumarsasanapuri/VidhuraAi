@@ -48,6 +48,9 @@ public class Phase5_3AutomatedEvidenceAcceptanceTest {
     @Mock
     private ExternalEvidenceValidationRepository validationRepository;
 
+    @Mock
+    private OfficialSourceAcquisitionService acquisitionService;
+
     private EvidenceAcceptanceGovernancePolicy governancePolicy;
     private ExternalEvidenceValidationService validationService;
     private ExternalEvidenceService evidenceService;
@@ -58,7 +61,12 @@ public class Phase5_3AutomatedEvidenceAcceptanceTest {
     @BeforeEach
     void setUp() {
         governancePolicy = new EvidenceAcceptanceGovernancePolicy();
-        validationService = new ExternalEvidenceValidationService(evidenceRepository, validationRepository, governancePolicy);
+        validationService = new ExternalEvidenceValidationService(
+                evidenceRepository,
+                validationRepository,
+                governancePolicy,
+                acquisitionService
+        );
         evidenceService = new ExternalEvidenceService(evidenceRepository, null, null, null, validationService);
 
         when(validationRepository.save(any(ExternalEvidenceValidationResult.class)))

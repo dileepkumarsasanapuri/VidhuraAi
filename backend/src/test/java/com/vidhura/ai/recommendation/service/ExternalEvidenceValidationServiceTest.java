@@ -32,6 +32,9 @@ class ExternalEvidenceValidationServiceTest {
     @Mock
     private ExternalEvidenceValidationRepository validationRepository;
 
+    @Mock
+    private OfficialSourceAcquisitionService acquisitionService;
+
     private ExternalEvidenceValidationService validationService;
 
     // Authentic Statutory Hashes
@@ -42,7 +45,12 @@ class ExternalEvidenceValidationServiceTest {
 
     @BeforeEach
     void setUp() {
-        validationService = new ExternalEvidenceValidationService(evidenceRepository, validationRepository);
+        validationService = new ExternalEvidenceValidationService(
+                evidenceRepository,
+                validationRepository,
+                new EvidenceAcceptanceGovernancePolicy(),
+                acquisitionService
+        );
         when(validationRepository.save(any(ExternalEvidenceValidationResult.class)))
                 .thenAnswer(inv -> inv.getArgument(0));
     }

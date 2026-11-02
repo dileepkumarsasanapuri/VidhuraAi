@@ -49,6 +49,9 @@ public class ExternalEvidenceIntegrationTest {
     @Mock
     private com.vidhura.ai.recommendation.repository.ExternalEvidenceValidationRepository validationRepository;
 
+    @Mock
+    private com.vidhura.ai.recommendation.service.OfficialSourceAcquisitionService acquisitionService;
+
     private ExternalEvidenceService externalEvidenceService;
     private com.vidhura.ai.recommendation.service.ExternalEvidenceValidationService validationService;
     private ExternalEvidenceController controller;
@@ -69,7 +72,9 @@ public class ExternalEvidenceIntegrationTest {
 
         validationService = new com.vidhura.ai.recommendation.service.ExternalEvidenceValidationService(
                 evidenceRepository,
-                validationRepository
+                validationRepository,
+                new com.vidhura.ai.recommendation.service.EvidenceAcceptanceGovernancePolicy(),
+                acquisitionService
         );
 
         controller = new ExternalEvidenceController(externalEvidenceService, validationService);

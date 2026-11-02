@@ -304,6 +304,13 @@ public class ExternalEvidenceValidationService {
                 ? record.getSourceDocumentHash().replaceAll("(?i)^sha256:", "").trim().toLowerCase()
                 : "";
 
+        // Reject malformed hashes before unnecessary artifact acquisition
+        if (cleanHash.isBlank() || !cleanHash.matches("^[a-fA-F0-9]{64}$")) {
+            record.setArtifactBacked(false);
+            record.setFreshnessStatus("UNACQUIRED");
+            return;
+        }
+
         // Check if mapped to a known physical file in statutory repository
         String mappedFile = HASH_TO_FILENAME.get(cleanHash);
         if (mappedFile != null) {
