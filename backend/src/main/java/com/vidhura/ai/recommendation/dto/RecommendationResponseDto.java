@@ -151,5 +151,51 @@ public class RecommendationResponseDto {
         private String reviewerName;
         @Builder.Default
         private List<String> missingEvidenceWarnings = new ArrayList<>();
+
+        // Phase 5.1 Correctness & Pricing metadata
+        private String pricingType;
+        private String pricingDisclaimer;
+        private String underwritingNote;
+        private ExternalInsurerIntelligenceDto externalInsurerIntelligence;
+        private ExternalInsurerIntelligenceDto externalIntelligence;
+
+        @Builder.Default
+        private List<String> positiveTradeoffs = new ArrayList<>();
+        @Builder.Default
+        private List<String> negativeTradeoffs = new ArrayList<>();
+    }
+
+    @Builder.Default
+    private List<IncompleteCatalogueEntryDto> incompleteCatalogueEntries = new ArrayList<>();
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class IncompleteCatalogueEntryDto {
+        private String policyCode;
+        private String policyName;
+        private String provider;
+        private String irdaUin;
+        private String pipelineStage;
+        private String reasonNotRecommended;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ExternalInsurerIntelligenceDto {
+        private String insurerName;
+        private String claimSettlementRatio;
+        private String incurredClaimRatio;
+        private String ombudsmanDisposalRate;
+        private double cashlessAccessibilityScore;
+        private boolean verifiedStatutory;
+        private String verificationStatus;
+        @Builder.Default
+        private String csrDenominatorDefinition = "Total claims reported during reporting period (Form NL-25)";
+        @Builder.Default
+        private String solvencyRegulatoryBasis = "IRDAI (Assets, Liabilities and Solvency Margin of Insurers) Regulations";
     }
 }

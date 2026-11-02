@@ -1,6 +1,8 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# ============================================
+# Vidhura AI — Frontend Git Ignore Configuration
+# ============================================
 
-# dependencies
+# ── Dependencies ───────────────────────────
 /node_modules
 /.pnp
 .pnp.*
@@ -10,32 +12,40 @@
 !.yarn/releases
 !.yarn/versions
 
-# testing
+# ── Testing & Coverage ─────────────────────
 /coverage
 
-# next.js
+# ── Next.js & Build Outputs ────────────────
 /.next/
 /out/
-
-# production
 /build
+/dist
+*.tsbuildinfo
+next-env.d.ts
 
-# misc
-.DS_Store
-*.pem
+# ── Environment & Secrets ──────────────────
+.env
+.env.*
+.env*.local
+!.env.example
 
-# debug
+# ── Debug Logs ─────────────────────────────
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# ── IDE & Editor Metadata ──────────────────
+.vscode
+.idea
+*.swp
+*.swo
 
-# vercel
+# ── Vercel ─────────────────────────────────
 .vercel
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# ── Platform Artifacts ─────────────────────
+.DS_Store
+Thumbs.db
+*.pem
+*.stackdump

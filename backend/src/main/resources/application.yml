@@ -76,4 +76,16 @@ logging:
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{requestId}] %-5level %logger{36} - %msg%n"
 
+vidhura:
+  discovery:
+    enabled: false
+    schedule-cron: "-"
+  freshness:
+    enabled: false
+    schedule-cron: "-"
+  policy:
+    discovery:
+      enabled: false
+      cron: "-"
+
 

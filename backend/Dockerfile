@@ -1,42 +1,53 @@
 # ============================================
-# Stage 1: Build the application
+# Vidhura AI Backend — Multi-stage Production Dockerfile
+# Platform: Java 17 / Spring Boot 3
 # ============================================
+
+# ── Stage 1: Build & Package ───────────────
 FROM maven:3.9-eclipse-temurin-17 AS builder
 
 WORKDIR /app
 
-# Copy pom.xml first for dependency caching
+# Cache Maven dependencies layer
 COPY pom.xml .
 RUN mvn dependency:go-offline -B
 
-# Copy source and build
+# Copy application source code and compile
 COPY src ./src
 RUN mvn clean package -DskipTests -B
 
-# ============================================
-# Stage 2: Production runtime
-# ============================================
-FROM eclipse-temurin:17-jre-jammy
+# ── Stage 2: Minimal Production Runtime ────
+FROM eclipse-temurin:17-jre-jammy AS runner
 
-# Security: run as non-root user
-RUN groupadd -r appuser && useradd -r -g appuser -s /sbin/nologin appuser
+# Install curl for container health check probe
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl && \
+    rm -rf /var/lib/apt/lists/*
+
+# Security: create dedicated non-root service account
+RUN groupadd -r -g 1001 appgroup && \
+    useradd -r -u 1001 -g appgroup -s /sbin/nologin -d /app appuser
 
 WORKDIR /app
 
-# Copy the built JAR
-COPY --from=builder /app/target/*.jar app.jar
+# Initialize container data directories with non-root ownership
+RUN mkdir -p /app/data/policies && chown -R appuser:appgroup /app
 
-# Set ownership
-RUN chown -R appuser:appuser /app
+# Copy only the compiled JAR from the builder stage
+COPY --from=builder --chown=appuser:appgroup /app/target/*.jar app.jar
 
 USER appuser
 
-# JVM production tuning
-ENV JAVA_OPTS="-XX:+UseG1GC -XX:MaxRAMPercentage=75.0 -Djava.security.egd=file:/dev/./urandom"
+# JVM container tuning and runtime environment defaults
+ENV JAVA_OPTS="-XX:+UseG1GC -XX:MaxRAMPercentage=75.0 -Djava.security.egd=file:/dev/./urandom" \
+    VIDHURA_POLICY_STORAGE_ROOT="/app/data/policies" \
+    SPRING_PROFILES_ACTIVE="prod"
 
 EXPOSE 5000
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+# Container healthcheck using the unauthenticated /api/health endpoint
+HEALTHCHECK --interval=30s --timeout=10s --start-period=45s --retries=3 \
   CMD curl -f http://localhost:5000/api/health || exit 1
 
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
+# Graceful signal handling: exec replaces shell process with Java PID 1
+ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar app.jar"]

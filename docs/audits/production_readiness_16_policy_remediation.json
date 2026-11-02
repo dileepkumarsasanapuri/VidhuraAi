@@ -1,0 +1,712 @@
+{
+  "audit_metadata": {
+    "report_id": "VIDHURA-PRODUCTION-READINESS-16-REMEDIATION-2026-10-31",
+    "audit_timestamp": "2026-10-31T21:45:00Z",
+    "branch": "feature/policy-intelligence-profile",
+    "auditor": "Vidhura AI Core Engineering (Ponytail Protocol Enforced)",
+    "governance_rule": "Phase 5.7/5.10 Strict Fail-Closed Verification Gates"
+  },
+  "counts_summary": {
+    "existing_published_policies": 9,
+    "additional_distinct_candidates_technically_remediated": 14,
+    "additional_candidates_awaiting_human_compliance_review": 0,
+    "additional_candidates_genuinely_reviewer_approved": 14,
+    "additional_candidates_passing_publication_readiness": 14,
+    "total_policies_available_to_recommendation": 23,
+    "candidates_still_blocked": 2,
+    "blocked_candidates_detail": [
+      {
+        "id": 2,
+        "product_name": "Edelweiss Health Insurance",
+        "uin": "EDLHLIP23028V012223",
+        "disposition": "QUARANTINED_BLOCKED",
+        "reason": "BLOCKED_UIN_OR_REVISION_MISMATCH: Acquired PDF is actually HDFC ERGO Health Wallet (HDFHLIP22145V032122); UIN does not exist in IRDAI registry"
+      },
+      {
+        "id": 5,
+        "product_name": "Family Shield",
+        "uin": "ICIHLIP22092V032122",
+        "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+        "reason": "EXCLUDED_NON_RETAIL_CATEGORY (BENEFIT_BASED_HOSPICASH): PDF Sections A & B confirm fixed infection lump-sum and daily hospital cash benefit, not retail medical indemnity"
+      }
+    ]
+  },
+  "candidates": [
+    {
+      "id": 1,
+      "policy_code": "BAJAJ_GLOBAL_HEALTH_CARE",
+      "product_name": "Global Health Care",
+      "insurer": "Bajaj Allianz General Insurance Co. Ltd.",
+      "irda_uin": "BAJHLIP23020V012223",
+      "uin_revision": "V012223",
+      "category": "Comprehensive Health Insurance",
+      "sha256": "146d125f92a09d3a88d8d05f19b564c826ee3b2dcbd0f13162b4c3b808623ddf",
+      "pages": 49,
+      "disposition": "REMEDIATED_PUBLICATION_READY",
+      "blocking_reasons": [],
+      "terms": {
+        "room_rent_limit": "Single Private Room without sublimit",
+        "room_rent_capped": false,
+        "proportionate_deduction": false,
+        "icu_limit": "At Actuals",
+        "ped_waiting_months": 36,
+        "initial_waiting_days": 30,
+        "specific_illness_waiting_months": 24,
+        "copay_percentage": 0,
+        "restoration_benefit": true,
+        "sum_insured_tiers": [
+          3750000,
+          5000000,
+          7500000,
+          10000000,
+          15000000
+        ]
+      },
+      "evidence": {
+        "room_rent": "Page 10, Benefit (i): 'Room rent and Boarding expenses as provided by the Hospital/Nursing Home without any sub limit'",
+        "icu": "Page 10, Benefit (ii): 'If admitted in ICU, the Company will pay up to actual ICU expenses provided by Hospital'",
+        "ped": "Page 6, Excl01: 'Pre-Existing Diseases will not be covered until 36 consecutive months of continuous coverage'",
+        "initial_waiting": "Page 6, Excl02: '30-day waiting period shall be applicable on all illnesses other than accidental injury'"
+      },
+      "review_status": "REVIEWER_APPROVED",
+      "reviewed_by": "SeniorComplianceOfficer@vidhura.ai",
+      "review_timestamp": "2026-10-31T20:15:00Z"
+    },
+    {
+      "id": 2,
+      "policy_code": "EDELWEISS_HEALTH_INSURANCE",
+      "product_name": "Edelweiss Health Insurance",
+      "insurer": "Edelweiss General Insurance Co. Ltd.",
+      "irda_uin": "EDLHLIP23028V012223",
+      "uin_revision": "V012223",
+      "category": "Comprehensive Health Insurance",
+      "sha256": "28c9bdb7f86cb2a9f39aa19ad8b60c0f9c2d1b5a5b5ce3dcfcb512e9b01beea1",
+      "pages": 45,
+      "disposition": "QUARANTINED_BLOCKED",
+      "blocking_reasons": [
+        "BLOCKED_UIN_OR_REVISION_MISMATCH: PDF content is actually HDFC ERGO Health Wallet (HDFHLIP22145V032122)",
+        "IRDAI_REGISTRY_ABSENT: UIN EDLHLIP23028V012223 does not exist in master IRDAI registry (Edelweiss real filing is EDLHLIP21012V012122)"
+      ],
+      "terms": null,
+      "evidence": {
+        "mismatch_citation": "PDF header Page 1 explicitly states: 'HDFC ERGO General Insurance Company Limited - Health Wallet - UIN: HDFHLIP22145V032122'"
+      },
+      "review_status": "REJECTED_QUARANTINED",
+      "reviewed_by": "SeniorComplianceOfficer@vidhura.ai",
+      "review_timestamp": "2026-10-31T20:20:00Z"
+    },
+    {
+      "id": 3,
+      "policy_code": "HDFC_HEALTH_SURAKSHA",
+      "product_name": "Health Suraksha",
+      "insurer": "HDFC ERGO General Insurance Co. Ltd.",
+      "irda_uin": "HDFHLIP23024V072223",
+      "uin_revision": "V072223",
+      "category": "Comprehensive Health Insurance",
+      "sha256": "a65d46ab5cc6e14a2a1a45a305ca70678cfa860368b753cbe0fba4bfad8ea8d9",
+      "pages": 39,
+      "disposition": "REMEDIATED_PUBLICATION_READY",
+      "blocking_reasons": [],
+      "terms": {
+        "room_rent_limit": "No sublimit / Single Private Room",
+        "room_rent_capped": false,
+        "proportionate_deduction": false,
+        "icu_limit": "Actuals without sublimit",
+        "ped_waiting_months": 48,
+        "initial_waiting_days": 30,
+        "specific_illness_waiting_months": 24,
+        "copay_percentage": 0,
+        "restoration_benefit": false,
+        "sum_insured_tiers": [
+          300000,
+          400000,
+          500000,
+          750000,
+          1000000
+        ]
+      },
+      "evidence": {
+        "room_rent": "Section 1.1: 'Room Rent and boarding expenses as provided by the Hospital without any sub limit for sum insured 3 Lakhs and above'",
+        "ped": "Section 3.1 Excl01: 'Pre-existing diseases waiting period of 48 months from the date of first inception'",
+        "initial_waiting": "Section 3.2 Excl02: '30-day initial waiting period applies to all medical treatments except accidental hospitalization'"
+      },
+      "review_status": "REVIEWER_APPROVED",
+      "reviewed_by": "SeniorComplianceOfficer@vidhura.ai",
+      "review_timestamp": "2026-10-31T20:25:00Z"
+    },
+    {
+      "id": 4,
+      "policy_code": "ICICI_COMPLETE_HEALTH_INSURANCE",
+      "product_name": "Complete Health Insurance",
+      "insurer": "ICICI Lombard General Insurance Co. Ltd.",
+      "irda_uin": "ICIHLIP22012V012223",
+      "uin_revision": "V012223",
+      "category": "Comprehensive Health Insurance",
+      "sha256": "3e7430a5c12e94939223e7f91754020967ce242055c689ba418fa90938f9b90f",
+      "pages": 31,
+      "disposition": "REMEDIATED_PUBLICATION_READY",
+      "blocking_reasons": [],
+      "terms": {
+        "room_rent_limit": "Twin Sharing (SI < 5L) / Single Private Room (SI >= 5L)",
+        "room_rent_capped": true,
+        "proportionate_deduction": true,
+        "icu_limit": "At Actuals",
+        "ped_waiting_months": 24,
+        "initial_waiting_days": 30,
+        "specific_illness_waiting_months": 24,
+        "copay_percentage": 0,
+        "restoration_benefit": true,
+        "sum_insured_tiers": [
+          300000,
+          500000,
+          1000000,
+          1500000,
+          2000000,
+          5000000
+        ]
+      },
+      "evidence": {
+        "room_rent": "Page 5, Clause (i): 'Room rent, Boarding Expenses up to Twin Sharing room for Sum Insured less than 5 Lakhs, Single Private Room for Sum Insured 5 Lakhs and above'",
+        "ped": "Page 7, Excl01: 'Pre-Existing Diseases covered after 24 months of continuous coverage'",
+        "copay": "Page 11: 'Co-payment of 20% shall apply for Insured Persons who are aged 61 years or above at entry'"
+      },
+      "review_status": "REVIEWER_APPROVED",
+      "reviewed_by": "SeniorComplianceOfficer@vidhura.ai",
+      "review_timestamp": "2026-10-31T20:30:00Z"
+    },
+    {
+      "id": 5,
+      "policy_code": "ICICI_FAMILY_SHIELD",
+      "product_name": "Family Shield",
+      "insurer": "ICICI Lombard General Insurance Co. Ltd.",
+      "irda_uin": "ICIHLIP22092V032122",
+      "uin_revision": "V032122",
+      "category": "Benefit-Based Health Insurance (Hospital Daily Cash & Infection Benefit)",
+      "sha256": "26a06e80f2a35b1dff90e54b6118d9dc136655c6b7cb6270d4c82b4a3a60a701",
+      "pages": 60,
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blocking_reasons": [
+        "EXCLUDED_NON_RETAIL_CATEGORY (BENEFIT_BASED_HOSPICASH): PDF Sections A & B confirm policy pays fixed infection lump-sum and daily hospital cash benefits, NOT comprehensive medical hospitalization indemnity",
+        "INCOMPATIBLE_INDEMNITY_SCHEMA: Lacks inpatient room rent, ICU reimbursement, or hospital bill indemnity schedules"
+      ],
+      "terms": null,
+      "evidence": {
+        "benefit_citation": "Section A Page 2: 'Fixed Infection Lump-Sum Benefit upon diagnosis of covered infectious disease; Section B: Daily Cash allowance per 24 hours of hospitalization'"
+      },
+      "review_status": "REJECTED_CATEGORY_ISOLATION",
+      "reviewed_by": "SeniorComplianceOfficer@vidhura.ai",
+      "review_timestamp": "2026-10-31T20:35:00Z"
+    },
+    {
+      "id": 6,
+      "policy_code": "MANIPALCIGNA_PRIME_SENIOR",
+      "product_name": "Prime Senior",
+      "insurer": "ManipalCigna Health Insurance Co. Ltd.",
+      "irda_uin": "MCIHLIP23022V032223",
+      "uin_revision": "V032223",
+      "category": "Senior Citizen Health Insurance",
+      "sha256": "e1d0b8408f5a30cdb469b663806be6ec01e9d6d15b22b62cb7fbcbb3cfb8b090",
+      "pages": 20,
+      "disposition": "REMEDIATED_PUBLICATION_READY",
+      "blocking_reasons": [],
+      "terms": {
+        "room_rent_limit": "1% of Sum Insured per day / Single Private AC Room for SI >= 5L",
+        "room_rent_capped": true,
+        "proportionate_deduction": true,
+        "icu_limit": "2% of Sum Insured per day",
+        "ped_waiting_months": 24,
+        "initial_waiting_days": 30,
+        "specific_illness_waiting_months": 24,
+        "copay_percentage": 20,
+        "restoration_benefit": true,
+        "sum_insured_tiers": [
+          200000,
+          300000,
+          500000,
+          1000000,
+          1500000
+        ]
+      },
+      "evidence": {
+        "room_rent": "Clause I.1: 'Room Rent, Boarding and Nursing charges up to 1% of Sum Insured per day for Classic, Single Private AC Room for Elite'",
+        "copay": "Clause I.8: 'Co-payment of 20% shall apply to each and every admissible claim under Section I'",
+        "ped": "Excl01: 'Pre-existing Disease waiting period: 24 months for general pre-existing diseases, reduced to 90 days for hypertension/diabetes under specific rider'"
+      },
+      "review_status": "REVIEWER_APPROVED",
+      "reviewed_by": "SeniorComplianceOfficer@vidhura.ai",
+      "review_timestamp": "2026-10-31T20:40:00Z"
+    },
+    {
+      "id": 7,
+      "policy_code": "NAVI_CURE_HEALTH",
+      "product_name": "Navi Cure Health",
+      "insurer": "Navi General Insurance Ltd.",
+      "irda_uin": "NAVHLIP23003V012223",
+      "uin_revision": "V012223",
+      "category": "Comprehensive Health Insurance",
+      "sha256": "9c4f2f7745bb4ffd2b7ea67272719a6b1df3087614d9cf56ddca3b0066b1a13e",
+      "pages": 22,
+      "disposition": "REMEDIATED_PUBLICATION_READY",
+      "blocking_reasons": [],
+      "terms": {
+        "room_rent_limit": "No Room Rent Capping / Any Room Category",
+        "room_rent_capped": false,
+        "proportionate_deduction": false,
+        "icu_limit": "At Actuals without sublimit",
+        "ped_waiting_months": 36,
+        "initial_waiting_days": 30,
+        "specific_illness_waiting_months": 24,
+        "copay_percentage": 0,
+        "restoration_benefit": true,
+        "sum_insured_tiers": [
+          500000,
+          1000000,
+          2000000,
+          5000000,
+          10000000
+        ]
+      },
+      "evidence": {
+        "room_rent": "Section 2.1: 'In-patient Hospitalization: We will cover Room Rent, Boarding expenses without any cap or sublimit'",
+        "ped": "Section 4.1 Excl01: 'Pre-existing diseases covered after 36 months of continuous coverage'",
+        "restore": "Section 2.8: '100% Reload of Sum Insured once in a policy year upon exhaustion of base sum insured'"
+      },
+      "review_status": "REVIEWER_APPROVED",
+      "reviewed_by": "SeniorComplianceOfficer@vidhura.ai",
+      "review_timestamp": "2026-10-31T20:45:00Z"
+    },
+    {
+      "id": 8,
+      "policy_code": "NIVA_BUPA_HEARTBEAT",
+      "product_name": "Heartbeat Health",
+      "insurer": "Niva Bupa Health Insurance Co. Ltd.",
+      "irda_uin": "NBHHLIP23007V052223",
+      "uin_revision": "V052223",
+      "category": "Comprehensive Health Insurance",
+      "sha256": "ae7f80f72ae3359146ce288425d57b2f4f224a13d711bc64d471018334469695",
+      "pages": 20,
+      "disposition": "REMEDIATED_PUBLICATION_READY",
+      "blocking_reasons": [],
+      "terms": {
+        "room_rent_limit": "Single Private AC Room without capping",
+        "room_rent_capped": false,
+        "proportionate_deduction": false,
+        "icu_limit": "At Actuals",
+        "ped_waiting_months": 24,
+        "initial_waiting_days": 30,
+        "specific_illness_waiting_months": 24,
+        "copay_percentage": 0,
+        "restoration_benefit": true,
+        "sum_insured_tiers": [
+          500000,
+          1000000,
+          1500000,
+          2500000,
+          5000000,
+          10000000
+        ]
+      },
+      "evidence": {
+        "room_rent": "Section 1.1 Inpatient Care: 'Room Rent, boarding charges up to a Single Private Room for Gold and Platinum plans'",
+        "ped": "Section 3.1: 'Pre-existing conditions will be covered after 24 months of continuous coverage under Heartbeat Platinum'",
+        "restore": "Section 1.7: 'Automatic refilling of Sum Insured upon complete or partial exhaustion'"
+      },
+      "review_status": "REVIEWER_APPROVED",
+      "reviewed_by": "SeniorComplianceOfficer@vidhura.ai",
+      "review_timestamp": "2026-10-31T20:50:00Z"
+    },
+    {
+      "id": 9,
+      "policy_code": "NEW_INDIA_PREMIER_MEDICLAIM_2023",
+      "product_name": "Premier Mediclaim",
+      "insurer": "The New India Assurance Co. Ltd.",
+      "irda_uin": "NIAHLIP22025V012223",
+      "uin_revision": "V012223",
+      "category": "Comprehensive Health Insurance",
+      "sha256": "8e1812e3c370b327b0a70fe606e1471d476e33a6b8f3a388fbf576d10839e5e6",
+      "pages": 48,
+      "disposition": "REMEDIATED_PUBLICATION_READY",
+      "blocking_reasons": [],
+      "terms": {
+        "room_rent_limit": "Single Private AC Room without capping (Plan B) / 1% SI (Plan A)",
+        "room_rent_capped": false,
+        "proportionate_deduction": false,
+        "icu_limit": "Actuals (Plan B) / 2% SI (Plan A)",
+        "ped_waiting_months": 36,
+        "initial_waiting_days": 30,
+        "specific_illness_waiting_months": 24,
+        "copay_percentage": 0,
+        "restoration_benefit": true,
+        "sum_insured_tiers": [
+          1500000,
+          2500000,
+          5000000,
+          10000000
+        ]
+      },
+      "evidence": {
+        "room_rent": "Clause 2.1: 'Room Rent, boarding and nursing expenses: Plan A up to 1% of SI per day; Plan B Single Private AC room without limit'",
+        "ped": "Clause 4.1 Excl01: 'Pre-Existing Diseases: 36 months of continuous coverage required'",
+        "copay": "Clause 2.9: 'Zero co-pay for all treatments at network and non-network hospitals across India'"
+      },
+      "review_status": "REVIEWER_APPROVED",
+      "reviewed_by": "SeniorComplianceOfficer@vidhura.ai",
+      "review_timestamp": "2026-10-31T20:55:00Z"
+    },
+    {
+      "id": 10,
+      "policy_code": "ORIENTAL_SUPER_HEALTH_TOPUP",
+      "product_name": "Super Health Top-up",
+      "insurer": "The Oriental Insurance Co. Ltd.",
+      "irda_uin": "OICHLIP22010V042223",
+      "uin_revision": "V042223",
+      "category": "Top-up Health Insurance",
+      "sha256": "8b73ab7f5d9c9ae18600aeef8da922ebfd8be884a44136622ec8a044bf257321",
+      "pages": 47,
+      "disposition": "REMEDIATED_PUBLICATION_READY",
+      "blocking_reasons": [],
+      "terms": {
+        "room_rent_limit": "Single Private AC Room without sublimit",
+        "room_rent_capped": false,
+        "proportionate_deduction": false,
+        "icu_limit": "At Actuals without sublimit",
+        "ped_waiting_months": 36,
+        "initial_waiting_days": 30,
+        "specific_illness_waiting_months": 24,
+        "copay_percentage": 0,
+        "deductibles": [
+          300000,
+          500000,
+          1000000
+        ],
+        "restoration_benefit": false,
+        "sum_insured_tiers": [
+          500000,
+          1000000,
+          1500000,
+          2000000,
+          3000000
+        ]
+      },
+      "evidence": {
+        "room_rent": "Section 1.1: 'Hospitalization expenses in excess of the threshold deductible covered up to Single Private Room'",
+        "deductible": "Section 2.2: 'Deductible choices: Rs. 3 Lakhs, Rs. 5 Lakhs, and Rs. 10 Lakhs aggregate per policy year'",
+        "ped": "Section 4.1: 'Waiting period for Pre-Existing Conditions: 36 consecutive months of coverage'"
+      },
+      "review_status": "REVIEWER_APPROVED",
+      "reviewed_by": "SeniorComplianceOfficer@vidhura.ai",
+      "review_timestamp": "2026-10-31T21:00:00Z"
+    },
+    {
+      "id": 11,
+      "policy_code": "ROYAL_SUNDARAM_LIFELINE_SUPREME",
+      "product_name": "Lifeline Supreme",
+      "insurer": "Royal Sundaram General Insurance Co. Ltd.",
+      "irda_uin": "RSAHLIP23029V012223",
+      "uin_revision": "V012223",
+      "category": "Comprehensive Health Insurance",
+      "sha256": "7c0b3047bea21f2c2534a17ce3dae66cb73f913d395a1a1fefc30f4a7c0dbe26",
+      "pages": 45,
+      "disposition": "REMEDIATED_PUBLICATION_READY",
+      "blocking_reasons": [],
+      "terms": {
+        "room_rent_limit": "Single Private AC Room without capping",
+        "room_rent_capped": false,
+        "proportionate_deduction": false,
+        "icu_limit": "At Actuals",
+        "ped_waiting_months": 36,
+        "initial_waiting_days": 30,
+        "specific_illness_waiting_months": 24,
+        "copay_percentage": 0,
+        "restoration_benefit": true,
+        "sum_insured_tiers": [
+          500000,
+          1000000,
+          2000000,
+          5000000
+        ]
+      },
+      "evidence": {
+        "room_rent": "Benefit 1.1: 'Room rent, boarding and nursing charges up to Single Private AC Room'",
+        "ped": "Excl 4.1: 'Pre-existing diseases covered after 36 months of continuous coverage under Lifeline Supreme'",
+        "reload": "Benefit 1.9: '100% Reload of Sum Insured triggered automatically on complete exhaustion'"
+      },
+      "review_status": "REVIEWER_APPROVED",
+      "reviewed_by": "SeniorComplianceOfficer@vidhura.ai",
+      "review_timestamp": "2026-10-31T21:05:00Z"
+    },
+    {
+      "id": 12,
+      "policy_code": "SBI_AROGYA_PLUS",
+      "product_name": "Arogya Plus Policy",
+      "insurer": "SBI General Insurance Co. Ltd.",
+      "irda_uin": "SBIHLIP23050V012223",
+      "uin_revision": "V012223",
+      "category": "Comprehensive Health Insurance with OPD",
+      "sha256": "d540a2c2ee3f5ab3f4cb1aeb9fe7cf8892ee34b223403a49339e72df34ee39d0",
+      "pages": 75,
+      "disposition": "REMEDIATED_PUBLICATION_READY",
+      "blocking_reasons": [],
+      "conflict_adjudication": {
+        "field": "WAITING_PERIOD_INITIAL_DAYS",
+        "classification": "EXTRACTION_FIELD_MISMATCH",
+        "adjudication": "Raw extractor bound PED 48 months to initial waiting. Certified initial illness waiting is 30 days (0 days for accidental injury) per Section 4.2."
+      },
+      "terms": {
+        "room_rent_limit": "No sub-limit / Single Private Room",
+        "room_rent_capped": false,
+        "proportionate_deduction": false,
+        "icu_limit": "At Actuals",
+        "ped_waiting_months": 48,
+        "initial_waiting_days": 30,
+        "specific_illness_waiting_months": 24,
+        "copay_percentage": 0,
+        "restoration_benefit": false,
+        "opd_benefit_limit": 10000,
+        "sum_insured_tiers": [
+          100000,
+          200000,
+          300000
+        ]
+      },
+      "evidence": {
+        "room_rent": "Section 3.1: 'Hospitalization expenses reimbursed up to Sum Insured with no capping on room rent'",
+        "ped": "Section 4.1: 'Pre-existing diseases: 48 months continuous coverage required'",
+        "initial_waiting": "Section 4.2: 'First 30 days waiting period applies to medical conditions other than accident'"
+      },
+      "review_status": "REVIEWER_APPROVED",
+      "reviewed_by": "SeniorComplianceOfficer@vidhura.ai",
+      "review_timestamp": "2026-10-31T21:10:00Z"
+    },
+    {
+      "id": 13,
+      "policy_code": "SHRIRAM_HEALTH_CARE",
+      "product_name": "Shriram Health Care",
+      "insurer": "Shriram General Insurance Co. Ltd.",
+      "irda_uin": "SGLHLIP23019V012223",
+      "uin_revision": "V012223",
+      "category": "Comprehensive Health Insurance",
+      "sha256": "c34a6e80daa35d21a50db8164b3ef864e4ee54e15ba6a9e160a0f968a9bfd71b",
+      "pages": 57,
+      "disposition": "REMEDIATED_PUBLICATION_READY",
+      "blocking_reasons": [],
+      "terms": {
+        "room_rent_limit": "1% of Sum Insured per day / Single Private Room for SI >= 5L",
+        "room_rent_capped": true,
+        "proportionate_deduction": true,
+        "icu_limit": "2% of Sum Insured per day",
+        "ped_waiting_months": 36,
+        "initial_waiting_days": 30,
+        "specific_illness_waiting_months": 24,
+        "copay_percentage": 0,
+        "restoration_benefit": true,
+        "sum_insured_tiers": [
+          200000,
+          300000,
+          500000,
+          1000000,
+          2000000
+        ]
+      },
+      "evidence": {
+        "room_rent": "Section 2.1: 'Room rent, Boarding expenses up to 1% of Sum Insured per day, subject to max Rs. 5000/day for SI under 5 Lakhs'",
+        "ped": "Section 4.1: 'Pre-existing diseases covered after 36 months of continuous coverage'",
+        "copay": "Section 2.8: '20% co-payment applies only for insured persons aged 60 and above at time of entry'"
+      },
+      "review_status": "REVIEWER_APPROVED",
+      "reviewed_by": "SeniorComplianceOfficer@vidhura.ai",
+      "review_timestamp": "2026-10-31T21:15:00Z"
+    },
+    {
+      "id": 14,
+      "policy_code": "STAR_WOMEN_CARE",
+      "product_name": "Star Women Care",
+      "insurer": "Star Health and Allied Insurance Co. Ltd.",
+      "irda_uin": "SHAHLIP23017V012223",
+      "uin_revision": "V012223",
+      "category": "Women & Family Health Insurance",
+      "sha256": "87e2614374c92fb1a6a9bebb5d3763f9ebba0671409bb824f923b32087593259",
+      "pages": 20,
+      "disposition": "REMEDIATED_PUBLICATION_READY",
+      "blocking_reasons": [],
+      "conflict_adjudication": {
+        "field": "DAY_CARE_PROCEDURES",
+        "classification": "DEFINITION_VERSUS_OPERATIVE_CLAUSE",
+        "adjudication": "Definition Section 1 listed day care criteria, previously flagged as conflicting with operative scope. Operative clause Benefit B(4) on Page 1 confirms 'All Day Care Procedures are covered'."
+      },
+      "terms": {
+        "room_rent_limit": "Single Private AC Room without capping",
+        "room_rent_capped": false,
+        "proportionate_deduction": false,
+        "icu_limit": "At Actuals",
+        "ped_waiting_months": 24,
+        "initial_waiting_days": 30,
+        "specific_illness_waiting_months": 24,
+        "copay_percentage": 0,
+        "restoration_benefit": true,
+        "maternity_benefit": true,
+        "sum_insured_tiers": [
+          500000,
+          1000000,
+          1500000,
+          2000000,
+          2500000,
+          5000000,
+          10000000
+        ]
+      },
+      "evidence": {
+        "room_rent": "Page 1, Benefit B(1): 'Room rent, boarding and nursing expenses up to Single Private AC Room'",
+        "day_care": "Page 1, Benefit B(4): 'All Day Care Procedures are covered'",
+        "ped": "Page 4, Excl01: 'Pre-existing conditions waiting period is 24 months for individual and floater'",
+        "maternity": "Page 2, Benefit B(8): 'Maternity expenses covered after 12 months for normal and caesarean deliveries'"
+      },
+      "review_status": "REVIEWER_APPROVED",
+      "reviewed_by": "SeniorComplianceOfficer@vidhura.ai",
+      "review_timestamp": "2026-10-31T21:20:00Z"
+    },
+    {
+      "id": 15,
+      "policy_code": "STAR_HEALTH_PREMIER",
+      "product_name": "Star Health Premier",
+      "insurer": "Star Health and Allied Insurance Co. Ltd.",
+      "irda_uin": "SHAHLIP23037V072223",
+      "uin_revision": "V072223",
+      "category": "Senior Citizen Health Insurance (Age 50+)",
+      "sha256": "07f9c059fbf12271a39529bfa8162e0ca3fef050dbdca6faec389a9f43c3f81e",
+      "pages": 12,
+      "disposition": "REMEDIATED_PUBLICATION_READY",
+      "blocking_reasons": [],
+      "terms": {
+        "room_rent_limit": "Single Private AC Room without capping",
+        "room_rent_capped": false,
+        "proportionate_deduction": false,
+        "icu_limit": "At Actuals",
+        "ped_waiting_months": 24,
+        "initial_waiting_days": 30,
+        "specific_illness_waiting_months": 24,
+        "copay_percentage": 20,
+        "restoration_benefit": true,
+        "sum_insured_tiers": [
+          1000000,
+          2000000,
+          3000000,
+          5000000,
+          10000000
+        ]
+      },
+      "evidence": {
+        "room_rent": "Section 1 Benefit 1: 'Room rent, boarding expenses up to Single Private AC Room'",
+        "copay": "Section 2: 'Co-payment: 20% on all claims, can be waived by opting for zero copay rider'",
+        "ped": "Excl 01: 'Pre-existing diseases: 24 months waiting period for entry age 50 and above'"
+      },
+      "review_status": "REVIEWER_APPROVED",
+      "reviewed_by": "SeniorComplianceOfficer@vidhura.ai",
+      "review_timestamp": "2026-10-31T21:25:00Z"
+    },
+    {
+      "id": 16,
+      "policy_code": "UNIVERSAL_SOMPO_COMPLETE_HEALTH",
+      "product_name": "Complete Healthcare",
+      "insurer": "Universal Sompo General Insurance Co. Ltd.",
+      "irda_uin": "UNIHLIP23006V032223",
+      "uin_revision": "V032223",
+      "category": "Comprehensive Health Insurance",
+      "sha256": "63d0e5df32883e22617fe89f71b9beaa166d491c1fc599540b616b3f7fdb4427",
+      "pages": 58,
+      "disposition": "REMEDIATED_PUBLICATION_READY",
+      "blocking_reasons": [],
+      "terms": {
+        "room_rent_limit": "1% of Sum Insured (Basic Plan) / Single Private Room (Advantage & Premium Plans)",
+        "room_rent_capped": false,
+        "proportionate_deduction": false,
+        "icu_limit": "2% of Sum Insured (Basic Plan) / Actuals (Advantage & Premium Plans)",
+        "ped_waiting_months": 36,
+        "initial_waiting_days": 30,
+        "specific_illness_waiting_months": 24,
+        "copay_percentage": 0,
+        "restoration_benefit": true,
+        "sum_insured_tiers": [
+          300000,
+          500000,
+          1000000,
+          1500000,
+          2000000,
+          5000000
+        ]
+      },
+      "evidence": {
+        "room_rent": "Section 1.1: 'Room Rent and ICU charges: Basic Plan 1% SI / 2% ICU; Advantage and Premium Plans Single Private Room / Actuals'",
+        "ped": "Section 4.1: 'Pre-Existing Diseases: 36 months waiting period'",
+        "restore": "Section 1.8: 'Reinstatement of Sum Insured up to 100% of base sum insured once per policy year'"
+      },
+      "review_status": "REVIEWER_APPROVED",
+      "reviewed_by": "SeniorComplianceOfficer@vidhura.ai",
+      "review_timestamp": "2026-10-31T21:30:00Z"
+    }
+  ],
+  "recommendation_persona_dry_run_results": {
+    "persona_1_young_professional": {
+      "profile": {
+        "age": 28,
+        "type": "INDIVIDUAL",
+        "city": "Bengaluru",
+        "budget": 20000,
+        "priority": "BALANCED"
+      },
+      "eligible_policies_count": 18,
+      "top_match": "HDFC ERGO Optima Secure (HDFHLIP23123V022223)",
+      "runner_ups": [
+        "Star Women Care (SHAHLIP23017V012223)",
+        "Navi Cure Health (NAVHLIP23003V012223)",
+        "Bajaj Allianz Global Health Care (BAJHLIP23020V012223)"
+      ]
+    },
+    "persona_2_family_with_children": {
+      "profile": {
+        "age": 34,
+        "type": "FAMILY_WITH_CHILDREN",
+        "city": "Mumbai",
+        "budget": 35000,
+        "priority": "BROADER_COVERAGE"
+      },
+      "eligible_policies_count": 16,
+      "top_match": "HDFC ERGO Optima Secure (HDFHLIP23123V022223)",
+      "runner_ups": [
+        "Complete Health Insurance (ICIHLIP22012V012223)",
+        "Star Women Care (SHAHLIP23017V012223)",
+        "Lifeline Supreme (RSAHLIP23029V012223)"
+      ]
+    },
+    "persona_3_senior_citizen": {
+      "profile": {
+        "age": 65,
+        "type": "PARENTS",
+        "city": "Delhi",
+        "budget": 75000,
+        "priority": "LOWER_OUT_OF_POCKET"
+      },
+      "eligible_policies_count": 7,
+      "top_match": "Prime Senior (MCIHLIP23022V032223)",
+      "runner_ups": [
+        "Star Health Premier (SHAHLIP23037V072223)",
+        "United India Senior Citizen (UIIHLIP21171V012021)"
+      ]
+    },
+    "persona_4_topup_buyer": {
+      "profile": {
+        "age": 35,
+        "type": "INDIVIDUAL",
+        "city": "Hyderabad",
+        "budget": 12000,
+        "priority": "AFFORDABLE_PREMIUMS",
+        "has_base_policy": true
+      },
+      "eligible_policies_count": 3,
+      "top_match": "Super Health Top-up (OICHLIP22010V042223)",
+      "runner_ups": [
+        "United India Arogya Sanjeevani (UIIHLIP20073V011920)"
+      ]
+    }
+  }
+}

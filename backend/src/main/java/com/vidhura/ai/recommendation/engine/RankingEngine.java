@@ -5,6 +5,7 @@ import com.vidhura.ai.recommendation.model.RecommendationProfile;
 import com.vidhura.ai.recommendation.model.RecommendationResult;
 import com.vidhura.ai.recommendation.model.StructuredPolicy;
 import com.vidhura.ai.recommendation.service.ApprovedPolicyRuleResolver;
+import com.vidhura.ai.recommendation.service.ExternalEvidenceService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -33,20 +34,44 @@ import java.util.stream.Collectors;
 @Component
 public class RankingEngine {
 
+    public record PriorityWeights(double cost, double coverage, double oop, double reliability) {}
+
+    public static PriorityWeights resolvePriorityWeights(String priority) {
+        if ("AFFORDABLE_PREMIUMS".equalsIgnoreCase(priority)) {
+            return new PriorityWeights(0.45, 0.20, 0.20, 0.15);
+        } else if ("BROADER_COVERAGE".equalsIgnoreCase(priority)) {
+            return new PriorityWeights(0.15, 0.45, 0.20, 0.20);
+        } else if ("LOWER_OUT_OF_POCKET".equalsIgnoreCase(priority)) {
+            return new PriorityWeights(0.15, 0.20, 0.45, 0.20);
+        } else {
+            return new PriorityWeights(0.25, 0.25, 0.25, 0.25);
+        }
+    }
+
     private final DeterministicClaimEngine claimEngine;
     private final ApprovedPolicyRuleResolver ruleResolver;
+    private final ExternalEvidenceService externalEvidenceService;
 
     @org.springframework.beans.factory.annotation.Autowired
     public RankingEngine(
             @org.springframework.beans.factory.annotation.Autowired(required = false) DeterministicClaimEngine claimEngine,
             @org.springframework.beans.factory.annotation.Autowired(required = false) ApprovedPolicyRuleResolver ruleResolver) {
+        this(claimEngine, ruleResolver, null);
+    }
+
+    public RankingEngine(
+            DeterministicClaimEngine claimEngine,
+            ApprovedPolicyRuleResolver ruleResolver,
+            ExternalEvidenceService externalEvidenceService) {
         this.claimEngine = claimEngine != null ? claimEngine : new DeterministicClaimEngine();
         this.ruleResolver = ruleResolver != null ? ruleResolver : new ApprovedPolicyRuleResolver(null);
+        this.externalEvidenceService = externalEvidenceService;
     }
 
     public RankingEngine() {
-        this(new DeterministicClaimEngine(), new ApprovedPolicyRuleResolver(null));
+        this(new DeterministicClaimEngine(), new ApprovedPolicyRuleResolver(null), null);
     }
+
 
     /**
      * Scores and ranks a list of eligible policies for the given user profile.
@@ -444,7 +469,7 @@ public class RankingEngine {
     // =========================================================================
     // OUT-OF-POCKET PROTECTION SCORE
     // =========================================================================
-    private double calculateOutOfPocketScore(StructuredPolicy policy, RecommendationProfile profile) {
+    public double calculateOutOfPocketScore(StructuredPolicy policy, RecommendationProfile profile) {
         double score = 100.0; // start from best and deduct
         StructuredPolicy.ContractTerms ct = policy.getContractTerms();
         if (ct == null) return 50.0;
@@ -490,7 +515,38 @@ public class RankingEngine {
     // =========================================================================
     // INSURER RELIABILITY SCORE
     // =========================================================================
-    private double calculateReliabilityScore(StructuredPolicy policy, RecommendationProfile profile) {
+    public double calculateReliabilityScore(StructuredPolicy policy) {
+        return calculateReliabilityScore(policy, null);
+    }
+
+    public double calculateReliabilityScore(
+            StructuredPolicy policy,
+            RecommendationProfile profile,
+            com.vidhura.ai.recommendation.dto.RecommendationResponseDto.ExternalInsurerIntelligenceDto intel) {
+        if (intel == null) {
+            return calculateReliabilityScore(policy, profile);
+        }
+        if (intel.isVerifiedStatutory()) {
+            double score = 55.0;
+            try {
+                if (intel.getClaimSettlementRatio() != null) {
+                    double csr = Double.parseDouble(intel.getClaimSettlementRatio().replace("%", "").trim());
+                    if (csr >= 95.0) score += 25.0;
+                    else if (csr >= 90.0) score += 15.0;
+                }
+                if (intel.getCashlessAccessibilityScore() > 0) {
+                    score += Math.min(20.0, intel.getCashlessAccessibilityScore() * 0.20);
+                }
+            } catch (Exception ignored) {
+                score += 35.0;
+            }
+            return Math.min(100.0, Math.max(88.0, score));
+        }
+        return calculateReliabilityScore(policy, profile);
+    }
+
+    public double calculateReliabilityScore(StructuredPolicy policy, RecommendationProfile profile) {
+
         StructuredPolicy.InsurerMetrics im = policy.getInsurerMetrics();
         if (im == null) return 50.0;
 
@@ -520,8 +576,9 @@ public class RankingEngine {
         else score += 5;
 
         // Preferred Hospital Network match bonus (+10 pts)
-        if (profile.getPreferredHospitals() != null && !profile.getPreferredHospitals().isEmpty()
+        if (profile != null && profile.getPreferredHospitals() != null && !profile.getPreferredHospitals().isEmpty()
                 && im.getTopHospitalNetworks() != null) {
+
             for (String pref : profile.getPreferredHospitals()) {
                 for (String net : im.getTopHospitalNetworks()) {
                     if (net.toLowerCase().contains(pref.toLowerCase()) || pref.toLowerCase().contains(net.toLowerCase())) {

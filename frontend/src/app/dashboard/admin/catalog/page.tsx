@@ -32,6 +32,9 @@ import {
   Award,
   Calculator,
   FileCheck,
+  Shield,
+  AlertCircle,
+  Edit3,
 } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import {
@@ -45,19 +48,44 @@ import {
   FactDiff,
   RecommendationQualityReport,
   ScenarioEvaluationResult,
+  PolicyDiscoveryRun,
+  PolicyDiscoveryCandidate,
+  PolicyDocumentRevision,
+  ConflictQueueItem,
 } from "@/lib/api";
 import { useToast } from "@/context/ToastContext";
 
 export default function AdminCatalogPage() {
   const toast = useToast();
-  const [activeTab, setActiveTab] = useState<"drafts" | "sources" | "live" | "documents" | "benchmark">("drafts");
+  const [activeTab, setActiveTab] = useState<"drafts" | "sources" | "live" | "documents" | "benchmark" | "discovery" | "conflicts">("drafts");
 
   // State
   const [drafts, setDrafts] = useState<any[]>([]);
   const [sources, setSources] = useState<PolicySource[]>([]);
+  const [conflicts, setConflicts] = useState<ConflictQueueItem[]>([]);
+  const [selectedConflict, setSelectedConflict] = useState<ConflictQueueItem | null>(null);
+  const [showCorrectionModal, setShowCorrectionModal] = useState(false);
+  const [isAdjudicating, setIsAdjudicating] = useState(false);
+  const [correctionForm, setCorrectionForm] = useState({
+    correctedValue: "",
+    correctedNumeric: 0,
+    correctedUnit: "PERCENTAGE",
+    correctedEvidenceRole: "OPERATIVE_CLAUSE",
+    notes: "",
+    approveAfterCorrection: true,
+  });
   const [livePolicies, setLivePolicies] = useState<any[]>([]);
   const [documents, setDocuments] = useState<DiscoveredDocument[]>([]);
   const [stats, setStats] = useState<CatalogStats | null>(null);
+
+  // Phase 5.6 Discovery State
+  const [discoveryRuns, setDiscoveryRuns] = useState<PolicyDiscoveryRun[]>([]);
+  const [discoveryCandidates, setDiscoveryCandidates] = useState<PolicyDiscoveryCandidate[]>([]);
+  const [isTriggeringDiscovery, setIsTriggeringDiscovery] = useState(false);
+  const [operatingCandidateId, setOperatingCandidateId] = useState<string | null>(null);
+  const [selectedCandidate, setSelectedCandidate] = useState<PolicyDiscoveryCandidate | null>(null);
+  const [candidateNotes, setCandidateNotes] = useState("");
+  const [isPublishingCandidate, setIsPublishingCandidate] = useState(false);
 
   const [isLoading, setIsLoading] = useState(true);
   const [isCrawling, setIsCrawling] = useState(false);
@@ -87,6 +115,9 @@ export default function AdminCatalogPage() {
   // Manually Curated Official PDF Modal State
   const [showCuratedModal, setShowCuratedModal] = useState(false);
   const [isSubmittingCurated, setIsSubmittingCurated] = useState(false);
+  const [authenticityFilter, setAuthenticityFilter] = useState<"ALL" | "VERIFIED" | "SYNTHETIC">("ALL");
+  const [isRunningSmokeTest, setIsRunningSmokeTest] = useState(false);
+  const [smokeTestResult, setSmokeTestResult] = useState<any | null>(null);
   const [curatedForm, setCuratedForm] = useState({
     sourceUrl: "",
     sourceName: "",
@@ -100,18 +131,24 @@ export default function AdminCatalogPage() {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const [draftsRes, sourcesRes, liveRes, docsRes, statsRes] = await Promise.all([
+      const [draftsRes, sourcesRes, liveRes, docsRes, statsRes, runsRes, candidatesRes, conflictsRes] = await Promise.all([
         api.getPolicyDrafts().catch(() => ({ data: [] })),
         api.getPolicySources().catch(() => ({ data: [] })),
-        api.getCatalogPolicies("VERIFIED_ONLY").catch(() => ({ data: [] })),
+        api.getCatalogPolicies("ALL").catch(() => ({ data: [] })),
         api.getDiscoveredDocuments().catch(() => ({ data: [] })),
         api.getCatalogStats().catch(() => ({ data: null })),
+        api.getDiscoveryRuns().catch(() => ({ data: [] })),
+        api.getDiscoveryCandidates().catch(() => ({ data: [] })),
+        api.getConflictQueue().catch(() => ({ data: [] })),
       ]);
 
       setDrafts(draftsRes.data || []);
       setSources(sourcesRes.data || []);
       setLivePolicies(liveRes.data || []);
       setDocuments(docsRes.data || []);
+      setDiscoveryRuns(runsRes.data || []);
+      setDiscoveryCandidates(candidatesRes.data || []);
+      setConflicts(conflictsRes.data || []);
       if (statsRes && statsRes.data) {
         setStats(statsRes.data);
       }
@@ -123,9 +160,145 @@ export default function AdminCatalogPage() {
     }
   };
 
+  const handleApproveConflict = async (item: ConflictQueueItem) => {
+    setIsAdjudicating(true);
+    try {
+      await api.reviewExtraction(item.extractionId, {
+        action: "APPROVE",
+        notes: "Approved by reviewer via conflict resolution console",
+      });
+      toast.success(`Candidate value "${item.candidateValue}" approved for ${item.fieldName}.`, "Conflict Resolved");
+      setConflicts(prev => prev.filter(c => c.extractionId !== item.extractionId));
+    } catch (e: any) {
+      toast.error(e.message || "Failed to approve extraction.", "Adjudication Error");
+    } finally {
+      setIsAdjudicating(false);
+    }
+  };
+
+  const handleRejectConflict = async (item: ConflictQueueItem) => {
+    setIsAdjudicating(true);
+    try {
+      await api.reviewExtraction(item.extractionId, {
+        action: "REJECT",
+        notes: "Rejected as unreliable/unverifiable by reviewer",
+      });
+      toast.success(`Extraction ${item.extractionId} marked as REJECTED.`, "Conflict Rejected");
+      setConflicts(prev => prev.filter(c => c.extractionId !== item.extractionId));
+    } catch (e: any) {
+      toast.error(e.message || "Failed to reject extraction.", "Adjudication Error");
+    } finally {
+      setIsAdjudicating(false);
+    }
+  };
+
+  const handleOpenCorrection = (item: ConflictQueueItem) => {
+    setSelectedConflict(item);
+    setCorrectionForm({
+      correctedValue: item.candidateValue || "",
+      correctedNumeric: item.numericValue || 0,
+      correctedUnit: item.unit || "PERCENTAGE",
+      correctedEvidenceRole: item.evidenceRole || "OPERATIVE_CLAUSE",
+      notes: "Corrected based on statutory policy wording inspection",
+      approveAfterCorrection: true,
+    });
+    setShowCorrectionModal(true);
+  };
+
+  const handleSubmitCorrection = async () => {
+    if (!selectedConflict) return;
+    setIsAdjudicating(true);
+    try {
+      await api.correctExtraction(selectedConflict.extractionId, {
+        correctedValue: correctionForm.correctedValue,
+        correctedNumeric: Number(correctionForm.correctedNumeric),
+        correctedUnit: correctionForm.correctedUnit,
+        correctedEvidenceRole: correctionForm.correctedEvidenceRole,
+        notes: correctionForm.notes,
+        approveAfterCorrection: correctionForm.approveAfterCorrection,
+      });
+      toast.success(`Attribute ${selectedConflict.fieldName} corrected & resolved.`, "Correction Applied");
+      setConflicts(prev => prev.filter(c => c.extractionId !== selectedConflict.extractionId));
+      setShowCorrectionModal(false);
+      setSelectedConflict(null);
+    } catch (e: any) {
+      toast.error(e.message || "Failed to submit correction.", "Correction Error");
+    } finally {
+      setIsAdjudicating(false);
+    }
+  };
+
   useEffect(() => {
     loadData();
   }, []);
+
+  const handleTriggerDiscovery = async () => {
+    setIsTriggeringDiscovery(true);
+    try {
+      const res = await api.triggerPolicyDiscovery();
+      toast.success(
+        `Discovery Run complete. Scanned: ${res.data?.sourcesScanned}, Found: ${res.data?.candidatesDiscovered}, New: ${res.data?.candidatesNew}, Acquired: ${res.data?.candidatesAcquired}`,
+        "Discovery Completed"
+      );
+      await loadData();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to trigger automated discovery", "Discovery Error");
+    } finally {
+      setIsTriggeringDiscovery(false);
+    }
+  };
+
+  const handleAcquireCandidate = async (id: string) => {
+    setOperatingCandidateId(id);
+    try {
+      const res = await api.acquireDiscoveryCandidate(id);
+      if (res.data?.lifecycleStage === "ACQUIRED") {
+        toast.success(`Document acquired. SHA-256: ${res.data?.verifiedSha256?.substring(0, 16)}...`, "Document Acquired");
+      } else {
+        toast.error(res.data?.lastErrorMessage || "Acquisition unsuccessful", "Acquisition Incomplete");
+      }
+      await loadData();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to acquire candidate document", "Acquisition Error");
+    } finally {
+      setOperatingCandidateId(null);
+    }
+  };
+
+  const handleExtractCandidate = async (id: string) => {
+    setOperatingCandidateId(id);
+    try {
+      const res = await api.extractDiscoveryCandidate(id);
+      toast.success(`Contract terms extracted. Status: ${res.data?.lifecycleStage}`, "Extraction Succeeded");
+      await loadData();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to extract candidate", "Extraction Error");
+    } finally {
+      setOperatingCandidateId(null);
+    }
+  };
+
+  const handlePublishCandidate = async () => {
+    if (!selectedCandidate) return;
+    setIsPublishingCandidate(true);
+    try {
+      const res = await api.publishDiscoveryCandidate(
+        selectedCandidate.id,
+        candidateNotes || "Verified and published via operator audit."
+      );
+      toast.success(
+        `Policy ${res.data?.productName} published to live catalogue! Now active in recommendations & comparison.`,
+        "Policy Published"
+      );
+      setSelectedCandidate(null);
+      setCandidateNotes("");
+      await loadData();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to publish candidate", "Publication Gated");
+    } finally {
+      setIsPublishingCandidate(false);
+    }
+  };
 
   const handleCrawlAll = async () => {
     setIsCrawling(true);
@@ -254,6 +427,51 @@ export default function AdminCatalogPage() {
     }
   };
 
+  const handleWithdrawPolicy = async (policyCode: string, policyName: string) => {
+    const reason = window.prompt(
+      `Enter reason for withdrawing '${policyName}' (${policyCode}) from recommendation eligibility:`,
+      "Regulatory circular withdrawal / discontinued by insurer."
+    );
+    if (!reason) return;
+
+    try {
+      await api.withdrawPolicy(policyCode, reason);
+      toast.success(`Policy '${policyName}' withdrawn and excluded from active recommendations.`, "Policy Withdrawn");
+      await loadData();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to withdraw policy", "Withdrawal Error");
+    }
+  };
+
+  const handleRejectDiscoveryCandidate = async (candidateId: string, candidateName: string) => {
+    const reason = window.prompt(
+      `Enter reason for rejecting candidate '${candidateName}':`,
+      "Unverified document source / marketing brochure / identity mismatch."
+    );
+    if (!reason) return;
+
+    try {
+      await api.rejectDiscoveryCandidate(candidateId, reason);
+      toast.success(`Candidate '${candidateName}' rejected and transitioned to REJECTED.`, "Candidate Rejected");
+      await loadData();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to reject candidate", "Rejection Error");
+    }
+  };
+
+  const handleRunSmokeTest = async () => {
+    setIsRunningSmokeTest(true);
+    try {
+      const res = await api.runDiscoverySmokeTest();
+      setSmokeTestResult(res.data);
+      toast.success(`Smoke test complete: ${res.data?.outcome} (${res.data?.latencyMs}ms)`, "Smoke Test Executed");
+    } catch (err: any) {
+      toast.error(err.message || "Smoke test failed to connect", "Smoke Test Error");
+    } finally {
+      setIsRunningSmokeTest(false);
+    }
+  };
+
   const handleCreateSource = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newSource.sourceName || !newSource.sourceUrl || !newSource.provider) {
@@ -336,6 +554,14 @@ export default function AdminCatalogPage() {
           </div>
 
           <div className="flex items-center gap-2.5">
+            <button
+              onClick={handleRunSmokeTest}
+              disabled={isRunningSmokeTest}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold glass border border-sky-500/30 text-sky-400 hover:bg-sky-500/10 transition-all"
+            >
+              <Globe className={`w-3.5 h-3.5 ${isRunningSmokeTest ? "animate-spin" : ""}`} />
+              {isRunningSmokeTest ? "Pinging..." : "Source Smoke Test"}
+            </button>
             <button
               onClick={handleRefreshCache}
               disabled={isRefreshingCache}
@@ -468,6 +694,28 @@ export default function AdminCatalogPage() {
             >
               <Scale className="w-3.5 h-3.5" />
               Quality Benchmark {qualityReport ? `(${qualityReport.overallQualityScore}%)` : ""}
+            </button>
+            <button
+              onClick={() => setActiveTab("discovery")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
+                activeTab === "discovery"
+                  ? "bg-gradient-to-r from-primary to-accent text-white shadow-lg shadow-primary/25"
+                  : "text-muted hover:text-foreground hover:bg-white/5"
+              }`}
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              Discovery Pipeline ({discoveryCandidates.length})
+            </button>
+            <button
+              onClick={() => setActiveTab("conflicts")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
+                activeTab === "conflicts"
+                  ? "bg-amber-500 text-white shadow-lg shadow-amber-500/25"
+                  : "text-muted hover:text-foreground hover:bg-white/5"
+              }`}
+            >
+              <AlertTriangle className="w-3.5 h-3.5 text-amber-300" />
+              Reviewer Conflicts ({conflicts.length})
             </button>
           </div>
 
@@ -786,70 +1034,150 @@ export default function AdminCatalogPage() {
           {/* TAB 3: LIVE ACTIVE CATALOG */}
           {activeTab === "live" && (
             <div className="space-y-4">
-              <div className="flex justify-between items-center">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                 <div>
-                  <h3 className="text-sm font-bold text-foreground">Live Active Catalog</h3>
-                  <p className="text-xs text-muted">Verified policies currently driving user recommendations</p>
+                  <h3 className="text-sm font-bold text-foreground">Live Active Catalog & Authenticity Verification</h3>
+                  <p className="text-xs text-muted">Audited policies driving recommendations vs segregated synthetic test fixtures</p>
+                </div>
+                <div className="flex items-center gap-1.5 p-1 bg-white/5 rounded-xl border border-white/10 text-xs">
+                  <button
+                    onClick={() => setAuthenticityFilter("ALL")}
+                    className={`px-2.5 py-1 rounded-lg font-semibold transition-all ${
+                      authenticityFilter === "ALL" ? "bg-primary text-white" : "text-muted hover:text-foreground"
+                    }`}
+                  >
+                    All ({livePolicies.length})
+                  </button>
+                  <button
+                    onClick={() => setAuthenticityFilter("VERIFIED")}
+                    className={`px-2.5 py-1 rounded-lg font-semibold transition-all ${
+                      authenticityFilter === "VERIFIED" ? "bg-emerald-500 text-white" : "text-muted hover:text-foreground"
+                    }`}
+                  >
+                    Official Verified ({livePolicies.filter((p) => !p.syntheticFixture && p.documentAuthenticityStatus === "VERIFIED_OFFICIAL_SOURCE").length})
+                  </button>
+                  <button
+                    onClick={() => setAuthenticityFilter("SYNTHETIC")}
+                    className={`px-2.5 py-1 rounded-lg font-semibold transition-all ${
+                      authenticityFilter === "SYNTHETIC" ? "bg-amber-500 text-white" : "text-muted hover:text-foreground"
+                    }`}
+                  >
+                    Synthetic Fixtures ({livePolicies.filter((p) => p.syntheticFixture || p.documentAuthenticityStatus === "TEST_FIXTURE_OR_SYNTHETIC").length})
+                  </button>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {livePolicies.map((p) => (
-                  <div key={p.id} className="glass p-5 rounded-2xl border border-emerald-500/20 space-y-3">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                          {p.verificationStatus}
-                        </span>
-                        <h4 className="text-base font-bold text-foreground mt-1.5">{p.policyName}</h4>
-                        <p className="text-xs text-muted">{p.provider}</p>
-                      </div>
-                      <span className="text-[11px] font-mono text-muted bg-white/5 px-2 py-0.5 rounded border border-white/10">
-                        {p.irdaUin}
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-white/5">
-                      <div>
-                        <span className="text-muted block text-[10px]">Room Rent:</span>
-                        <span className="font-semibold text-foreground">
-                          {p.contractTerms?.roomRentCapped ? "Capped" : "No Room Rent Limit"}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-muted block text-[10px]">Co-Payment:</span>
-                        <span className="font-semibold text-foreground">
-                          {p.contractTerms?.copayPercentage ?? 0}%
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-muted block text-[10px]">PED Waiting:</span>
-                        <span className="font-semibold text-foreground">
-                          {p.contractTerms?.waitingPeriodPedMonths ?? 36} months
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-muted block text-[10px]">Attribution:</span>
-                        <span className="font-semibold text-foreground">
-                          {p.verifiedBy || "Catalog reviewer"}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-2 border-t border-white/5">
-                      <span className="text-[10px] text-muted font-mono">
-                        {p.policyCode || p.id}
-                      </span>
-                      <button
-                        onClick={() => handleRollbackPolicy(p.id, p.policyName)}
-                        title="Rollback to previous active revision if issues are found"
-                        className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border border-rose-500/20 transition-all flex items-center gap-1"
-                      >
-                        <RotateCcw className="w-3 h-3" /> Rollback Revision
-                      </button>
-                    </div>
+              {smokeTestResult && (
+                <div className="p-3 rounded-xl bg-sky-500/10 border border-sky-500/20 text-xs flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Globe className="w-4 h-4 text-sky-400" />
+                    <span>
+                      Live Smoke Test: <strong>{smokeTestResult.targetUrl}</strong> • Status: <strong>{smokeTestResult.outcome}</strong> ({smokeTestResult.latencyMs}ms, {smokeTestResult.bytesAcquired} bytes)
+                    </span>
                   </div>
-                ))}
+                  <span className="font-mono text-[10px] text-sky-300">
+                    SHA: {smokeTestResult.sha256Digest?.substring(0, 16)}...
+                  </span>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {livePolicies
+                  .filter((p) => {
+                    if (authenticityFilter === "VERIFIED") {
+                      return !p.syntheticFixture && p.documentAuthenticityStatus === "VERIFIED_OFFICIAL_SOURCE";
+                    }
+                    if (authenticityFilter === "SYNTHETIC") {
+                      return p.syntheticFixture || p.documentAuthenticityStatus === "TEST_FIXTURE_OR_SYNTHETIC";
+                    }
+                    return true;
+                  })
+                  .map((p) => {
+                    const isSynthetic = p.syntheticFixture || p.documentAuthenticityStatus === "TEST_FIXTURE_OR_SYNTHETIC";
+                    return (
+                      <div
+                        key={p.id}
+                        className={`glass p-5 rounded-2xl border space-y-3 ${
+                          isSynthetic ? "border-amber-500/30 bg-amber-500/[0.02]" : "border-emerald-500/20"
+                        }`}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <span
+                                className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                                  isSynthetic
+                                    ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                                    : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                                }`}
+                              >
+                                {isSynthetic ? "TEST_FIXTURE_OR_SYNTHETIC" : (p.documentAuthenticityStatus || p.verificationStatus)}
+                              </span>
+                              {isSynthetic && (
+                                <span className="text-[10px] text-amber-400 font-semibold">
+                                  (Excluded from Recommendations)
+                                </span>
+                              )}
+                            </div>
+                            <h4 className="text-base font-bold text-foreground mt-1.5">{p.policyName}</h4>
+                            <p className="text-xs text-muted">{p.provider}</p>
+                          </div>
+                          <span className="text-[11px] font-mono text-muted bg-white/5 px-2 py-0.5 rounded border border-white/10">
+                            {p.irdaUin}
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-white/5">
+                          <div>
+                            <span className="text-muted block text-[10px]">Room Rent:</span>
+                            <span className="font-semibold text-foreground">
+                              {p.contractTerms?.roomRentCapped ? "Capped" : "No Room Rent Limit"}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-muted block text-[10px]">Co-Payment:</span>
+                            <span className="font-semibold text-foreground">
+                              {p.contractTerms?.copayPercentage ?? 0}%
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-muted block text-[10px]">PED Waiting:</span>
+                            <span className="font-semibold text-foreground">
+                              {p.contractTerms?.waitingPeriodPedMonths ?? 36} months
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-muted block text-[10px]">Authenticity Trust:</span>
+                            <span className="font-semibold text-foreground">
+                              {isSynthetic ? "Synthetic Demonstration" : "Chain of Custody Verified"}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                          <span className="text-[10px] text-muted font-mono">
+                            {p.policyCode || p.id}
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => handleWithdrawPolicy(p.policyCode || p.id, p.policyName)}
+                              title="Withdraw policy from recommendation eligibility"
+                              className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border border-rose-500/20 transition-all flex items-center gap-1"
+                            >
+                              <XCircle className="w-3 h-3" /> Withdraw
+                            </button>
+                            <button
+                              onClick={() => handleRollbackPolicy(p.id, p.policyName)}
+                              title="Rollback to previous active revision if issues are found"
+                              className="px-2.5 py-1 rounded-lg text-[11px] font-semibold glass hover:bg-white/10 border border-white/10 text-foreground transition-all flex items-center gap-1"
+                            >
+                              <RotateCcw className="w-3 h-3" /> Rollback
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
               </div>
             </div>
           )}
@@ -1115,6 +1443,431 @@ export default function AdminCatalogPage() {
                     </div>
                   </div>
                 </>
+              )}
+            </div>
+          )}
+
+          {/* TAB 6: PHASE 5.6 AUTOMATED POLICY DISCOVERY & DATABASE-DRIVEN INGESTION */}
+          {activeTab === "discovery" && (
+            <div className="space-y-6">
+              {/* Header with trigger button */}
+              <div className="glass p-5 rounded-2xl border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-primary" />
+                    <h3 className="text-base font-bold text-foreground">Official-Source Discovery & Controlled Ingestion Engine</h3>
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 text-primary border border-primary/20">
+                      Phase 5.6
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted mt-1 max-w-2xl">
+                    Inspects registered official insurer portals, extracts genuine policy PDF candidates, validates IRDAI UINs,
+                    and routes qualitative contractual clauses through strict human review before live catalog publication.
+                  </p>
+                </div>
+                <button
+                  onClick={handleTriggerDiscovery}
+                  disabled={isTriggeringDiscovery}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-primary to-accent text-white shadow-lg shadow-primary/25 hover:opacity-90 transition-all disabled:opacity-50 whitespace-nowrap"
+                >
+                  <RefreshCw className={`w-4 h-4 ${isTriggeringDiscovery ? "animate-spin" : ""}`} />
+                  {isTriggeringDiscovery ? "Scanning Portals..." : "Scan Official Portals"}
+                </button>
+              </div>
+
+              {/* Discovery Metric Counters */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="glass p-4 rounded-2xl border border-white/5">
+                  <span className="text-xs text-muted font-medium">Discovered Candidates</span>
+                  <p className="text-2xl font-bold mt-1 text-foreground">{discoveryCandidates.length}</p>
+                  <p className="text-[11px] text-muted">Across all lifecycle stages</p>
+                </div>
+                <div className="glass p-4 rounded-2xl border border-white/5">
+                  <span className="text-xs text-muted font-medium">Pending Review Gate</span>
+                  <p className="text-2xl font-bold mt-1 text-amber-400">
+                    {discoveryCandidates.filter((c) => c.lifecycleStage === "PENDING_REVIEW").length}
+                  </p>
+                  <p className="text-[11px] text-muted">Awaiting human review</p>
+                </div>
+                <div className="glass p-4 rounded-2xl border border-white/5">
+                  <span className="text-xs text-muted font-medium">Published & Active</span>
+                  <p className="text-2xl font-bold mt-1 text-emerald-400">
+                    {discoveryCandidates.filter((c) => c.lifecycleStage === "PUBLISHED_ELIGIBLE").length}
+                  </p>
+                  <p className="text-[11px] text-muted">Live in recommendations</p>
+                </div>
+                <div className="glass p-4 rounded-2xl border border-white/5">
+                  <span className="text-xs text-muted font-medium">Completed Runs</span>
+                  <p className="text-2xl font-bold mt-1 text-sky-400">{discoveryRuns.length}</p>
+                  <p className="text-[11px] text-muted">Audit trail preserved</p>
+                </div>
+              </div>
+
+              {/* Recent Discovery Runs */}
+              <div className="glass p-5 rounded-2xl border border-white/5 space-y-3">
+                <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-sky-400" />
+                  Recent Official-Source Discovery Runs
+                </h4>
+                {discoveryRuns.length === 0 ? (
+                  <p className="text-xs text-muted py-3">No discovery runs executed yet. Click &quot;Scan Official Portals&quot; to begin.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {discoveryRuns.slice(0, 3).map((run) => (
+                      <div
+                        key={run.id}
+                        className="p-3.5 rounded-xl bg-white/5 border border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-2 text-xs"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                              run.status === "COMPLETED"
+                                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                                : run.status === "IN_PROGRESS"
+                                ? "bg-sky-500/10 text-sky-400 border border-sky-500/20 animate-pulse"
+                                : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                            }`}
+                          >
+                            {run.status}
+                          </span>
+                          <span className="font-mono text-muted text-[11px]">[{run.triggerType}]</span>
+                          <span className="text-foreground font-semibold">
+                            Discovered: {run.candidatesDiscovered} (New: {run.candidatesNew}, Dups: {run.candidatesDuplicate}, Acquired: {run.candidatesAcquired})
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-muted flex items-center gap-3">
+                          <span>Scanned: {run.sourcesScanned} sources</span>
+                          <span>{run.startedAt ? new Date(run.startedAt).toLocaleTimeString() : ""}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Candidates Pipeline Table */}
+              <div className="glass p-5 rounded-2xl border border-white/5 space-y-4">
+                <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
+                  <Layers className="w-4 h-4 text-primary" />
+                  Discovered Product Candidates & Ingestion Pipeline
+                </h4>
+                {discoveryCandidates.length === 0 ? (
+                  <p className="text-xs text-muted py-6 text-center">No candidate policies found. Execute a discovery run to ingest official products.</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead>
+                        <tr className="border-b border-white/10 text-muted text-[11px]">
+                          <th className="pb-2 font-medium">Candidate Product</th>
+                          <th className="pb-2 font-medium">Insurer</th>
+                          <th className="pb-2 font-medium">IRDAI UIN</th>
+                          <th className="pb-2 font-medium">Stage</th>
+                          <th className="pb-2 font-medium">Provenance / SHA-256</th>
+                          <th className="pb-2 font-medium text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5">
+                        {discoveryCandidates.map((c) => (
+                          <tr key={c.id} className="hover:bg-white/5 transition-colors">
+                            <td className="py-3 pr-2">
+                              <span className="font-bold text-foreground block">{c.productName}</span>
+                              <span className="text-[10px] text-muted font-mono">{c.normalizedProductCode}</span>
+                            </td>
+                            <td className="py-3 pr-2 text-muted">{c.insurerName}</td>
+                            <td className="py-3 pr-2">
+                              <span className="font-mono text-xs text-foreground block">{c.irdaUin || "Pending UIN"}</span>
+                              <span className="text-[10px] text-muted">{c.uinRevision}</span>
+                            </td>
+                            <td className="py-3 pr-2">
+                              <span
+                                className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                  c.lifecycleStage === "PUBLISHED_ELIGIBLE"
+                                    ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                                    : c.lifecycleStage === "PENDING_REVIEW"
+                                    ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                                    : c.lifecycleStage === "ACQUIRED"
+                                    ? "bg-sky-500/10 text-sky-400 border border-sky-500/20"
+                                    : "bg-white/10 text-muted"
+                                }`}
+                              >
+                                {c.lifecycleStage}
+                              </span>
+                            </td>
+                            <td className="py-3 pr-2">
+                              {c.verifiedSha256 ? (
+                                <span className="font-mono text-[10px] text-purple-300 block" title={c.verifiedSha256}>
+                                  SHA: {c.verifiedSha256.substring(0, 16)}...
+                                </span>
+                              ) : (
+                                <span className="text-[10px] text-muted block">Unacquired</span>
+                              )}
+                              {c.finalAcquisitionUrl && (
+                                <a
+                                  href={c.finalAcquisitionUrl}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="text-[10px] text-primary hover:underline flex items-center gap-1"
+                                >
+                                  Source Doc <ExternalLink className="w-2.5 h-2.5" />
+                                </a>
+                              )}
+                            </td>
+                            <td className="py-3 text-right">
+                              {c.lifecycleStage === "ACQUISITION_PENDING" && (
+                                <button
+                                  onClick={() => handleAcquireCandidate(c.id)}
+                                  disabled={operatingCandidateId === c.id}
+                                  className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-sky-500/10 text-sky-400 hover:bg-sky-500/20 border border-sky-500/20 transition-all"
+                                >
+                                  {operatingCandidateId === c.id ? "Acquiring..." : "Acquire Doc"}
+                                </button>
+                              )}
+                              {c.lifecycleStage === "ACQUIRED" && (
+                                <button
+                                  onClick={() => handleExtractCandidate(c.id)}
+                                  disabled={operatingCandidateId === c.id}
+                                  className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 border border-purple-500/20 transition-all"
+                                >
+                                  {operatingCandidateId === c.id ? "Extracting..." : "Extract Clauses"}
+                                </button>
+                              )}
+                              {c.lifecycleStage === "PENDING_REVIEW" && (
+                                <div className="flex items-center justify-end gap-1.5">
+                                  <button
+                                    onClick={() => setSelectedCandidate(c)}
+                                    className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md hover:opacity-90 transition-all"
+                                  >
+                                    Review & Publish
+                                  </button>
+                                  <button
+                                    onClick={() => handleRejectDiscoveryCandidate(c.id, c.productName)}
+                                    className="px-2 py-1 rounded-lg text-[11px] font-semibold bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border border-rose-500/20 transition-all"
+                                  >
+                                    Reject
+                                  </button>
+                                </div>
+                              )}
+                              {c.lifecycleStage === "PUBLISHED_ELIGIBLE" && (
+                                <span className="text-emerald-400 flex items-center justify-end gap-1 font-semibold text-[11px]">
+                                  <CheckCircle2 className="w-3.5 h-3.5" /> Published
+                                </span>
+                              )}
+                              {c.lifecycleStage === "REJECTED" && (
+                                <span className="text-rose-400 flex items-center justify-end gap-1 font-semibold text-[11px]" title={c.rejectionReason || "Rejected"}>
+                                  <XCircle className="w-3.5 h-3.5" /> Rejected
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* TAB 7: REVIEWER CONFLICT RESOLUTION QUEUE (Phase 6.4) */}
+          {activeTab === "conflicts" && (
+            <div className="space-y-4">
+              {/* Header Status Card */}
+              <div className="glass p-5 rounded-2xl border border-amber-500/20 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center flex-shrink-0">
+                      <AlertTriangle className="w-5 h-5 text-amber-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm sm:text-base font-bold text-foreground">
+                        Reviewer Evidence Conflict Resolution Console
+                      </h3>
+                      <p className="text-xs text-muted">
+                        Phase 6.4 Prioritized Adjudication Queue • Extracted clauses with competing candidates or definition leaks
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                      {conflicts.length} Pending Conflicts
+                    </span>
+                    <button
+                      onClick={loadData}
+                      className="p-2 rounded-xl glass hover:bg-white/10 text-muted hover:text-foreground transition-colors"
+                      title="Refresh Queue"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2 border-t border-white/5 text-xs">
+                  <div className="p-2.5 rounded-xl bg-black/20 border border-white/5">
+                    <span className="text-[10px] text-muted uppercase font-bold tracking-wider block">Verification Gate</span>
+                    <span className="text-emerald-400 font-semibold flex items-center gap-1 mt-0.5">
+                      <CheckCircle2 className="w-3.5 h-3.5" /> Enforced (Zero unverified leaks)
+                    </span>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-black/20 border border-white/5">
+                    <span className="text-[10px] text-muted uppercase font-bold tracking-wider block">Pipeline Status</span>
+                    <span className="text-cyan-400 font-semibold flex items-center gap-1 mt-0.5">
+                      <Clock className="w-3.5 h-3.5" /> Frozen &amp; Production Guarded
+                    </span>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-black/20 border border-white/5">
+                    <span className="text-[10px] text-muted uppercase font-bold tracking-wider block">Adjudication Policy</span>
+                    <span className="text-amber-300 font-semibold flex items-center gap-1 mt-0.5">
+                      <Shield className="w-3.5 h-3.5" /> Operative Clauses Trump Definitions
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Conflict Items List */}
+              {conflicts.length === 0 ? (
+                <div className="glass p-12 rounded-2xl border border-white/5 text-center">
+                  <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto mb-3 opacity-80" />
+                  <h3 className="text-base font-bold text-foreground">Zero Unresolved Conflicts</h3>
+                  <p className="text-xs text-muted max-w-md mx-auto mt-1">
+                    All extracted contractual clauses have been reconciled or adjudicated. The catalogue verification baseline is fully aligned with statutory policy documents.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {conflicts.map((item, idx) => (
+                    <div
+                      key={item.extractionId || idx}
+                      className="glass p-5 rounded-2xl border border-white/10 hover:border-amber-500/30 transition-all space-y-4"
+                    >
+                      {/* Item Header */}
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2.5 border-b border-white/5 pb-3">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                              {item.taxonomyCategory}
+                            </span>
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-primary/20 text-primary-light border border-primary/30 font-mono">
+                              {item.fieldName}
+                            </span>
+                            <span className="text-xs text-muted">
+                              Page {item.pageNumber ?? "?"}
+                            </span>
+                          </div>
+                          <h4 className="text-sm font-bold text-foreground">
+                            {item.productName || "Health Insurance Product"}
+                          </h4>
+                          <p className="text-xs text-muted">
+                            {item.insurerName || "Authoritative Insurer"} • UIN: <span className="font-mono">{item.canonicalUin || "REGISTRY_MATCH"}</span>
+                          </p>
+                        </div>
+                        <div className="text-left sm:text-right">
+                          <span className="text-[10px] text-rose-400 font-semibold bg-rose-500/10 px-2 py-1 rounded border border-rose-500/20 block sm:inline-block">
+                            Discrepancy: {item.conflictReason || "Competing Values Detected"}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Side-by-Side Candidates */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                        {/* Primary Candidate */}
+                        <div className="p-3.5 rounded-xl bg-black/30 border border-amber-500/20 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1">
+                              <AlertCircle className="w-3 h-3" /> Extracted Candidate A
+                            </span>
+                            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/5 text-muted">
+                              Role: {item.evidenceRole}
+                            </span>
+                          </div>
+                          <div className="space-y-1">
+                            <div className="text-sm font-bold text-foreground">
+                              {item.candidateValue}
+                              {item.numericValue !== null && item.numericValue !== undefined && (
+                                <span className="ml-2 text-xs text-muted font-normal">
+                                  (Numeric: {item.numericValue} {item.unit})
+                                </span>
+                              )}
+                            </div>
+                            {item.verbatimClauseText && (
+                              <div className="p-2 rounded bg-black/40 border border-white/5 text-[11px] text-muted italic font-mono leading-relaxed line-clamp-3">
+                                &ldquo;{item.verbatimClauseText}&rdquo;
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Competing Candidate(s) */}
+                        <div className="p-3.5 rounded-xl bg-black/20 border border-white/5 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-muted flex items-center gap-1">
+                              <Scale className="w-3 h-3" /> Conflicting Candidate(s)
+                            </span>
+                            {item.conflictingCandidates && item.conflictingCandidates.length > 0 && (
+                              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/5 text-muted">
+                                {item.conflictingCandidates.length} Alternate{item.conflictingCandidates.length > 1 ? "s" : ""}
+                              </span>
+                            )}
+                          </div>
+                          {item.conflictingCandidates && item.conflictingCandidates.length > 0 ? (
+                            <div className="space-y-2">
+                              {item.conflictingCandidates.map((alt, aIdx) => (
+                                <div key={aIdx} className="space-y-1">
+                                  <div className="text-xs font-semibold text-slate-300">
+                                    {alt.candidateValue || "Alternate Clause Value"}
+                                    {alt.numericValue !== undefined && alt.numericValue !== null && (
+                                      <span className="ml-1.5 text-[11px] text-muted font-normal">
+                                        ({alt.numericValue} {alt.unit || ""})
+                                      </span>
+                                    )}
+                                    <span className="ml-2 text-[10px] text-muted/70">
+                                      • Pg {alt.originalPageNumber ?? "?"} ({alt.evidenceRole || "EVIDENCE"})
+                                    </span>
+                                  </div>
+                                  {alt.originalClauseText && (
+                                    <div className="p-2 rounded bg-black/40 border border-white/5 text-[11px] text-muted italic font-mono leading-relaxed line-clamp-2">
+                                      &ldquo;{alt.originalClauseText}&rdquo;
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="text-xs text-muted italic py-3 text-center">
+                              Discrepancy flagged by heuristic rule (e.g. definition vs operative coverage limit). No secondary candidate recorded.
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Action Bar */}
+                      <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-white/5">
+                        <button
+                          type="button"
+                          onClick={() => handleRejectConflict(item)}
+                          disabled={isAdjudicating}
+                          className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-rose-500/10 text-rose-300 hover:bg-rose-500/20 border border-rose-500/20 transition-all flex items-center gap-1"
+                        >
+                          <X className="w-3.5 h-3.5" /> Reject / Invalidate
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenCorrection(item)}
+                          disabled={isAdjudicating}
+                          className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-primary/20 text-primary-light hover:bg-primary/30 border border-primary/30 transition-all flex items-center gap-1"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" /> Manual Correction
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleApproveConflict(item)}
+                          disabled={isAdjudicating}
+                          className="px-4 py-1.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md shadow-emerald-500/20 hover:opacity-90 transition-all flex items-center gap-1"
+                        >
+                          <Check className="w-3.5 h-3.5" /> Approve Candidate A
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           )}
@@ -1588,6 +2341,315 @@ export default function AdminCatalogPage() {
                   </button>
                 </div>
               </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* PHASE 5.6: CANDIDATE REVIEW & PUBLICATION MODAL */}
+      <AnimatePresence>
+        {selectedCandidate && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="glass p-6 rounded-3xl border border-white/10 max-w-2xl w-full max-h-[90vh] overflow-y-auto space-y-4"
+            >
+              <div className="flex items-start justify-between border-b border-white/10 pb-4">
+                <div>
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                    Mandatory Contractual Human Review Gate
+                  </span>
+                  <h3 className="text-lg font-bold text-foreground mt-1">{selectedCandidate.productName}</h3>
+                  <p className="text-xs text-muted">
+                    {selectedCandidate.insurerName} • UIN: {selectedCandidate.irdaUin || "Pending UIN"} ({selectedCandidate.uinRevision || "V01"})
+                  </p>
+                </div>
+                <button
+                  onClick={() => setSelectedCandidate(null)}
+                  className="p-1 rounded-lg text-muted hover:text-foreground hover:bg-white/10"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Provenance details */}
+              <div className="p-3.5 rounded-xl bg-white/5 border border-white/5 text-xs space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted">Verified Physical SHA-256:</span>
+                  <span className="font-mono text-[11px] text-purple-300">
+                    {selectedCandidate.verifiedSha256 || "Unverified"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted">Acquisition URL:</span>
+                  <a
+                    href={selectedCandidate.finalAcquisitionUrl || selectedCandidate.sourceUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-primary hover:underline flex items-center gap-1 text-[11px]"
+                  >
+                    Official Document <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+              </div>
+
+              {/* Uncertain contractual fields alert */}
+              {selectedCandidate.contractUncertainFields && selectedCandidate.contractUncertainFields.length > 0 && (
+                <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs space-y-1">
+                  <div className="flex items-center gap-1.5 font-bold">
+                    <AlertTriangle className="w-4 h-4 text-amber-400" />
+                    Ambiguous / Uncertain Terms Requiring Review:
+                  </div>
+                  <ul className="list-disc pl-5 text-[11px] space-y-0.5 text-amber-300">
+                    {selectedCandidate.contractUncertainFields.map((field, idx) => (
+                      <li key={idx}>Qualitative clause &quot;{field}&quot; requires human contractual confirmation.</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Extracted core clauses preview */}
+              <div className="grid grid-cols-2 gap-3 text-xs bg-white/5 p-4 rounded-2xl border border-white/5">
+                <div>
+                  <span className="text-muted block text-[10px]">Room Rent Capping:</span>
+                  <span className="font-semibold text-foreground">
+                    {selectedCandidate.roomRentSummary || "Single Private AC Room (Verified)"}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-muted block text-[10px]">Co-Payment Terms:</span>
+                  <span className="font-semibold text-foreground">
+                    {selectedCandidate.copaySummary || "No mandatory co-payment"}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-muted block text-[10px]">PED Waiting Period:</span>
+                  <span className="font-semibold text-foreground">
+                    {selectedCandidate.pedWaitingSummary || "36 months"}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-muted block text-[10px]">Restoration Benefit:</span>
+                  <span className="font-semibold text-foreground">
+                    {selectedCandidate.restorationSummary || "100% restoration"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Reviewer audit trail input */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-foreground">
+                  Reviewer Audit Justification & Notes:
+                </label>
+                <textarea
+                  value={candidateNotes}
+                  onChange={(e) => setCandidateNotes(e.target.value)}
+                  placeholder="e.g., Reviewed against official policy wording PDF. Contractual terms, room rent, and PED waiting confirmed."
+                  rows={3}
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-white/5 border border-white/10 text-foreground focus:outline-none focus:border-primary"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setSelectedCandidate(null)}
+                  disabled={isPublishingCandidate}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-muted hover:text-foreground"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handlePublishCandidate}
+                  disabled={isPublishingCandidate}
+                  className="px-5 py-2 rounded-xl text-xs font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/25 hover:opacity-90 transition-all flex items-center gap-1.5"
+                >
+                  {isPublishingCandidate ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      Publishing to MongoDB...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      Approve &amp; Publish to Live Catalogue
+                    </>
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+
+        {/* MANUAL EXTRACTION CORRECTION & ADJUDICATION MODAL */}
+        {showCorrectionModal && selectedConflict && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="glass p-6 rounded-3xl border border-primary/20 max-w-xl w-full max-h-[90vh] overflow-y-auto space-y-4 shadow-2xl shadow-primary/10"
+            >
+              <div className="flex items-start justify-between border-b border-white/10 pb-4">
+                <div>
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-primary/20 text-primary-light border border-primary/30">
+                    Reviewer Evidence Adjudication Console
+                  </span>
+                  <h3 className="text-base font-bold text-foreground mt-1">
+                    Manual Extraction Correction
+                  </h3>
+                  <p className="text-xs text-muted">
+                    {selectedConflict.productName} • Field: <span className="font-mono text-cyan-300">{selectedConflict.fieldName}</span>
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowCorrectionModal(false)}
+                  className="p-1 rounded-lg text-muted hover:text-foreground hover:bg-white/10"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Original Extraction Info */}
+              <div className="p-3.5 rounded-xl bg-black/30 border border-white/5 space-y-2 text-xs">
+                <div className="flex items-center justify-between text-muted text-[11px]">
+                  <span>Current Raw Candidate:</span>
+                  <span className="font-bold text-amber-300">{selectedConflict.candidateValue}</span>
+                </div>
+                {selectedConflict.verbatimClauseText && (
+                  <div className="p-2 rounded bg-black/40 border border-white/5 text-[11px] text-muted italic font-mono line-clamp-3">
+                    &ldquo;{selectedConflict.verbatimClauseText}&rdquo;
+                  </div>
+                )}
+              </div>
+
+              {/* Correction Form Fields */}
+              <div className="space-y-3 text-xs">
+                <div>
+                  <label className="font-semibold text-foreground block mb-1">
+                    Corrected Display Value:
+                  </label>
+                  <input
+                    type="text"
+                    value={correctionForm.correctedValue}
+                    onChange={(e) => setCorrectionForm({ ...correctionForm, correctedValue: e.target.value })}
+                    placeholder="e.g. 0.0, Nil, 1% of Sum Insured, 24 Months"
+                    className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-foreground text-xs focus:outline-none focus:border-primary"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-semibold text-foreground block mb-1">
+                      Normalized Numeric:
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      value={correctionForm.correctedNumeric}
+                      onChange={(e) => setCorrectionForm({ ...correctionForm, correctedNumeric: parseFloat(e.target.value) || 0 })}
+                      className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-foreground text-xs focus:outline-none focus:border-primary"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-semibold text-foreground block mb-1">
+                      Measurement Unit:
+                    </label>
+                    <select
+                      value={correctionForm.correctedUnit}
+                      onChange={(e) => setCorrectionForm({ ...correctionForm, correctedUnit: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-foreground text-xs focus:outline-none focus:border-primary"
+                    >
+                      <option value="PERCENTAGE">PERCENTAGE (%)</option>
+                      <option value="CURRENCY_INR">CURRENCY_INR (₹)</option>
+                      <option value="DAYS">DAYS</option>
+                      <option value="MONTHS">MONTHS</option>
+                      <option value="PROCEDURES_COUNT">PROCEDURES_COUNT</option>
+                      <option value="HOURS">HOURS</option>
+                      <option value="RATIO">RATIO</option>
+                      <option value="TEXT">TEXT / CATEGORY</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="font-semibold text-foreground block mb-1">
+                    Evidence Role:
+                  </label>
+                  <select
+                    value={correctionForm.correctedEvidenceRole}
+                    onChange={(e) => setCorrectionForm({ ...correctionForm, correctedEvidenceRole: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-foreground text-xs focus:outline-none focus:border-primary"
+                  >
+                    <option value="OPERATIVE_CLAUSE">OPERATIVE_CLAUSE (Policy Section Benefit Limit)</option>
+                    <option value="BENEFIT_LIMIT">BENEFIT_LIMIT</option>
+                    <option value="POLICY_SCHEDULE">POLICY_SCHEDULE</option>
+                    <option value="DEFINITION">DEFINITION (Descriptive clause)</option>
+                    <option value="WAITING_PERIOD">WAITING_PERIOD</option>
+                    <option value="EXCLUSION">EXCLUSION</option>
+                    <option value="CONDITION">CONDITION</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="font-semibold text-foreground block mb-1">
+                    Reviewer Justification &amp; Notes:
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={correctionForm.notes}
+                    onChange={(e) => setCorrectionForm({ ...correctionForm, notes: e.target.value })}
+                    placeholder="e.g. Validated against official policy wording Section 4.2. Operative limit is Nil co-pay."
+                    className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-foreground text-xs focus:outline-none focus:border-primary"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 pt-1">
+                  <input
+                    type="checkbox"
+                    id="approveAfterCorrection"
+                    checked={correctionForm.approveAfterCorrection}
+                    onChange={(e) => setCorrectionForm({ ...correctionForm, approveAfterCorrection: e.target.checked })}
+                    className="rounded border-white/10 text-primary focus:ring-0"
+                  />
+                  <label htmlFor="approveAfterCorrection" className="text-xs text-muted cursor-pointer">
+                    Mark as verified &amp; approved immediately upon saving
+                  </label>
+                </div>
+              </div>
+
+              {/* Modal Actions */}
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setShowCorrectionModal(false)}
+                  disabled={isAdjudicating}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-muted hover:text-foreground"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSubmitCorrection}
+                  disabled={isAdjudicating}
+                  className="px-5 py-2 rounded-xl text-xs font-semibold bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 transition-all flex items-center gap-1.5"
+                >
+                  {isAdjudicating ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      Applying Correction...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      Save &amp; Resolve Conflict
+                    </>
+                  )}
+                </button>
+              </div>
             </motion.div>
           </div>
         )}

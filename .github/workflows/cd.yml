@@ -1,20 +1,34 @@
 name: Continuous Delivery & Deployment (CD)
 
+# ─────────────────────────────────────────────────────────────
+# CD Safety Rule: Deployment is strictly decoupled from CI.
+# Automatic deployment to main is disabled.
+# Production releases require explicit release authorization.
+# ─────────────────────────────────────────────────────────────
+
 on:
-  push:
-    branches: [main]
-    tags:
-      - "v*.*.*"
   workflow_dispatch:
     inputs:
-      environment:
+      target_environment:
         description: "Target Deployment Environment"
         required: true
-        default: "production"
+        default: "staging"
         type: choice
         options:
-          - production
           - staging
+          - production
+      release_tag:
+        description: "Semantic Version Tag (e.g., v2.0.0)"
+        required: true
+        default: "v2.0.0"
+      authorization_code:
+        description: "Explicit Authorization Confirmation (Type 'RELEASE_AUTHORIZED' to proceed)"
+        required: true
+        default: ""
+
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
 
 env:
   REGISTRY: ghcr.io
@@ -23,11 +37,39 @@ env:
 
 jobs:
   # ─────────────────────────────────────────────────────────────
-  # Stage 1: Build & Publish OCI Container Images to GHCR
+  # Release Gate: Validate Explicit Authorization
+  # ─────────────────────────────────────────────────────────────
+  authorization-gate:
+    name: Release Authorization Verification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate Release Authorization
+        run: |
+          echo "=========================================================="
+          echo "Evaluating Release Authorization Boundary"
+          echo "Trigger Event: ${{ github.event_name }}"
+          echo "Ref:           ${{ github.ref }}"
+          echo "=========================================================="
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            if [ "${{ github.event.inputs.authorization_code }}" != "RELEASE_AUTHORIZED" ]; then
+              echo "❌ Release authorization failed. Input confirmation code was '${{ github.event.inputs.authorization_code }}'."
+              echo "To trigger CD, you must explicitly provide confirmation code: RELEASE_AUTHORIZED"
+              exit 1
+            fi
+            echo "✅ Explicit manual authorization confirmed for environment: ${{ github.event.inputs.target_environment }}"
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            echo "✅ Git semantic version release tag detected: ${{ github.ref }}"
+          fi
+
+  # ─────────────────────────────────────────────────────────────
+  # Stage 1: Build & Publish OCI Container Images to Registry
   # ─────────────────────────────────────────────────────────────
   build-and-publish:
-    name: Build & Push Container Images
+    name: Build & Publish Authorized Container Images
+    needs: [authorization-gate]
     runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.event.inputs.target_environment || 'production' }}
     permissions:
       contents: read
       packages: write
@@ -52,7 +94,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}
           tags: |
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=${{ github.event.inputs.release_tag || 'latest' }}
             type=sha,format=short
             type=semver,pattern={{version}}
 
@@ -62,7 +104,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE_NAME }}
           tags: |
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=${{ github.event.inputs.release_tag || 'latest' }}
             type=sha,format=short
             type=semver,pattern={{version}}
 
@@ -86,19 +128,20 @@ jobs:
           tags: ${{ steps.meta-frontend.outputs.tags }}
           labels: ${{ steps.meta-frontend.outputs.labels }}
           build-args: |
-            NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api' }}
+            NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL || '/api' }}
             NEXT_PUBLIC_GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID || '' }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
   # ─────────────────────────────────────────────────────────────
-  # Stage 2: Automated Deployment to Target Server
+  # Stage 2: Authorized Deployment Execution
   # ─────────────────────────────────────────────────────────────
   deploy:
-    name: Deploy to ${{ github.event.inputs.environment || 'production' }}
-    needs: [build-and-publish]
+    name: Deploy to ${{ github.event.inputs.target_environment || 'production' }}
+    needs: [authorization-gate, build-and-publish]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    environment:
+      name: ${{ github.event.inputs.target_environment || 'production' }}
 
     steps:
       - name: Checkout Code
@@ -120,25 +163,22 @@ jobs:
           ssh "$DEPLOY_USER@$DEPLOY_HOST" "
             cd /opt/vidhura-ai && \
             echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u '${{ github.actor }}' --password-stdin && \
-            docker compose pull && \
-            docker compose up -d --remove-orphans && \
+            docker compose -f docker-compose.prod.yml pull && \
+            docker compose -f docker-compose.prod.yml up -d --remove-orphans && \
             docker image prune -af --filter 'until=48h'
           "
 
-      - name: Simulated Deployment (Local / Self-Hosted Runner Fallback)
+      - name: Simulated Deployment Summary (No SSH Host Configured)
         if: env.DEPLOY_HOST == ''
         run: |
           echo "=========================================================="
           echo "DEPLOY_HOST secret not configured."
-          echo "Images were successfully published to GHCR:"
-          echo " - ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}:latest"
-          echo " - ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE_NAME }}:latest"
-          echo "To enable automated remote deployment, configure:"
-          echo " - DEPLOY_HOST, DEPLOY_USER, DEPLOY_KEY in repository secrets."
+          echo "Authorized images successfully pushed to registry."
+          echo "Environment target: ${{ github.event.inputs.target_environment || 'production' }}"
           echo "=========================================================="
 
   # ─────────────────────────────────────────────────────────────
-  # Stage 3: Post-Deployment Smoke Test & Health Check
+  # Stage 3: Post-Deployment Synthetic Health Check
   # ─────────────────────────────────────────────────────────────
   smoke-test:
     name: Post-Deployment Synthetic Health Check
@@ -147,16 +187,13 @@ jobs:
     steps:
       - name: Run Synthetic Health Check
         run: |
-          TARGET_URL="${{ secrets.DEPLOY_URL || 'http://localhost:5000' }}/api/health"
-          echo "Probing application health endpoint: $TARGET_URL"
-          
-          # If a live production URL is configured, perform HTTP probe with retries
-          if [[ "${{ secrets.DEPLOY_URL }}" != "" ]]; then
+          TARGET_URL="${{ secrets.DEPLOY_URL || '' }}"
+          if [ -n "$TARGET_URL" ]; then
+            echo "Probing application health endpoint: $TARGET_URL/api/health"
             for i in {1..10}; do
-              RESPONSE=$(curl -s -w "\n%{http_code}" "$TARGET_URL" || true)
+              RESPONSE=$(curl -s -w "\n%{http_code}" "$TARGET_URL/api/health" || true)
               HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
               BODY=$(echo "$RESPONSE" | sed '$d')
-              
               if [ "$HTTP_CODE" = "200" ]; then
                 echo "✅ Health check PASSED on attempt $i. Response: $BODY"
                 exit 0
@@ -167,5 +204,5 @@ jobs:
             echo "❌ Post-deployment health check failed after 10 attempts."
             exit 1
           else
-            echo "ℹ️ DEPLOY_URL not set. Skipping live HTTP probe in sandbox CI environment."
+            echo "ℹ️ DEPLOY_URL not set. Skipping live HTTP probe in sandbox environment."
           fi

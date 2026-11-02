@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import ScoreRing from "@/components/ScoreRing";
+import PolicyIntelligenceProfileDrawer from "@/components/profile/PolicyIntelligenceProfileDrawer";
 import { api, Policy } from "@/lib/api";
 import { useToast } from "@/context/ToastContext";
 
@@ -23,6 +24,7 @@ export default function PolicyDetailsPage() {
   const [error, setError] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showIntelligenceProfile, setShowIntelligenceProfile] = useState(false);
 
   useEffect(() => {
     async function fetchPolicy() {
@@ -157,7 +159,16 @@ export default function PolicyDetailsPage() {
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2 no-print flex-shrink-0">
+              <div className="flex items-center gap-2 no-print flex-shrink-0 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => setShowIntelligenceProfile(true)}
+                  className="px-4 py-2.5 text-xs font-semibold rounded-xl bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-500/30 text-indigo-300 transition-all flex items-center gap-2 shadow-sm"
+                  title="View 360° Policy Intelligence Profile"
+                >
+                  <Sparkles className="w-4 h-4 text-indigo-400" />
+                  Intelligence Profile
+                </button>
                 <button
                   type="button"
                   onClick={() => window.print()}
@@ -576,6 +587,13 @@ export default function PolicyDetailsPage() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* 360-Degree Policy Intelligence Profile Drawer */}
+      <PolicyIntelligenceProfileDrawer
+        isOpen={showIntelligenceProfile}
+        onClose={() => setShowIntelligenceProfile(false)}
+        policyCode={policy.id}
+      />
     </div>
   );
 }

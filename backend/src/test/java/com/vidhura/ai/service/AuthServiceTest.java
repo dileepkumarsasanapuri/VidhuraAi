@@ -258,4 +258,71 @@ class AuthServiceTest {
         assertEquals("new_encoded_hash", user.getPasswordHash());
         assertNull(user.getActiveRefreshToken());
     }
+
+    @Test
+    void testGoogleLoginSuccess_NewUser() {
+        String payloadJson = "{\"email\":\"google.user@example.com\",\"name\":\"Priya Sharma\",\"sub\":\"g_987654321\",\"picture\":\"https://lh3.google.com/photo.jpg\"}";
+        String encodedPayload = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(payloadJson.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        String simulatedJwt = "eyJhbGciOiJSUzI1NiJ9." + encodedPayload + ".mock_signature";
+
+        when(userRepository.findByEmail("google.user@example.com")).thenReturn(Optional.empty());
+        when(inMemoryUserStorage.findByEmail("google.user@example.com")).thenReturn(Optional.empty());
+        when(userRepository.save(any(User.class))).thenAnswer(inv -> {
+            User u = inv.getArgument(0);
+            if (u.getId() == null) u.setId("google-user-id");
+            return u;
+        });
+        when(tokenProvider.generateAccessToken(anyString())).thenReturn("mock_google_jwt");
+        when(tokenProvider.generateRefreshToken(anyString())).thenReturn("mock_google_refresh");
+
+        AuthDto.GoogleAuthRequest request = new AuthDto.GoogleAuthRequest();
+        request.setCredential(simulatedJwt);
+
+        AuthDto.AuthResponse response = authService.googleLogin(request);
+
+        assertNotNull(response);
+        assertTrue(response.getSuccess());
+        assertEquals("mock_google_jwt", response.getToken());
+        assertEquals("mock_google_refresh", response.getRefreshToken());
+        assertNotNull(response.getUser());
+        verify(userRepository, atLeastOnce()).save(any(User.class));
+    }
+
+    @Test
+    void testGoogleLoginSuccess_AdminRole() {
+        String payloadJson = "{\"email\":\"reviewer@vidhura.ai\",\"name\":\"Senior Reviewer\",\"sub\":\"g_reviewer_001\"}";
+        String encodedPayload = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(payloadJson.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        String simulatedJwt = "eyJhbGciOiJSUzI1NiJ9." + encodedPayload + ".mock_sig";
+
+        when(userRepository.findByEmail("reviewer@vidhura.ai")).thenReturn(Optional.empty());
+        when(inMemoryUserStorage.findByEmail("reviewer@vidhura.ai")).thenReturn(Optional.empty());
+        when(userRepository.save(any(User.class))).thenAnswer(inv -> {
+            User u = inv.getArgument(0);
+            if (u.getId() == null) u.setId("reviewer-id");
+            return u;
+        });
+        when(tokenProvider.generateAccessToken(anyString())).thenReturn("mock_admin_jwt");
+        when(tokenProvider.generateRefreshToken(anyString())).thenReturn("mock_admin_refresh");
+
+        AuthDto.GoogleAuthRequest request = new AuthDto.GoogleAuthRequest();
+        request.setCredential(simulatedJwt);
+
+        AuthDto.AuthResponse response = authService.googleLogin(request);
+
+        assertNotNull(response);
+        assertTrue(response.getSuccess());
+        assertEquals("mock_admin_jwt", response.getToken());
+    }
+
+    @Test
+    void testGoogleLogin_EmptyCredential() {
+        AuthDto.GoogleAuthRequest request = new AuthDto.GoogleAuthRequest();
+        request.setCredential("");
+
+        AuthDto.AuthResponse response = authService.googleLogin(request);
+
+        assertNotNull(response);
+        assertFalse(response.getSuccess());
+        assertEquals("Google credential token is required.", response.getError());
+    }
 }

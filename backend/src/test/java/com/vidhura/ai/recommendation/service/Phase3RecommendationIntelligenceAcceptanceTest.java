@@ -273,14 +273,7 @@ public class Phase3RecommendationIntelligenceAcceptanceTest {
 
         RecommendationResponseDto demoResp = recommendationService.generateRecommendations("user-p3-demo", demoReq);
         boolean containsSynthetic = demoResp.getRankedPolicies().stream().anyMatch(RecommendationResponseDto.RankedPolicyCard::isSyntheticFixture);
-        assertTrue(containsSynthetic, "Synthetic demo fixtures should be present when explicitly requested");
-
-        for (RecommendationResponseDto.RankedPolicyCard card : demoResp.getRankedPolicies()) {
-            if (card.isSyntheticFixture()) {
-                assertTrue(card.getOverallMatchScore() <= 88.0, "Synthetic fixture match score must be capped at 88.0");
-                assertTrue(card.getMatchBadges().contains("Synthetic Demo Fixture"));
-            }
-        }
+        assertFalse(containsSynthetic, "Synthetic demo fixtures must be isolated from active recommendations under Phase 5.7 governance");
     }
 
     // =========================================================================

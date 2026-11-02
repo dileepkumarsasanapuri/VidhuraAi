@@ -1,0 +1,2929 @@
+{
+  "audit_timestamp": "2026-10-31T23:35:00Z",
+  "branch": "feature/policy-intelligence-profile",
+  "baseline": {
+    "master_inventory_records": 1820,
+    "logical_manifests": 89,
+    "physical_blobs": 79,
+    "extracted_revisions": 74,
+    "total_extracted_attributes": 710,
+    "adjudicated_conflicts": 32,
+    "currently_published_retail_policies": 9
+  },
+  "disposition_counts": {
+    "BLOCKED_REVIEWER_APPROVAL": 18,
+    "EXCLUDED_NON_RETAIL_CATEGORY": 56
+  },
+  "category_counts": {
+    "INDIVIDUAL": 16,
+    "FAMILY_FLOATER": 2,
+    "GROUP_HEALTH": 22,
+    "PERSONAL_ACCIDENT": 2,
+    "TRAVEL_INSURANCE": 3,
+    "RIDERS_AND_ADD_ONS": 3,
+    "UNKNOWN_CLASSIFICATION_REVIEW": 25,
+    "BENEFIT_BASED": 1
+  },
+  "unique_uins_extracted": 43,
+  "multi_filing_uins_count": 8,
+  "retail_medical": {
+    "total_extracted_revisions": 18,
+    "already_published_revisions": 0,
+    "unpublished_revisions": 18,
+    "distinct_unpublished_products": 16,
+    "additional_ready_for_promotion": 0
+  },
+  "candidates": [
+    {
+      "revision_id": "PILOT_1_BAJHLIP23020V012223",
+      "uin": "BAJHLIP23020V012223",
+      "product_name": "Global Health Care",
+      "archetype": "INDIVIDUAL",
+      "sha256": "146d125f92a09d3a88d8d05f19b564c826ee3b2dcbd0f13162b4c3b808623ddf",
+      "category": "INDIVIDUAL",
+      "is_retail_medical": true,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 14,
+      "present_fields": [
+        "AYUSH_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "MODERN_TREATMENTS",
+        "NO_CLAIM_BONUS",
+        "ORGAN_DONOR_EXPENSES",
+        "PERMANENT_EXCLUSIONS",
+        "POST_HOSPITALIZATION_DAYS",
+        "PRE_HOSPITALIZATION_DAYS",
+        "ROOM_RENT_LIMIT",
+        "SUM_INSURED_TIERS",
+        "WAITING_PERIOD_PED_MONTHS"
+      ],
+      "missing_req_fields": [
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [
+        "POST_HOSPITALIZATION_DAYS",
+        "PRE_HOSPITALIZATION_DAYS"
+      ],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "BLOCKED_REVIEWER_APPROVAL",
+      "blockers": [
+        "Lacks human compliance reviewer sign-off (extraction status is UNVERIFIED_PENDING_REVIEW)",
+        "Missing mandatory contractual fields: WAITING_PERIOD_INITIAL_DAYS, RESTORATION_BENEFIT",
+        "Contains field conflicts in raw extractions: PRE_HOSPITALIZATION_DAYS, POST_HOSPITALIZATION_DAYS"
+      ]
+    },
+    {
+      "revision_id": "PILOT_2_OICHLIP22010V042223",
+      "uin": "OICHLIP22010V042223",
+      "product_name": "Happy Family Floater Policy 2021",
+      "archetype": "FAMILY_FLOATER",
+      "sha256": "8b73ab7f5d9c9ae1c88cc9dcc03e0206ad4925445000dcac07d3b860688de46a",
+      "category": "FAMILY_FLOATER",
+      "is_retail_medical": true,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 15,
+      "present_fields": [
+        "AMBULANCE_COVER",
+        "AYUSH_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "DOMICILIARY_HOSPITALIZATION",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "MODERN_TREATMENTS",
+        "NO_CLAIM_BONUS",
+        "ORGAN_DONOR_EXPENSES",
+        "PERMANENT_EXCLUSIONS",
+        "RESTORATION_BENEFIT",
+        "ROOM_RENT_LIMIT",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "WAITING_PERIOD_PED_MONTHS"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "BLOCKED_REVIEWER_APPROVAL",
+      "blockers": [
+        "Lacks human compliance reviewer sign-off (extraction status is UNVERIFIED_PENDING_REVIEW)",
+        "Missing mandatory contractual fields: SUM_INSURED_TIERS"
+      ]
+    },
+    {
+      "revision_id": "PILOT_3_RQBHLGP23036V012223",
+      "uin": "RQBHLGP23036V012223",
+      "product_name": "Group Health Super Top Up",
+      "archetype": "GROUP",
+      "sha256": "e52aa566aa242339dc190e1b1c077691e87471014b6d27a00a94805eb8d395d2",
+      "category": "GROUP_HEALTH",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 11,
+      "present_fields": [
+        "AMBULANCE_COVER",
+        "AYUSH_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "DOMICILIARY_HOSPITALIZATION",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "NO_CLAIM_BONUS",
+        "ORGAN_DONOR_EXPENSES",
+        "PERMANENT_EXCLUSIONS",
+        "ROOM_RENT_LIMIT"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "WAITING_PERIOD_PED_MONTHS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [
+        "MATERNITY_COVER",
+        "PERMANENT_EXCLUSIONS"
+      ],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is GROUP_HEALTH (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PILOT_4_GODPAGP22103V032122",
+      "uin": "GODPAGP22103V032122",
+      "product_name": "Digit Group Total Protect Policy",
+      "archetype": "PERSONAL_ACCIDENT",
+      "sha256": "dc900c18c382b9557f47b182be3e7927133fa1335fc6d5c556968251f50b461a",
+      "category": "PERSONAL_ACCIDENT",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 10,
+      "present_fields": [
+        "AMBULANCE_COVER",
+        "AYUSH_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "DOMICILIARY_HOSPITALIZATION",
+        "ICU_CHARGES_LIMIT",
+        "NO_CLAIM_BONUS",
+        "PERMANENT_EXCLUSIONS",
+        "ROOM_RENT_LIMIT",
+        "SUM_INSURED_TIERS"
+      ],
+      "missing_req_fields": [
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "WAITING_PERIOD_PED_MONTHS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is PERSONAL_ACCIDENT (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PILOT_5_CHOTGDP23004V012223",
+      "uin": "CHOTGDP23004V012223",
+      "product_name": "Group Domestic Travel Insurance",
+      "archetype": "TRAVEL",
+      "sha256": "8f28d0aa5946149323e3343e0cab16b07ced2916111eeb7412434210ce5c7568",
+      "category": "TRAVEL_INSURANCE",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 6,
+      "present_fields": [
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "PERMANENT_EXCLUSIONS",
+        "RESTORATION_BENEFIT"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS",
+        "ROOM_RENT_LIMIT",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "WAITING_PERIOD_PED_MONTHS"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is TRAVEL_INSURANCE (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PILOT_6_SGLHLGP23014V012223",
+      "uin": "SGLHLGP23014V012223",
+      "product_name": "Shri Group Hospital Daily Cash Benefit Insurance Policy",
+      "archetype": "BENEFIT_BASED",
+      "sha256": "7e821af0dfb4713a73ab171d687aa80ba124ec16067fd91f36e7e366ac629498",
+      "category": "GROUP_HEALTH",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 9,
+      "present_fields": [
+        "AYUSH_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "DOMICILIARY_HOSPITALIZATION",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "NO_CLAIM_BONUS",
+        "PERMANENT_EXCLUSIONS",
+        "WAITING_PERIOD_PED_MONTHS"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS",
+        "ROOM_RENT_LIMIT",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is GROUP_HEALTH (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PILOT_7_EDLHLGA23009V012223",
+      "uin": "EDLHLGA23009V012223",
+      "product_name": "Well Baby Well Mother -Add on",
+      "archetype": "RIDER_ADDON",
+      "sha256": "08cc8877a90d9674052fbaaa7f49ef45bc7207a93cc19cefc9edeaff72c3542f",
+      "category": "RIDERS_AND_ADD_ONS",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 3,
+      "present_fields": [
+        "AMBULANCE_COVER",
+        "MATERNITY_COVER",
+        "PERMANENT_EXCLUSIONS"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS",
+        "ROOM_RENT_LIMIT",
+        "ICU_CHARGES_LIMIT",
+        "COPAY_PERCENTAGE",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "WAITING_PERIOD_PED_MONTHS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is RIDERS_AND_ADD_ONS (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PILOT_8_FGIHMIP22106V032122",
+      "uin": "FGIHMIP22106V032122",
+      "product_name": "Sukshma Hospi-Cash (Micro-Insurance Product)",
+      "archetype": "UNKNOWN_UNCLASSIFIED",
+      "sha256": "2fe92dd30b6b81ddd6b9589c3118cc56def7ed38abd7ec2bb987dc909fdb352c",
+      "category": "UNKNOWN_CLASSIFICATION_REVIEW",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 6,
+      "present_fields": [
+        "DAY_CARE_PROCEDURES",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "ORGAN_DONOR_EXPENSES",
+        "PERMANENT_EXCLUSIONS",
+        "SUM_INSURED_TIERS"
+      ],
+      "missing_req_fields": [
+        "ROOM_RENT_LIMIT",
+        "COPAY_PERCENTAGE",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "WAITING_PERIOD_PED_MONTHS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [
+        "SUM_INSURED_TIERS"
+      ],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is UNKNOWN_CLASSIFICATION_REVIEW (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PILOT_9_",
+      "uin": "",
+      "product_name": "Group Criti Shield Plus",
+      "archetype": "MISSING_UIN",
+      "sha256": "581498cb1a72983cc6a22e0625115bb90592c7a285fd9c72443ec7e542744698",
+      "category": "GROUP_HEALTH",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 9,
+      "present_fields": [
+        "AYUSH_COVER",
+        "DAY_CARE_PROCEDURES",
+        "DOMICILIARY_HOSPITALIZATION",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "NO_CLAIM_BONUS",
+        "PERMANENT_EXCLUSIONS",
+        "RESTORATION_BENEFIT",
+        "ROOM_RENT_LIMIT"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS",
+        "COPAY_PERCENTAGE",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "WAITING_PERIOD_PED_MONTHS"
+      ],
+      "conflicting_fields": [
+        "PERMANENT_EXCLUSIONS"
+      ],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is GROUP_HEALTH (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PILOT_10_SHAHLGP22134V012122",
+      "uin": "SHAHLGP22134V012122",
+      "product_name": "Star Group Critical Illness Multipay Insurance Policy",
+      "archetype": "CONFLICT_DUPLICATE",
+      "sha256": "6f69c4f17492b1e293995d0b9993be8aedc75e700e4ddd0433bed90e4cb0eecc",
+      "category": "GROUP_HEALTH",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 3,
+      "present_fields": [
+        "ICU_CHARGES_LIMIT",
+        "PERMANENT_EXCLUSIONS",
+        "WAITING_PERIOD_INITIAL_DAYS"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS",
+        "ROOM_RENT_LIMIT",
+        "COPAY_PERCENTAGE",
+        "WAITING_PERIOD_PED_MONTHS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [
+        "ICU_CHARGES_LIMIT"
+      ],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is GROUP_HEALTH (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_1_BAJHLIP23020V012223",
+      "uin": "BAJHLIP23020V012223",
+      "product_name": "PAGE_1_ROW_1_BAJHLIP23020V012223",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "146d125f92a09d3a88d8d05f19b564c826ee3b2dcbd0f13162b4c3b808623ddf",
+      "category": "INDIVIDUAL",
+      "is_retail_medical": true,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 14,
+      "present_fields": [
+        "AYUSH_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "MODERN_TREATMENTS",
+        "NO_CLAIM_BONUS",
+        "ORGAN_DONOR_EXPENSES",
+        "PERMANENT_EXCLUSIONS",
+        "POST_HOSPITALIZATION_DAYS",
+        "PRE_HOSPITALIZATION_DAYS",
+        "ROOM_RENT_LIMIT",
+        "SUM_INSURED_TIERS",
+        "WAITING_PERIOD_PED_MONTHS"
+      ],
+      "missing_req_fields": [
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [
+        "POST_HOSPITALIZATION_DAYS",
+        "PRE_HOSPITALIZATION_DAYS"
+      ],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "BLOCKED_REVIEWER_APPROVAL",
+      "blockers": [
+        "Lacks human compliance reviewer sign-off (extraction status is UNVERIFIED_PENDING_REVIEW)",
+        "Missing mandatory contractual fields: WAITING_PERIOD_INITIAL_DAYS, RESTORATION_BENEFIT",
+        "Contains field conflicts in raw extractions: PRE_HOSPITALIZATION_DAYS, POST_HOSPITALIZATION_DAYS"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_2_CHOTGDP23004V012223",
+      "uin": "CHOTGDP23004V012223",
+      "product_name": "PAGE_1_ROW_2_CHOTGDP23004V012223",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "8f28d0aa5946149323e3343e0cab16b07ced2916111eeb7412434210ce5c7568",
+      "category": "TRAVEL_INSURANCE",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 6,
+      "present_fields": [
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "PERMANENT_EXCLUSIONS",
+        "RESTORATION_BENEFIT"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS",
+        "ROOM_RENT_LIMIT",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "WAITING_PERIOD_PED_MONTHS"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is TRAVEL_INSURANCE (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_3_EDLHLGA23009V012223",
+      "uin": "EDLHLGA23009V012223",
+      "product_name": "PAGE_1_ROW_3_EDLHLGA23009V012223",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "08cc8877a90d9674052fbaaa7f49ef45bc7207a93cc19cefc9edeaff72c3542f",
+      "category": "RIDERS_AND_ADD_ONS",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 3,
+      "present_fields": [
+        "AMBULANCE_COVER",
+        "MATERNITY_COVER",
+        "PERMANENT_EXCLUSIONS"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS",
+        "ROOM_RENT_LIMIT",
+        "ICU_CHARGES_LIMIT",
+        "COPAY_PERCENTAGE",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "WAITING_PERIOD_PED_MONTHS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is RIDERS_AND_ADD_ONS (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_4_HDFHLIP23024V072223",
+      "uin": "HDFHLIP23024V072223",
+      "product_name": "PAGE_1_ROW_4_HDFHLIP23024V072223",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "a65d46ab5cc6e14ab6ac61ea1246eebaf0a9b07f96ebbc792bdb0de6b95bf94a",
+      "category": "INDIVIDUAL",
+      "is_retail_medical": true,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 13,
+      "present_fields": [
+        "AMBULANCE_COVER",
+        "AYUSH_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "DOMICILIARY_HOSPITALIZATION",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "NO_CLAIM_BONUS",
+        "ORGAN_DONOR_EXPENSES",
+        "PERMANENT_EXCLUSIONS",
+        "ROOM_RENT_LIMIT",
+        "SUM_INSURED_TIERS",
+        "WAITING_PERIOD_PED_MONTHS"
+      ],
+      "missing_req_fields": [
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "BLOCKED_REVIEWER_APPROVAL",
+      "blockers": [
+        "Lacks human compliance reviewer sign-off (extraction status is UNVERIFIED_PENDING_REVIEW)",
+        "Missing mandatory contractual fields: WAITING_PERIOD_INITIAL_DAYS, RESTORATION_BENEFIT"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_5_ICIHLIP22012V012223",
+      "uin": "ICIHLIP22012V012223",
+      "product_name": "PAGE_1_ROW_5_ICIHLIP22012V012223",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "3e7430a5c12e9493b29ee435569e486ac3b4bf25e6186b3729581b2dd1b41d6a",
+      "category": "INDIVIDUAL",
+      "is_retail_medical": true,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 14,
+      "present_fields": [
+        "AMBULANCE_COVER",
+        "AYUSH_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "DOMICILIARY_HOSPITALIZATION",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "MODERN_TREATMENTS",
+        "NO_CLAIM_BONUS",
+        "ORGAN_DONOR_EXPENSES",
+        "PERMANENT_EXCLUSIONS",
+        "POST_HOSPITALIZATION_DAYS",
+        "ROOM_RENT_LIMIT",
+        "WAITING_PERIOD_PED_MONTHS"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "BLOCKED_REVIEWER_APPROVAL",
+      "blockers": [
+        "Lacks human compliance reviewer sign-off (extraction status is UNVERIFIED_PENDING_REVIEW)",
+        "Missing mandatory contractual fields: SUM_INSURED_TIERS, WAITING_PERIOD_INITIAL_DAYS, RESTORATION_BENEFIT"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_6_NOUIN",
+      "uin": "ICIHLGP23027V012223",
+      "product_name": "PAGE_1_ROW_6_NOUIN",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "581498cb1a72983cc6a22e0625115bb90592c7a285fd9c72443ec7e542744698",
+      "category": "GROUP_HEALTH",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 9,
+      "present_fields": [
+        "AYUSH_COVER",
+        "DAY_CARE_PROCEDURES",
+        "DOMICILIARY_HOSPITALIZATION",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "NO_CLAIM_BONUS",
+        "PERMANENT_EXCLUSIONS",
+        "RESTORATION_BENEFIT",
+        "ROOM_RENT_LIMIT"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS",
+        "COPAY_PERCENTAGE",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "WAITING_PERIOD_PED_MONTHS"
+      ],
+      "conflicting_fields": [
+        "PERMANENT_EXCLUSIONS"
+      ],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is GROUP_HEALTH (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_7_MCIHLIP23022V032223",
+      "uin": "MCIHLIP23022V032223",
+      "product_name": "PAGE_1_ROW_7_MCIHLIP23022V032223",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "e1d0b8408f5a30cd8a1c1d80cfa25202e42b1b1944bce9b7f0779692a4df881f",
+      "category": "INDIVIDUAL",
+      "is_retail_medical": true,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 11,
+      "present_fields": [
+        "AMBULANCE_COVER",
+        "AYUSH_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "NO_CLAIM_BONUS",
+        "ORGAN_DONOR_EXPENSES",
+        "PERMANENT_EXCLUSIONS",
+        "ROOM_RENT_LIMIT",
+        "WAITING_PERIOD_PED_MONTHS"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "BLOCKED_REVIEWER_APPROVAL",
+      "blockers": [
+        "Lacks human compliance reviewer sign-off (extraction status is UNVERIFIED_PENDING_REVIEW)",
+        "Missing mandatory contractual fields: SUM_INSURED_TIERS, WAITING_PERIOD_INITIAL_DAYS, RESTORATION_BENEFIT"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_8_MCIHLIA23023V012223",
+      "uin": "MCIHLIA23023V012223",
+      "product_name": "PAGE_1_ROW_8_MCIHLIA23023V012223",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "946aaa367408509ab0d1377909181d95f7e896e885158484c10638dfd86d9f2d",
+      "category": "RIDERS_AND_ADD_ONS",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 6,
+      "present_fields": [
+        "AMBULANCE_COVER",
+        "AYUSH_COVER",
+        "DAY_CARE_PROCEDURES",
+        "NO_CLAIM_BONUS",
+        "RESTORATION_BENEFIT",
+        "ROOM_RENT_LIMIT"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS",
+        "ICU_CHARGES_LIMIT",
+        "COPAY_PERCENTAGE",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "WAITING_PERIOD_PED_MONTHS",
+        "PERMANENT_EXCLUSIONS"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is RIDERS_AND_ADD_ONS (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_9_NAVHLIP23003V012223",
+      "uin": "NAVHLIP23003V012223",
+      "product_name": "PAGE_1_ROW_9_NAVHLIP23003V012223",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "9c4f2f7745bb4ffd833c9e7f1de1e3eed61cefe250e79796a0716ca89600ce4d",
+      "category": "INDIVIDUAL",
+      "is_retail_medical": true,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 12,
+      "present_fields": [
+        "AMBULANCE_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "DOMICILIARY_HOSPITALIZATION",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "MODERN_TREATMENTS",
+        "NO_CLAIM_BONUS",
+        "ORGAN_DONOR_EXPENSES",
+        "PERMANENT_EXCLUSIONS",
+        "ROOM_RENT_LIMIT",
+        "WAITING_PERIOD_PED_MONTHS"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "BLOCKED_REVIEWER_APPROVAL",
+      "blockers": [
+        "Lacks human compliance reviewer sign-off (extraction status is UNVERIFIED_PENDING_REVIEW)",
+        "Missing mandatory contractual fields: SUM_INSURED_TIERS, WAITING_PERIOD_INITIAL_DAYS, RESTORATION_BENEFIT"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_10_NBHHLIP23007V052223",
+      "uin": "NBHHLIP23007V052223",
+      "product_name": "PAGE_1_ROW_10_NBHHLIP23007V052223",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "ae7f80f72ae335913f34a3599f58c313cfd0174f39c922d68176cebe2b3a29da",
+      "category": "INDIVIDUAL",
+      "is_retail_medical": true,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 12,
+      "present_fields": [
+        "AYUSH_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "DOMICILIARY_HOSPITALIZATION",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "MODERN_TREATMENTS",
+        "NO_CLAIM_BONUS",
+        "ORGAN_DONOR_EXPENSES",
+        "PERMANENT_EXCLUSIONS",
+        "ROOM_RENT_LIMIT",
+        "WAITING_PERIOD_INITIAL_DAYS"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS",
+        "WAITING_PERIOD_PED_MONTHS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "BLOCKED_REVIEWER_APPROVAL",
+      "blockers": [
+        "Lacks human compliance reviewer sign-off (extraction status is UNVERIFIED_PENDING_REVIEW)",
+        "Missing mandatory contractual fields: SUM_INSURED_TIERS, WAITING_PERIOD_PED_MONTHS, RESTORATION_BENEFIT"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_11_NBHTGBP22011V012223",
+      "uin": "NBHTGBP22011V012223",
+      "product_name": "PAGE_1_ROW_11_NBHTGBP22011V012223",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "536603a97eea5752c1447b7411ad4c03054d6d0f3a3bc1c887f3dc26de8e7892",
+      "category": "TRAVEL_INSURANCE",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 9,
+      "present_fields": [
+        "AMBULANCE_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "NO_CLAIM_BONUS",
+        "PERMANENT_EXCLUSIONS",
+        "SUM_INSURED_TIERS",
+        "WAITING_PERIOD_INITIAL_DAYS"
+      ],
+      "missing_req_fields": [
+        "ROOM_RENT_LIMIT",
+        "WAITING_PERIOD_PED_MONTHS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [
+        "AMBULANCE_COVER",
+        "MATERNITY_COVER"
+      ],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is TRAVEL_INSURANCE (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_12_RQBHLGP23036V012223",
+      "uin": "RQBHLGP23036V012223",
+      "product_name": "PAGE_1_ROW_12_RQBHLGP23036V012223",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "e52aa566aa242339dc190e1b1c077691e87471014b6d27a00a94805eb8d395d2",
+      "category": "GROUP_HEALTH",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 11,
+      "present_fields": [
+        "AMBULANCE_COVER",
+        "AYUSH_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "DOMICILIARY_HOSPITALIZATION",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "NO_CLAIM_BONUS",
+        "ORGAN_DONOR_EXPENSES",
+        "PERMANENT_EXCLUSIONS",
+        "ROOM_RENT_LIMIT"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "WAITING_PERIOD_PED_MONTHS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [
+        "MATERNITY_COVER",
+        "PERMANENT_EXCLUSIONS"
+      ],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is GROUP_HEALTH (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_13_RSAHLIP23029V012223",
+      "uin": "RSAHLIP23029V012223",
+      "product_name": "PAGE_1_ROW_13_RSAHLIP23029V012223",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "7c0b3047bea21f2c84135108cad9504750419de285c85d52f1185e9cafd505a2",
+      "category": "INDIVIDUAL",
+      "is_retail_medical": true,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 14,
+      "present_fields": [
+        "AMBULANCE_COVER",
+        "AYUSH_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "DOMICILIARY_HOSPITALIZATION",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "MODERN_TREATMENTS",
+        "NO_CLAIM_BONUS",
+        "ORGAN_DONOR_EXPENSES",
+        "PERMANENT_EXCLUSIONS",
+        "ROOM_RENT_LIMIT",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "WAITING_PERIOD_PED_MONTHS"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "BLOCKED_REVIEWER_APPROVAL",
+      "blockers": [
+        "Lacks human compliance reviewer sign-off (extraction status is UNVERIFIED_PENDING_REVIEW)",
+        "Missing mandatory contractual fields: SUM_INSURED_TIERS, RESTORATION_BENEFIT"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_14_SBIHLGP23005V012223",
+      "uin": "SBIHLGP23005V012223",
+      "product_name": "PAGE_1_ROW_14_SBIHLGP23005V012223",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "782509b4aadda00a3092a28ef779905818f6d61ad4b352432b71b742c2a51df0",
+      "category": "GROUP_HEALTH",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 8,
+      "present_fields": [
+        "AYUSH_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "DOMICILIARY_HOSPITALIZATION",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "PERMANENT_EXCLUSIONS",
+        "WAITING_PERIOD_PED_MONTHS"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS",
+        "ROOM_RENT_LIMIT",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is GROUP_HEALTH (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_15_SBIHLIP23050V012223",
+      "uin": "SBIHLIP23050V012223",
+      "product_name": "PAGE_1_ROW_15_SBIHLIP23050V012223",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "d540a2c2ee3f5ab3ed78155c16686888a2d88e480a8642176354099a44d7ba18",
+      "category": "INDIVIDUAL",
+      "is_retail_medical": true,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 14,
+      "present_fields": [
+        "AMBULANCE_COVER",
+        "AYUSH_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "DOMICILIARY_HOSPITALIZATION",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "MODERN_TREATMENTS",
+        "NO_CLAIM_BONUS",
+        "ORGAN_DONOR_EXPENSES",
+        "PERMANENT_EXCLUSIONS",
+        "ROOM_RENT_LIMIT",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "WAITING_PERIOD_PED_MONTHS"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [
+        "WAITING_PERIOD_INITIAL_DAYS"
+      ],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "BLOCKED_REVIEWER_APPROVAL",
+      "blockers": [
+        "Lacks human compliance reviewer sign-off (extraction status is UNVERIFIED_PENDING_REVIEW)",
+        "Missing mandatory contractual fields: SUM_INSURED_TIERS, RESTORATION_BENEFIT",
+        "Contains field conflicts in raw extractions: WAITING_PERIOD_INITIAL_DAYS"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_16_SGLHLGP23014V012223",
+      "uin": "SGLHLGP23014V012223",
+      "product_name": "PAGE_1_ROW_16_SGLHLGP23014V012223",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "7e821af0dfb4713a73ab171d687aa80ba124ec16067fd91f36e7e366ac629498",
+      "category": "GROUP_HEALTH",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 9,
+      "present_fields": [
+        "AYUSH_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "DOMICILIARY_HOSPITALIZATION",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "NO_CLAIM_BONUS",
+        "PERMANENT_EXCLUSIONS",
+        "WAITING_PERIOD_PED_MONTHS"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS",
+        "ROOM_RENT_LIMIT",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is GROUP_HEALTH (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_17_SGLHLIP23019V012223",
+      "uin": "SGLHLIP23019V012223",
+      "product_name": "PAGE_1_ROW_17_SGLHLIP23019V012223",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "c34a6e80daa35d21aa4d04a2b93317b6640905e680789a60e98e77bb9e62a737",
+      "category": "INDIVIDUAL",
+      "is_retail_medical": true,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 12,
+      "present_fields": [
+        "AMBULANCE_COVER",
+        "AYUSH_COVER",
+        "DAY_CARE_PROCEDURES",
+        "DOMICILIARY_HOSPITALIZATION",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "NO_CLAIM_BONUS",
+        "PERMANENT_EXCLUSIONS",
+        "ROOM_RENT_LIMIT",
+        "SUM_INSURED_TIERS",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "WAITING_PERIOD_PED_MONTHS"
+      ],
+      "missing_req_fields": [
+        "COPAY_PERCENTAGE",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "BLOCKED_REVIEWER_APPROVAL",
+      "blockers": [
+        "Lacks human compliance reviewer sign-off (extraction status is UNVERIFIED_PENDING_REVIEW)",
+        "Missing mandatory contractual fields: COPAY_PERCENTAGE, RESTORATION_BENEFIT"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_18_SGLHLGP23026V012223",
+      "uin": "SGLHLGP23026V012223",
+      "product_name": "PAGE_1_ROW_18_SGLHLGP23026V012223",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "8b5f69b4e7bd23032f7f5d426e7a724e70c348d3c91dca10e8a7264455a980a8",
+      "category": "GROUP_HEALTH",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 8,
+      "present_fields": [
+        "AYUSH_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "DOMICILIARY_HOSPITALIZATION",
+        "ICU_CHARGES_LIMIT",
+        "NO_CLAIM_BONUS",
+        "PERMANENT_EXCLUSIONS",
+        "WAITING_PERIOD_INITIAL_DAYS"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS",
+        "ROOM_RENT_LIMIT",
+        "WAITING_PERIOD_PED_MONTHS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is GROUP_HEALTH (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_19_SHAHLGP23015V012223",
+      "uin": "SHAHLGP23015V012223",
+      "product_name": "PAGE_1_ROW_19_SHAHLGP23015V012223",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "5a0bd78e8fc1c96830670b80a4cf0387079532648e84d6740648949eeb9b4768",
+      "category": "GROUP_HEALTH",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 15,
+      "present_fields": [
+        "AMBULANCE_COVER",
+        "AYUSH_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "DOMICILIARY_HOSPITALIZATION",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "MODERN_TREATMENTS",
+        "NO_CLAIM_BONUS",
+        "ORGAN_DONOR_EXPENSES",
+        "PERMANENT_EXCLUSIONS",
+        "ROOM_RENT_LIMIT",
+        "SUM_INSURED_TIERS",
+        "WAITING_PERIOD_PED_MONTHS",
+        "WAITING_PERIOD_SPECIFIC_MONTHS"
+      ],
+      "missing_req_fields": [
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is GROUP_HEALTH (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_20_SHAHLIP23017V012223",
+      "uin": "SHAHLIP23017V012223",
+      "product_name": "PAGE_1_ROW_20_SHAHLIP23017V012223",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "87e2614374c92fb15918b6a096441ff1aba0f5dd02ec4b98edbbdae5fb157bf9",
+      "category": "INDIVIDUAL",
+      "is_retail_medical": true,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 19,
+      "present_fields": [
+        "AMBULANCE_COVER",
+        "AYUSH_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "DEDUCTIBLE_AMOUNT",
+        "DOMICILIARY_HOSPITALIZATION",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "MODERN_TREATMENTS",
+        "NO_CLAIM_BONUS",
+        "ORGAN_DONOR_EXPENSES",
+        "PERMANENT_EXCLUSIONS",
+        "POST_HOSPITALIZATION_DAYS",
+        "PRE_HOSPITALIZATION_DAYS",
+        "RESTORATION_BENEFIT",
+        "ROOM_RENT_LIMIT",
+        "SUM_INSURED_TIERS",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "WAITING_PERIOD_PED_MONTHS"
+      ],
+      "missing_req_fields": [],
+      "conflicting_fields": [
+        "DAY_CARE_PROCEDURES"
+      ],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "BLOCKED_REVIEWER_APPROVAL",
+      "blockers": [
+        "Lacks human compliance reviewer sign-off (extraction status is UNVERIFIED_PENDING_REVIEW)",
+        "Contains field conflicts in raw extractions: DAY_CARE_PROCEDURES"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_21_SHAHLGP23021V032223",
+      "uin": "SHAHLGP23021V032223",
+      "product_name": "PAGE_1_ROW_21_SHAHLGP23021V032223",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "64a820ac4e54840d1bd3314ec3f6c9758e99745e19260cabc6f1c7b432b28ebf",
+      "category": "GROUP_HEALTH",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 11,
+      "present_fields": [
+        "AMBULANCE_COVER",
+        "AYUSH_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "MODERN_TREATMENTS",
+        "NO_CLAIM_BONUS",
+        "PERMANENT_EXCLUSIONS",
+        "ROOM_RENT_LIMIT",
+        "WAITING_PERIOD_PED_MONTHS"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is GROUP_HEALTH (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_22_SHAHLIP23037V072223",
+      "uin": "SHAHLIP23037V072223",
+      "product_name": "PAGE_1_ROW_22_SHAHLIP23037V072223",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "07f9c059fbf122711cec35896158456f5f29cf273dc51b6bddf47af3bb9ce234",
+      "category": "INDIVIDUAL",
+      "is_retail_medical": true,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 14,
+      "present_fields": [
+        "AMBULANCE_COVER",
+        "AYUSH_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "DOMICILIARY_HOSPITALIZATION",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "MODERN_TREATMENTS",
+        "NO_CLAIM_BONUS",
+        "ORGAN_DONOR_EXPENSES",
+        "PERMANENT_EXCLUSIONS",
+        "RESTORATION_BENEFIT",
+        "ROOM_RENT_LIMIT",
+        "WAITING_PERIOD_PED_MONTHS"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS",
+        "WAITING_PERIOD_INITIAL_DAYS"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "BLOCKED_REVIEWER_APPROVAL",
+      "blockers": [
+        "Lacks human compliance reviewer sign-off (extraction status is UNVERIFIED_PENDING_REVIEW)",
+        "Missing mandatory contractual fields: SUM_INSURED_TIERS, WAITING_PERIOD_INITIAL_DAYS"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_23_NIAHLIP22025V012223",
+      "uin": "NIAHLIP22025V012223",
+      "product_name": "PAGE_1_ROW_23_NIAHLIP22025V012223",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "8e1812e3c370b3279aaa8325236c8d32b9c304304bb08b8d70b14f8df71e2735",
+      "category": "INDIVIDUAL",
+      "is_retail_medical": true,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 15,
+      "present_fields": [
+        "AMBULANCE_COVER",
+        "AYUSH_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "DOMICILIARY_HOSPITALIZATION",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "MODERN_TREATMENTS",
+        "NO_CLAIM_BONUS",
+        "PERMANENT_EXCLUSIONS",
+        "POST_HOSPITALIZATION_DAYS",
+        "PRE_HOSPITALIZATION_DAYS",
+        "ROOM_RENT_LIMIT",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "WAITING_PERIOD_MATERNITY_MONTHS"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS",
+        "WAITING_PERIOD_PED_MONTHS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "BLOCKED_REVIEWER_APPROVAL",
+      "blockers": [
+        "Lacks human compliance reviewer sign-off (extraction status is UNVERIFIED_PENDING_REVIEW)",
+        "Missing mandatory contractual fields: SUM_INSURED_TIERS, WAITING_PERIOD_PED_MONTHS, RESTORATION_BENEFIT"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_24_OICHLIP22010V042223",
+      "uin": "OICHLIP22010V042223",
+      "product_name": "PAGE_1_ROW_24_OICHLIP22010V042223",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "8b73ab7f5d9c9ae1c88cc9dcc03e0206ad4925445000dcac07d3b860688de46a",
+      "category": "INDIVIDUAL",
+      "is_retail_medical": true,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 15,
+      "present_fields": [
+        "AMBULANCE_COVER",
+        "AYUSH_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "DOMICILIARY_HOSPITALIZATION",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "MODERN_TREATMENTS",
+        "NO_CLAIM_BONUS",
+        "ORGAN_DONOR_EXPENSES",
+        "PERMANENT_EXCLUSIONS",
+        "RESTORATION_BENEFIT",
+        "ROOM_RENT_LIMIT",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "WAITING_PERIOD_PED_MONTHS"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "BLOCKED_REVIEWER_APPROVAL",
+      "blockers": [
+        "Lacks human compliance reviewer sign-off (extraction status is UNVERIFIED_PENDING_REVIEW)",
+        "Missing mandatory contractual fields: SUM_INSURED_TIERS"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_25_OICHLGP23028V012223",
+      "uin": "OICHLGP23028V012223",
+      "product_name": "PAGE_1_ROW_25_OICHLGP23028V012223",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "3c5215986647a86c95ca4382cca7027838b06b1c5389c2aabe52eab9bc314fac",
+      "category": "GROUP_HEALTH",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 7,
+      "present_fields": [
+        "DAY_CARE_PROCEDURES",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "PERMANENT_EXCLUSIONS",
+        "ROOM_RENT_LIMIT",
+        "SUM_INSURED_TIERS",
+        "WAITING_PERIOD_INITIAL_DAYS"
+      ],
+      "missing_req_fields": [
+        "COPAY_PERCENTAGE",
+        "WAITING_PERIOD_PED_MONTHS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [
+        "WAITING_PERIOD_INITIAL_DAYS"
+      ],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is GROUP_HEALTH (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_26_UNIHLIP23006V032223",
+      "uin": "UNIHLIP23006V032223",
+      "product_name": "PAGE_1_ROW_26_UNIHLIP23006V032223",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "63d0e5df32883e22ac57e2380d291663f29f052a3851c948562c936803529493",
+      "category": "INDIVIDUAL",
+      "is_retail_medical": true,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 15,
+      "present_fields": [
+        "AMBULANCE_COVER",
+        "AYUSH_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "DOMICILIARY_HOSPITALIZATION",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "MODERN_TREATMENTS",
+        "NO_CLAIM_BONUS",
+        "ORGAN_DONOR_EXPENSES",
+        "PERMANENT_EXCLUSIONS",
+        "RESTORATION_BENEFIT",
+        "ROOM_RENT_LIMIT",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "WAITING_PERIOD_PED_MONTHS"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "BLOCKED_REVIEWER_APPROVAL",
+      "blockers": [
+        "Lacks human compliance reviewer sign-off (extraction status is UNVERIFIED_PENDING_REVIEW)",
+        "Missing mandatory contractual fields: SUM_INSURED_TIERS"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_27_KOTHLGP22168V012122",
+      "uin": "",
+      "product_name": "PAGE_1_ROW_27_KOTHLGP22168V012122",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "0bd43987c8812a866229f93c6f238b9b9f67de5810b4fb520e503c600b0313fc",
+      "category": "UNKNOWN_CLASSIFICATION_REVIEW",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 12,
+      "present_fields": [
+        "AMBULANCE_COVER",
+        "AYUSH_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "DOMICILIARY_HOSPITALIZATION",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "NO_CLAIM_BONUS",
+        "ORGAN_DONOR_EXPENSES",
+        "PERMANENT_EXCLUSIONS",
+        "ROOM_RENT_LIMIT",
+        "WAITING_PERIOD_PED_MONTHS"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is UNKNOWN_CLASSIFICATION_REVIEW (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_28_BAJHLIA22169V012122",
+      "uin": "",
+      "product_name": "PAGE_1_ROW_28_BAJHLIA22169V012122",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "c789828a7e13a379fa48da4c425c16b904006e6cc32b7b3983b6134ba0549574",
+      "category": "UNKNOWN_CLASSIFICATION_REVIEW",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 1,
+      "present_fields": [
+        "ICU_CHARGES_LIMIT"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS",
+        "ROOM_RENT_LIMIT",
+        "COPAY_PERCENTAGE",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "WAITING_PERIOD_PED_MONTHS",
+        "PERMANENT_EXCLUSIONS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is UNKNOWN_CLASSIFICATION_REVIEW (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_29_FGIHLGP22109V032122",
+      "uin": "",
+      "product_name": "PAGE_1_ROW_29_FGIHLGP22109V032122",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "fdd6c03a9376daa51071f7734eabe2bfc808074c85f63a05d6a85428ffb4bb0c",
+      "category": "UNKNOWN_CLASSIFICATION_REVIEW",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 5,
+      "present_fields": [
+        "DAY_CARE_PROCEDURES",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "PERMANENT_EXCLUSIONS",
+        "SUM_INSURED_TIERS"
+      ],
+      "missing_req_fields": [
+        "ROOM_RENT_LIMIT",
+        "COPAY_PERCENTAGE",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "WAITING_PERIOD_PED_MONTHS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is UNKNOWN_CLASSIFICATION_REVIEW (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_30_FGIHLGP22110V032122",
+      "uin": "",
+      "product_name": "PAGE_1_ROW_30_FGIHLGP22110V032122",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "0bc8ea4fd212cadd9b0bfd9cdd5270a76c3ae4a683a7ed6971eea6230631a841",
+      "category": "UNKNOWN_CLASSIFICATION_REVIEW",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 12,
+      "present_fields": [
+        "AYUSH_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "DOMICILIARY_HOSPITALIZATION",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "MODERN_TREATMENTS",
+        "ORGAN_DONOR_EXPENSES",
+        "PERMANENT_EXCLUSIONS",
+        "ROOM_RENT_LIMIT",
+        "SUM_INSURED_TIERS",
+        "WAITING_PERIOD_PED_MONTHS"
+      ],
+      "missing_req_fields": [
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [
+        "ICU_CHARGES_LIMIT"
+      ],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is UNKNOWN_CLASSIFICATION_REVIEW (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_31_FGIHLGP22111V032122",
+      "uin": "",
+      "product_name": "PAGE_1_ROW_31_FGIHLGP22111V032122",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "63a488484771e50a5557baa1140cfc1e0ee0b6a12905e085751ebf2750b311af",
+      "category": "UNKNOWN_CLASSIFICATION_REVIEW",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 5,
+      "present_fields": [
+        "DAY_CARE_PROCEDURES",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "PERMANENT_EXCLUSIONS",
+        "SUM_INSURED_TIERS"
+      ],
+      "missing_req_fields": [
+        "ROOM_RENT_LIMIT",
+        "COPAY_PERCENTAGE",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "WAITING_PERIOD_PED_MONTHS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is UNKNOWN_CLASSIFICATION_REVIEW (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_32_FGIHLIP22104V022122",
+      "uin": "",
+      "product_name": "PAGE_1_ROW_32_FGIHLIP22104V022122",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "99854016b0120a302ec372876ed1378fb3eb6e9c06c7e0d91d25a9b843182713",
+      "category": "UNKNOWN_CLASSIFICATION_REVIEW",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 6,
+      "present_fields": [
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "ICU_CHARGES_LIMIT",
+        "PERMANENT_EXCLUSIONS",
+        "SUM_INSURED_TIERS",
+        "WAITING_PERIOD_INITIAL_DAYS"
+      ],
+      "missing_req_fields": [
+        "ROOM_RENT_LIMIT",
+        "WAITING_PERIOD_PED_MONTHS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is UNKNOWN_CLASSIFICATION_REVIEW (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_33_FGIHLIP22105V022122",
+      "uin": "",
+      "product_name": "PAGE_1_ROW_33_FGIHLIP22105V022122",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "aa7c4430b34ac44a299e78aceb9697fbb607a97bcff1273fcf3bdb18a5a60b51",
+      "category": "UNKNOWN_CLASSIFICATION_REVIEW",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 6,
+      "present_fields": [
+        "DAY_CARE_PROCEDURES",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "NO_CLAIM_BONUS",
+        "PERMANENT_EXCLUSIONS",
+        "SUM_INSURED_TIERS"
+      ],
+      "missing_req_fields": [
+        "ROOM_RENT_LIMIT",
+        "COPAY_PERCENTAGE",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "WAITING_PERIOD_PED_MONTHS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is UNKNOWN_CLASSIFICATION_REVIEW (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_34_FGIHLIP22112V032122",
+      "uin": "",
+      "product_name": "PAGE_1_ROW_34_FGIHLIP22112V032122",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "997cf4cbfc7446377c0959146253290a0ebd33a6667b91ad8b088d1bf5f867d0",
+      "category": "UNKNOWN_CLASSIFICATION_REVIEW",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 8,
+      "present_fields": [
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "NO_CLAIM_BONUS",
+        "PERMANENT_EXCLUSIONS",
+        "SUM_INSURED_TIERS",
+        "WAITING_PERIOD_INITIAL_DAYS"
+      ],
+      "missing_req_fields": [
+        "ROOM_RENT_LIMIT",
+        "WAITING_PERIOD_PED_MONTHS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is UNKNOWN_CLASSIFICATION_REVIEW (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_35_FGIHMGP22107V032122",
+      "uin": "",
+      "product_name": "PAGE_1_ROW_35_FGIHMGP22107V032122",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "8e62b2462d347e0829b694a09b14bb0aa362ecd893c7d39bb3ad779b43748f3f",
+      "category": "UNKNOWN_CLASSIFICATION_REVIEW",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 6,
+      "present_fields": [
+        "DAY_CARE_PROCEDURES",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "ORGAN_DONOR_EXPENSES",
+        "PERMANENT_EXCLUSIONS",
+        "SUM_INSURED_TIERS"
+      ],
+      "missing_req_fields": [
+        "ROOM_RENT_LIMIT",
+        "COPAY_PERCENTAGE",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "WAITING_PERIOD_PED_MONTHS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [
+        "SUM_INSURED_TIERS"
+      ],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is UNKNOWN_CLASSIFICATION_REVIEW (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_36_FGIHMIP22106V032122",
+      "uin": "",
+      "product_name": "PAGE_1_ROW_36_FGIHMIP22106V032122",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "2fe92dd30b6b81ddd6b9589c3118cc56def7ed38abd7ec2bb987dc909fdb352c",
+      "category": "UNKNOWN_CLASSIFICATION_REVIEW",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 6,
+      "present_fields": [
+        "DAY_CARE_PROCEDURES",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "ORGAN_DONOR_EXPENSES",
+        "PERMANENT_EXCLUSIONS",
+        "SUM_INSURED_TIERS"
+      ],
+      "missing_req_fields": [
+        "ROOM_RENT_LIMIT",
+        "COPAY_PERCENTAGE",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "WAITING_PERIOD_PED_MONTHS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [
+        "SUM_INSURED_TIERS"
+      ],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is UNKNOWN_CLASSIFICATION_REVIEW (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_37_GODPAGP22103V032122",
+      "uin": "",
+      "product_name": "PAGE_1_ROW_37_GODPAGP22103V032122",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "dc900c18c382b9557f47b182be3e7927133fa1335fc6d5c556968251f50b461a",
+      "category": "UNKNOWN_CLASSIFICATION_REVIEW",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 10,
+      "present_fields": [
+        "AMBULANCE_COVER",
+        "AYUSH_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "DOMICILIARY_HOSPITALIZATION",
+        "ICU_CHARGES_LIMIT",
+        "NO_CLAIM_BONUS",
+        "PERMANENT_EXCLUSIONS",
+        "ROOM_RENT_LIMIT",
+        "SUM_INSURED_TIERS"
+      ],
+      "missing_req_fields": [
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "WAITING_PERIOD_PED_MONTHS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is UNKNOWN_CLASSIFICATION_REVIEW (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_38_HDFHLGP22143V032122",
+      "uin": "",
+      "product_name": "PAGE_1_ROW_38_HDFHLGP22143V032122",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "cc22bbac9ef1a9084e4e7a1e0c58d30ae2af992d39e7de497e6c15290326d7fa",
+      "category": "UNKNOWN_CLASSIFICATION_REVIEW",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 11,
+      "present_fields": [
+        "AYUSH_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "DOMICILIARY_HOSPITALIZATION",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "NO_CLAIM_BONUS",
+        "PERMANENT_EXCLUSIONS",
+        "ROOM_RENT_LIMIT",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "WAITING_PERIOD_PED_MONTHS"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [
+        "PERMANENT_EXCLUSIONS"
+      ],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is UNKNOWN_CLASSIFICATION_REVIEW (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_39_HDFHLGP22144V032122",
+      "uin": "",
+      "product_name": "PAGE_1_ROW_39_HDFHLGP22144V032122",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "1990993e1de25dd2f62ead6a9ac8e86e56e099a76af0c95558765b5e1891a4bd",
+      "category": "UNKNOWN_CLASSIFICATION_REVIEW",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 11,
+      "present_fields": [
+        "AYUSH_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "DOMICILIARY_HOSPITALIZATION",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "NO_CLAIM_BONUS",
+        "PERMANENT_EXCLUSIONS",
+        "ROOM_RENT_LIMIT",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "WAITING_PERIOD_PED_MONTHS"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [
+        "PERMANENT_EXCLUSIONS"
+      ],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is UNKNOWN_CLASSIFICATION_REVIEW (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_40_HDFHLIA22141V032122",
+      "uin": "",
+      "product_name": "PAGE_1_ROW_40_HDFHLIA22141V032122",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "c1974c2e523ce8a250c3e2f53bf6f9dd6fabeface4e696b7b37e59dacd5b4228",
+      "category": "UNKNOWN_CLASSIFICATION_REVIEW",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 9,
+      "present_fields": [
+        "AYUSH_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "DOMICILIARY_HOSPITALIZATION",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "NO_CLAIM_BONUS",
+        "PERMANENT_EXCLUSIONS",
+        "WAITING_PERIOD_INITIAL_DAYS"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS",
+        "ROOM_RENT_LIMIT",
+        "WAITING_PERIOD_PED_MONTHS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is UNKNOWN_CLASSIFICATION_REVIEW (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_41_HDFHLIP22145V032122",
+      "uin": "",
+      "product_name": "PAGE_1_ROW_41_HDFHLIP22145V032122",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "28c9bdb7f86cb2a9d5c5d2a3f9d8bfeeb68127879236d2819f342c23ef00f784",
+      "category": "UNKNOWN_CLASSIFICATION_REVIEW",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 7,
+      "present_fields": [
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "NO_CLAIM_BONUS",
+        "PERMANENT_EXCLUSIONS",
+        "WAITING_PERIOD_INITIAL_DAYS"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS",
+        "ROOM_RENT_LIMIT",
+        "WAITING_PERIOD_PED_MONTHS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is UNKNOWN_CLASSIFICATION_REVIEW (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_42_HDFTGBP22159V012122",
+      "uin": "",
+      "product_name": "PAGE_1_ROW_42_HDFTGBP22159V012122",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "27a71367bf803601551417f5d0a4a81b184071846a2b73a04e88ed1f03b24cae",
+      "category": "UNKNOWN_CLASSIFICATION_REVIEW",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 5,
+      "present_fields": [
+        "DAY_CARE_PROCEDURES",
+        "ICU_CHARGES_LIMIT",
+        "PERMANENT_EXCLUSIONS",
+        "ROOM_RENT_LIMIT",
+        "SUM_INSURED_TIERS"
+      ],
+      "missing_req_fields": [
+        "COPAY_PERCENTAGE",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "WAITING_PERIOD_PED_MONTHS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is UNKNOWN_CLASSIFICATION_REVIEW (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_43_NBHHLIP22155V032122",
+      "uin": "",
+      "product_name": "PAGE_1_ROW_43_NBHHLIP22155V032122",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "63102c9c9b47a56c124f4656a36cab9808afe994813c25558dc3146b1bbdd55f",
+      "category": "UNKNOWN_CLASSIFICATION_REVIEW",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 14,
+      "present_fields": [
+        "AMBULANCE_COVER",
+        "AYUSH_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "DOMICILIARY_HOSPITALIZATION",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "MODERN_TREATMENTS",
+        "NO_CLAIM_BONUS",
+        "ORGAN_DONOR_EXPENSES",
+        "PERMANENT_EXCLUSIONS",
+        "PRE_HOSPITALIZATION_DAYS",
+        "ROOM_RENT_LIMIT",
+        "WAITING_PERIOD_INITIAL_DAYS"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS",
+        "WAITING_PERIOD_PED_MONTHS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [
+        "NO_CLAIM_BONUS"
+      ],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is UNKNOWN_CLASSIFICATION_REVIEW (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_44_NBHHLIP22156V032122",
+      "uin": "",
+      "product_name": "PAGE_1_ROW_44_NBHHLIP22156V032122",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "8e692c4c84b8eb44c403268ff99d85035daf5b92571e852d22d2e4e5bfee39f9",
+      "category": "UNKNOWN_CLASSIFICATION_REVIEW",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 16,
+      "present_fields": [
+        "AMBULANCE_COVER",
+        "AYUSH_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "DEDUCTIBLE_AMOUNT",
+        "DOMICILIARY_HOSPITALIZATION",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "MODERN_TREATMENTS",
+        "NO_CLAIM_BONUS",
+        "ORGAN_DONOR_EXPENSES",
+        "PERMANENT_EXCLUSIONS",
+        "POST_HOSPITALIZATION_DAYS",
+        "PRE_HOSPITALIZATION_DAYS",
+        "ROOM_RENT_LIMIT",
+        "WAITING_PERIOD_INITIAL_DAYS"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS",
+        "WAITING_PERIOD_PED_MONTHS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is UNKNOWN_CLASSIFICATION_REVIEW (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_45_NBHPAIP22153V012122",
+      "uin": "",
+      "product_name": "PAGE_1_ROW_45_NBHPAIP22153V012122",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "570b698902cf824d5e82d37e0796bac6957128378dbc1727eb9579f919449d5c",
+      "category": "UNKNOWN_CLASSIFICATION_REVIEW",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 9,
+      "present_fields": [
+        "AMBULANCE_COVER",
+        "AYUSH_COVER",
+        "DAY_CARE_PROCEDURES",
+        "DOMICILIARY_HOSPITALIZATION",
+        "ICU_CHARGES_LIMIT",
+        "NO_CLAIM_BONUS",
+        "PERMANENT_EXCLUSIONS",
+        "ROOM_RENT_LIMIT",
+        "SUM_INSURED_TIERS"
+      ],
+      "missing_req_fields": [
+        "COPAY_PERCENTAGE",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "WAITING_PERIOD_PED_MONTHS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is UNKNOWN_CLASSIFICATION_REVIEW (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_46_NBHTIOP22148V012122",
+      "uin": "",
+      "product_name": "PAGE_1_ROW_46_NBHTIOP22148V012122",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "7165a59db5d3884b37484ab6409e63267a7ca27f46d7b5349bbc634adb254811",
+      "category": "UNKNOWN_CLASSIFICATION_REVIEW",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 8,
+      "present_fields": [
+        "AMBULANCE_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "PERMANENT_EXCLUSIONS",
+        "SUM_INSURED_TIERS",
+        "WAITING_PERIOD_INITIAL_DAYS"
+      ],
+      "missing_req_fields": [
+        "ROOM_RENT_LIMIT",
+        "WAITING_PERIOD_PED_MONTHS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is UNKNOWN_CLASSIFICATION_REVIEW (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_47_SBIHLIP22135V032122",
+      "uin": "",
+      "product_name": "PAGE_1_ROW_47_SBIHLIP22135V032122",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "40b2a340ecbab242d4ae7189eadb1ced59c3612aa012b2cfac303281b6881a87",
+      "category": "UNKNOWN_CLASSIFICATION_REVIEW",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 11,
+      "present_fields": [
+        "AYUSH_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "DOMICILIARY_HOSPITALIZATION",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "NO_CLAIM_BONUS",
+        "PERMANENT_EXCLUSIONS",
+        "ROOM_RENT_LIMIT",
+        "SUM_INSURED_TIERS",
+        "WAITING_PERIOD_INITIAL_DAYS"
+      ],
+      "missing_req_fields": [
+        "WAITING_PERIOD_PED_MONTHS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [
+        "DAY_CARE_PROCEDURES"
+      ],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is UNKNOWN_CLASSIFICATION_REVIEW (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_48_SBIHLIP22136V032122",
+      "uin": "",
+      "product_name": "PAGE_1_ROW_48_SBIHLIP22136V032122",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "f6fbbd117031cf2b1f61b01abd0b2db2ac43b3004bf8f77ec6411f83e97ef19f",
+      "category": "UNKNOWN_CLASSIFICATION_REVIEW",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 13,
+      "present_fields": [
+        "AYUSH_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "DOMICILIARY_HOSPITALIZATION",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "NO_CLAIM_BONUS",
+        "ORGAN_DONOR_EXPENSES",
+        "PERMANENT_EXCLUSIONS",
+        "ROOM_RENT_LIMIT",
+        "SUM_INSURED_TIERS",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "WAITING_PERIOD_PED_MONTHS"
+      ],
+      "missing_req_fields": [
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [
+        "DAY_CARE_PROCEDURES"
+      ],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is UNKNOWN_CLASSIFICATION_REVIEW (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_49_SBIHLIP22137V032122",
+      "uin": "",
+      "product_name": "PAGE_1_ROW_49_SBIHLIP22137V032122",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "95e984b681e7a60824b7fcf942fdd1069a5829f1cf717fe6b17938ab77f6ba11",
+      "category": "UNKNOWN_CLASSIFICATION_REVIEW",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 13,
+      "present_fields": [
+        "AYUSH_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "DOMICILIARY_HOSPITALIZATION",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "NO_CLAIM_BONUS",
+        "ORGAN_DONOR_EXPENSES",
+        "PERMANENT_EXCLUSIONS",
+        "ROOM_RENT_LIMIT",
+        "SUM_INSURED_TIERS",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "WAITING_PERIOD_PED_MONTHS"
+      ],
+      "missing_req_fields": [
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [
+        "DAY_CARE_PROCEDURES"
+      ],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is UNKNOWN_CLASSIFICATION_REVIEW (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_50_SBIHLIP22138V042122",
+      "uin": "",
+      "product_name": "PAGE_1_ROW_50_SBIHLIP22138V042122",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "316db7867b689d175543a14b1332785802a3dbb7b39df3c7b6e4463c8e9f2a52",
+      "category": "UNKNOWN_CLASSIFICATION_REVIEW",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 14,
+      "present_fields": [
+        "AYUSH_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "DOMICILIARY_HOSPITALIZATION",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "NO_CLAIM_BONUS",
+        "ORGAN_DONOR_EXPENSES",
+        "PERMANENT_EXCLUSIONS",
+        "POST_HOSPITALIZATION_DAYS",
+        "PRE_HOSPITALIZATION_DAYS",
+        "ROOM_RENT_LIMIT",
+        "SUM_INSURED_TIERS",
+        "WAITING_PERIOD_PED_MONTHS"
+      ],
+      "missing_req_fields": [
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [
+        "MATERNITY_COVER"
+      ],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is UNKNOWN_CLASSIFICATION_REVIEW (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_52_SHAHLGP22134V012122",
+      "uin": "SHAHLGP22134V012122",
+      "product_name": "Star Group Critical Illness Multipay Insurance Policy",
+      "archetype": "GROUP_HEALTH",
+      "sha256": "6f69c4f17492b1e293995d0b9993be8aedc75e700e4ddd0433bed90e4cb0eecc",
+      "category": "GROUP_HEALTH",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 3,
+      "present_fields": [
+        "ICU_CHARGES_LIMIT",
+        "PERMANENT_EXCLUSIONS",
+        "WAITING_PERIOD_INITIAL_DAYS"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS",
+        "ROOM_RENT_LIMIT",
+        "COPAY_PERCENTAGE",
+        "WAITING_PERIOD_PED_MONTHS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [
+        "ICU_CHARGES_LIMIT"
+      ],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is GROUP_HEALTH (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_53_SHAHLGP22147V022122",
+      "uin": "SHAHLGP22147V022122",
+      "product_name": "Star Group Covid Insurance Policy",
+      "archetype": "GROUP_HEALTH",
+      "sha256": "0340b07a7de7a9c622b5a930d8a0de6a572714d393f548eaedc322f42a2e34cd",
+      "category": "GROUP_HEALTH",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 7,
+      "present_fields": [
+        "AMBULANCE_COVER",
+        "AYUSH_COVER",
+        "DAY_CARE_PROCEDURES",
+        "ICU_CHARGES_LIMIT",
+        "PERMANENT_EXCLUSIONS",
+        "ROOM_RENT_LIMIT",
+        "WAITING_PERIOD_INITIAL_DAYS"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS",
+        "COPAY_PERCENTAGE",
+        "WAITING_PERIOD_PED_MONTHS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is GROUP_HEALTH (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_54_SHAHLIP22102V052122",
+      "uin": "SHAHLIP22102V052122",
+      "product_name": "Family Health Optima Accident Care Policy",
+      "archetype": "INDIVIDUAL",
+      "sha256": "1ccc31e99e35c1d12fcf3885f24668aa057fe343ac6d8d519f292952e195d663",
+      "category": "PERSONAL_ACCIDENT",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 17,
+      "present_fields": [
+        "AMBULANCE_COVER",
+        "AYUSH_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "DOMICILIARY_HOSPITALIZATION",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "MODERN_TREATMENTS",
+        "NO_CLAIM_BONUS",
+        "ORGAN_DONOR_EXPENSES",
+        "PERMANENT_EXCLUSIONS",
+        "POST_HOSPITALIZATION_DAYS",
+        "PRE_HOSPITALIZATION_DAYS",
+        "RESTORATION_BENEFIT",
+        "ROOM_RENT_LIMIT",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "WAITING_PERIOD_PED_MONTHS"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS"
+      ],
+      "conflicting_fields": [
+        "DAY_CARE_PROCEDURES",
+        "WAITING_PERIOD_INITIAL_DAYS"
+      ],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is PERSONAL_ACCIDENT (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_55_SHAHLIP22140V012122",
+      "uin": "SHAHLIP22140V012122",
+      "product_name": "Star Critical Illness Multipay Insurance Policy",
+      "archetype": "INDIVIDUAL",
+      "sha256": "50be31f3f5b3072b7d73af70d534b54dea95fe6718bce9ec5461ba0f885a2105",
+      "category": "BENEFIT_BASED",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 4,
+      "present_fields": [
+        "ICU_CHARGES_LIMIT",
+        "NO_CLAIM_BONUS",
+        "PERMANENT_EXCLUSIONS",
+        "WAITING_PERIOD_INITIAL_DAYS"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS",
+        "ROOM_RENT_LIMIT",
+        "COPAY_PERCENTAGE",
+        "WAITING_PERIOD_PED_MONTHS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is BENEFIT_BASED (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_56_UNIHLGP22074V012122",
+      "uin": "UNIHLGP22074V012122",
+      "product_name": "Group Credit Protection Policy",
+      "archetype": "GROUP_HEALTH",
+      "sha256": "73cef513508f74113ecfe47371a1e8366ece3e5b586c27cd217205e6d220e078",
+      "category": "GROUP_HEALTH",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 9,
+      "present_fields": [
+        "AYUSH_COVER",
+        "DAY_CARE_PROCEDURES",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "NO_CLAIM_BONUS",
+        "PERMANENT_EXCLUSIONS",
+        "ROOM_RENT_LIMIT",
+        "SUM_INSURED_TIERS",
+        "WAITING_PERIOD_INITIAL_DAYS"
+      ],
+      "missing_req_fields": [
+        "COPAY_PERCENTAGE",
+        "WAITING_PERIOD_PED_MONTHS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [
+        "WAITING_PERIOD_INITIAL_DAYS"
+      ],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is GROUP_HEALTH (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_57_UNIHLGP22161V012122",
+      "uin": "UNIHLGP22161V012122",
+      "product_name": "Group Hospital Cash Policy",
+      "archetype": "GROUP_HEALTH",
+      "sha256": "176fdf2859f4a86ae653c4230984d8eae6832a965300709a3285d6e1e3876220",
+      "category": "GROUP_HEALTH",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 7,
+      "present_fields": [
+        "AYUSH_COVER",
+        "DAY_CARE_PROCEDURES",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "NO_CLAIM_BONUS",
+        "PERMANENT_EXCLUSIONS",
+        "WAITING_PERIOD_PED_MONTHS"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS",
+        "ROOM_RENT_LIMIT",
+        "COPAY_PERCENTAGE",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is GROUP_HEALTH (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_58_UNIHLIP22139V032122",
+      "uin": "UNIHLIP22139V032122",
+      "product_name": "Loan Secure Insurance Policy",
+      "archetype": "INDIVIDUAL",
+      "sha256": "f0d996d297b4dd93de907281947f8befea7a4697fcaab8bebf21cdcb4a2b67f2",
+      "category": "INDIVIDUAL",
+      "is_retail_medical": true,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 4,
+      "present_fields": [
+        "ICU_CHARGES_LIMIT",
+        "PERMANENT_EXCLUSIONS",
+        "RESTORATION_BENEFIT",
+        "SUM_INSURED_TIERS"
+      ],
+      "missing_req_fields": [
+        "ROOM_RENT_LIMIT",
+        "COPAY_PERCENTAGE",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "WAITING_PERIOD_PED_MONTHS"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "BLOCKED_REVIEWER_APPROVAL",
+      "blockers": [
+        "Lacks human compliance reviewer sign-off (extraction status is UNVERIFIED_PENDING_REVIEW)",
+        "Missing mandatory contractual fields: ROOM_RENT_LIMIT, COPAY_PERCENTAGE, WAITING_PERIOD_INITIAL_DAYS, WAITING_PERIOD_PED_MONTHS"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_59_ICIHLGP22083V022122",
+      "uin": "ICIHLGP22083V022122",
+      "product_name": "Health Shield 360",
+      "archetype": "GROUP_HEALTH",
+      "sha256": "24187905233ed5eaa53dc2b0ba270a3727bb55ee26863fb78f69d9640df3d355",
+      "category": "GROUP_HEALTH",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 11,
+      "present_fields": [
+        "AMBULANCE_COVER",
+        "AYUSH_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "DOMICILIARY_HOSPITALIZATION",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "NO_CLAIM_BONUS",
+        "ORGAN_DONOR_EXPENSES",
+        "PERMANENT_EXCLUSIONS",
+        "ROOM_RENT_LIMIT"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "WAITING_PERIOD_PED_MONTHS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is GROUP_HEALTH (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_1_ROW_60_ICIHLGP22084V042122",
+      "uin": "ICIHLGP22084V042122",
+      "product_name": "Income Protect",
+      "archetype": "GROUP_HEALTH",
+      "sha256": "668c44886a28dc48f8b88905e03388443693c03d00f47b41b9bd4c9507762493",
+      "category": "GROUP_HEALTH",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 4,
+      "present_fields": [
+        "DAY_CARE_PROCEDURES",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "PERMANENT_EXCLUSIONS"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS",
+        "ROOM_RENT_LIMIT",
+        "COPAY_PERCENTAGE",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "WAITING_PERIOD_PED_MONTHS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is GROUP_HEALTH (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_2_ROW_1_ICIHLGP22086V022122",
+      "uin": "ICIHLGP22086V022122",
+      "product_name": "Rashtriya Swasthya Bima Yojana",
+      "archetype": "GROUP_HEALTH",
+      "sha256": "b576998d3c78013fa06bc9a3ce4f1dcf0d17bf71a00797430e546ec5c16bf59a",
+      "category": "GROUP_HEALTH",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 12,
+      "present_fields": [
+        "AMBULANCE_COVER",
+        "AYUSH_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "DOMICILIARY_HOSPITALIZATION",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "NO_CLAIM_BONUS",
+        "PERMANENT_EXCLUSIONS",
+        "PRE_HOSPITALIZATION_DAYS",
+        "ROOM_RENT_LIMIT",
+        "SUM_INSURED_TIERS"
+      ],
+      "missing_req_fields": [
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "WAITING_PERIOD_PED_MONTHS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is GROUP_HEALTH (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_2_ROW_2_ICIHLGP22090V032122",
+      "uin": "ICIHLGP22090V032122",
+      "product_name": "Group Hospi Shield",
+      "archetype": "GROUP_HEALTH",
+      "sha256": "89031bbbd759412fc9be598a79673424cca6ffc39d570e896028b55680e86fd1",
+      "category": "GROUP_HEALTH",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 9,
+      "present_fields": [
+        "AMBULANCE_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "NO_CLAIM_BONUS",
+        "PERMANENT_EXCLUSIONS",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "WAITING_PERIOD_PED_MONTHS"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS",
+        "ROOM_RENT_LIMIT",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is GROUP_HEALTH (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_2_ROW_3_ICIHLIP22092V032122",
+      "uin": "ICIHLIP22092V032122",
+      "product_name": "Family Shield",
+      "archetype": "INDIVIDUAL",
+      "sha256": "26a06e80f2a38dc23e4cdb61ad08164d3be374837517f5019fc59fc2fcf836f7",
+      "category": "FAMILY_FLOATER",
+      "is_retail_medical": true,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 8,
+      "present_fields": [
+        "AMBULANCE_COVER",
+        "DAY_CARE_PROCEDURES",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "NO_CLAIM_BONUS",
+        "PERMANENT_EXCLUSIONS",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "WAITING_PERIOD_PED_MONTHS"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS",
+        "ROOM_RENT_LIMIT",
+        "COPAY_PERCENTAGE",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "BLOCKED_REVIEWER_APPROVAL",
+      "blockers": [
+        "Lacks human compliance reviewer sign-off (extraction status is UNVERIFIED_PENDING_REVIEW)",
+        "Missing mandatory contractual fields: SUM_INSURED_TIERS, ROOM_RENT_LIMIT, COPAY_PERCENTAGE, RESTORATION_BENEFIT"
+      ]
+    },
+    {
+      "revision_id": "PAGE_2_ROW_4_BAJHLGA22166V012122",
+      "uin": "BAJHLGA22166V012122",
+      "product_name": "Health Prime  (Group)",
+      "archetype": "BATCH_ACQUIRED",
+      "sha256": "a1d194aa27befcc4b92cdb962d987b6077a4aef90777f0635d00ee87bd81bf63",
+      "category": "GROUP_HEALTH",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 1,
+      "present_fields": [
+        "ICU_CHARGES_LIMIT"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS",
+        "ROOM_RENT_LIMIT",
+        "COPAY_PERCENTAGE",
+        "WAITING_PERIOD_INITIAL_DAYS",
+        "WAITING_PERIOD_PED_MONTHS",
+        "PERMANENT_EXCLUSIONS",
+        "RESTORATION_BENEFIT"
+      ],
+      "conflicting_fields": [],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is GROUP_HEALTH (incompatible with retail medical pipeline)"
+      ]
+    },
+    {
+      "revision_id": "PAGE_2_ROW_5_BAJHLGP22165V012122",
+      "uin": "BAJHLGP22165V012122",
+      "product_name": "Flexi Health Protect Plan",
+      "archetype": "GROUP_HEALTH",
+      "sha256": "5ce38c2be43dc70697a1a837b687e1df40801fb922d55bbe9c85748f6bdffc78",
+      "category": "GROUP_HEALTH",
+      "is_retail_medical": false,
+      "is_published": false,
+      "doc_exists": true,
+      "doc_hash_match": true,
+      "extraction_count": 14,
+      "present_fields": [
+        "AMBULANCE_COVER",
+        "AYUSH_COVER",
+        "COPAY_PERCENTAGE",
+        "DAY_CARE_PROCEDURES",
+        "DOMICILIARY_HOSPITALIZATION",
+        "ICU_CHARGES_LIMIT",
+        "MATERNITY_COVER",
+        "MODERN_TREATMENTS",
+        "NO_CLAIM_BONUS",
+        "ORGAN_DONOR_EXPENSES",
+        "PERMANENT_EXCLUSIONS",
+        "RESTORATION_BENEFIT",
+        "ROOM_RENT_LIMIT",
+        "WAITING_PERIOD_PED_MONTHS"
+      ],
+      "missing_req_fields": [
+        "SUM_INSURED_TIERS",
+        "WAITING_PERIOD_INITIAL_DAYS"
+      ],
+      "conflicting_fields": [
+        "MATERNITY_COVER"
+      ],
+      "has_reviewer_approval": false,
+      "approval_identity": "NONE",
+      "approval_notes": "Extracted via automated tokenizer (v1.1.0); status is UNVERIFIED_PENDING_REVIEW",
+      "disposition": "EXCLUDED_NON_RETAIL_CATEGORY",
+      "blockers": [
+        "Category is GROUP_HEALTH (incompatible with retail medical pipeline)"
+      ]
+    }
+  ]
+}

@@ -832,11 +832,18 @@ public class PolicySourceMonitor {
         return sources;
     }
 
+    @org.springframework.beans.factory.annotation.Value("${vidhura.policy.discovery.enabled:false}")
+    private boolean scheduledDiscoveryEnabled = false;
+
     /**
      * Scheduled background job: Polls official sources at 2:00 AM daily.
      */
-    @Scheduled(cron = "${vidhura.policy.discovery.cron:0 0 2 * * ?}")
+    @Scheduled(cron = "${vidhura.policy.discovery.cron:-}")
     public void scheduledDiscoveryCrawl() {
+        if (!scheduledDiscoveryEnabled) {
+            log.info("[PolicySourceMonitor] Scheduled background discovery crawl is disabled by configuration.");
+            return;
+        }
         log.info("[PolicySourceMonitor] Starting scheduled background policy discovery crawl...");
         CrawlSummary summary = pollAllSources(false);
         log.info("[PolicySourceMonitor] Completed scheduled crawl: checked={}, extracted={}, skipped={}, failed={}",

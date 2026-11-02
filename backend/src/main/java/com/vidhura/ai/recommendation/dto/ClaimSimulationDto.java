@@ -319,6 +319,69 @@ public class ClaimSimulationDto {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
+    public static class FeatureValueDto {
+        private String policyId;
+        private String policyName;
+        private String value;
+        private String clauseCitation;
+        private String verbatimText;
+        private boolean favorable;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ContractualFeatureComparisonDto {
+        private String featureKey;
+        private String featureName;
+        private String category;
+        @Builder.Default
+        private List<FeatureValueDto> policyValues = new ArrayList<>();
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class PersonalizedComparisonAnalysisDto {
+        @Builder.Default
+        private List<String> policyAAdvantages = new ArrayList<>();
+        @Builder.Default
+        private List<String> policyBAdvantages = new ArrayList<>();
+        private String financialRecommendation;
+        private String tradeOffSummary;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class InsurerIntelligenceComparisonDto {
+        private String insurerCode;
+        private String insurerName;
+        private String verificationStatus;
+        private boolean verifiedStatutory;
+        private boolean evidenceUnavailable;
+        private String claimSettlementRatio;
+        private String solvencyRatio;
+        private String repudiationRatio;
+        private String sourceDocumentTitle;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class OmittedPolicyComparisonDto {
+        private String policyIdOrCode;
+        private String omissionReason;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class ClaimComparisonResponseDto {
         private String scenarioDiagnosis;
         private BigDecimal totalSubmittedBill;
@@ -331,6 +394,13 @@ public class ClaimSimulationDto {
         private String varianceExplanation;
         @Builder.Default
         private List<ClauseDeltaDto> clauseDeltas = new ArrayList<>();
+        @Builder.Default
+        private List<ContractualFeatureComparisonDto> contractualMatrix = new ArrayList<>();
+        private PersonalizedComparisonAnalysisDto personalizedAnalysis;
+        @Builder.Default
+        private List<InsurerIntelligenceComparisonDto> insurerIntelligences = new ArrayList<>();
+        @Builder.Default
+        private List<OmittedPolicyComparisonDto> omittedPolicies = new ArrayList<>();
         @Builder.Default
         private String disclaimer = "SCENARIO-BASED COMPARATIVE ESTIMATE: These figures are comparative estimates grounded in versioned contractual policy clauses for educational purposes, not guarantees of claim settlement.";
         private Instant evaluatedAt;
